@@ -28,6 +28,7 @@ export default function AssetsPage() {
   const [statuses, setStatuses] = useState([]);
   const [photosMap, setPhotosMap] = useState({});
   const [usersMap, setUsersMap] = useState({});
+  const [responsiblesMap, setResponsiblesMap] = useState({});
   const [previewPhoto, setPreviewPhoto] = useState(null);
 
   const canEdit = role && ['super_admin', 'hrd'].includes(role.role_name);
@@ -89,6 +90,23 @@ export default function AssetsPage() {
           });
         }
         setPhotosMap(photoMap);
+
+        const { data: assignments } = await supabase
+          .from('asset_responsible_assignments')
+          .select('asset_id, is_primary, responsible:asset_responsibles(responsible_name)')
+          .in('asset_id', assetIds)
+          .order('is_primary', { ascending: false });
+
+        const assignmentMap = {};
+        if (assignments) {
+          assignments.forEach(item => {
+            if (!assignmentMap[item.asset_id]) assignmentMap[item.asset_id] = [];
+            if (item.responsible?.responsible_name) {
+              assignmentMap[item.asset_id].push(item.responsible.responsible_name);
+            }
+          });
+        }
+        setResponsiblesMap(assignmentMap);
       }
 
       const userIds = [...new Set(data?.filter(a => a.responsible_user_id).map(a => a.responsible_user_id) || [])];
@@ -343,7 +361,7 @@ export default function AssetsPage() {
                       <td className="text-ink-300">{getCategoryName(asset.category_id)}</td>
                       <td className="text-ink-300">{getLocationName(asset.location_id)}</td>
                       <td className="text-ink-300">
-                        {usersMap[asset.responsible_user_id] || '-'}
+                        {responsiblesMap[asset.id]?.join(', ') || usersMap[asset.responsible_user_id] || '-'}
                       </td>
                       <td>
                         <span className={condBadge}>{getConditionName(asset.condition_id)}</span>

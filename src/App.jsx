@@ -3,7 +3,6 @@ import { useAuth } from './contexts/AuthContext';
 import { supabase } from './lib/supabase';
 import MainLayout from './components/layout/MainLayout';
 import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
@@ -17,6 +16,7 @@ import MaintenanceScheduleDetailPage from './pages/MaintenanceScheduleDetailPage
 import CategoriesPage from './pages/CategoriesPage';
 import LocationsPage from './pages/LocationsPage';
 import DepartmentsPage from './pages/DepartmentsPage';
+import AssetResponsiblesPage from './pages/AssetResponsiblesPage';
 import VendorsPage from './pages/VendorsPage';
 import AssetsPage from './pages/AssetsPage';
 import AssetDetailPage from './pages/AssetDetailPage';
@@ -123,7 +123,7 @@ export default function App() {
     <Routes>
       {/* Public Routes */}
       <Route path="/login" element={!profile ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
-      <Route path="/register" element={!profile ? <RegisterPage /> : <Navigate to="/dashboard" replace />} />
+      <Route path="/register" element={<Navigate to="/login" replace />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
@@ -160,6 +160,11 @@ export default function App() {
         <Route path="departments" element={
           <HRDRoute>
             <DepartmentsPage />
+          </HRDRoute>
+        } />
+        <Route path="asset-responsibles" element={
+          <HRDRoute>
+            <AssetResponsiblesPage />
           </HRDRoute>
         } />
         <Route path="vendors" element={

@@ -8,6 +8,15 @@ import {
   ArrowRight, Calendar, ExternalLink, TrendingUp, X
 } from 'lucide-react';
 
+// Sapaan dinamis berdasarkan waktu lokal browser
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 11) return 'Selamat Pagi';
+  if (hour >= 11 && hour < 15) return 'Selamat Siang';
+  if (hour >= 15 && hour < 18) return 'Selamat Sore';
+  return 'Selamat Malam';
+}
+
 export default function DashboardPage() {
   const { profile } = useAuth();
   const [stats, setStats] = useState({
@@ -122,7 +131,9 @@ export default function DashboardPage() {
   };
 
   const activePercent = stats.total > 0 ? Math.round((stats.active / stats.total) * 1000) / 10 : 0;
-  const firstName = profile?.full_name?.split(' ')[0] || 'User';
+  // Sapaan mengikuti waktu, lalu nama lengkap (termasuk gelar, mis. "Bu Widi").
+  const greeting = getGreeting();
+  const displayName = profile?.full_name?.trim() || 'User';
 
   const statCards = [
     {
@@ -188,7 +199,7 @@ export default function DashboardPage() {
             </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">
-            Selamat datang, <span className="shimmer-text">{firstName}</span>
+            {greeting}, <span className="shimmer-text">{displayName}</span>
           </h1>
           <p className="text-sm text-ink-400 mt-1">Overview real-time aset dan pemeliharaan perusahaan</p>
         </div>

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff, LogIn, Shield, Building2, Activity, ArrowRight } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
+import BrandLogo from '../components/BrandLogo';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -57,9 +58,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <div className="relative z-10 flex flex-col justify-center px-16">
           <div className="mb-12">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center mb-8 shadow-glow-blue">
-              <Building2 size={28} className="text-white" />
-            </div>
+            <BrandLogo className="w-full max-w-[360px] h-[108px] mb-8" />
             <div className="text-xs font-mono font-medium text-primary-400 uppercase tracking-wider mb-3">Harmas Asset System</div>
             <h1 className="text-4xl font-bold text-white mb-4 leading-tight tracking-tight">
               Manajemen Aset<br />
@@ -96,9 +95,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md relative">
           {/* Mobile Logo */}
           <div className="lg:hidden mb-8 text-center">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center mx-auto mb-4 shadow-glow-blue">
-              <Building2 size={28} className="text-white" />
-            </div>
+            <BrandLogo className="w-[260px] h-[78px] mx-auto mb-4" />
             <h1 className="text-xl font-bold text-white">Harmas Asset System</h1>
             <p className="text-ink-400 text-xs mt-1 font-mono">CV HARMAS INDUSTRI SANDANG</p>
           </div>
@@ -184,9 +181,9 @@ export default function LoginPage() {
             <div className="mt-6 pt-6 border-t border-white/5 text-center">
               <p className="text-ink-400 text-sm">
                 Belum punya akun?{' '}
-                <Link to="/register" className="text-primary-400 hover:text-primary-300 font-medium transition-colors">
-                  Daftar di sini
-                </Link>
+                <span className="text-ink-200 font-medium">
+                  Hubungi administrator
+                </span>
               </p>
             </div>
           </div>

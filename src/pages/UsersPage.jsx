@@ -3,11 +3,13 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { ROLE_LABELS, ROLE_OPTIONS, ACCOUNT_STATUS_LABELS, ACCOUNT_STATUS, formatDateTime } from '../lib/constants';
 import toast from 'react-hot-toast';
-import { Search, Filter, Check, X, Ban, RotateCcw, Shield, RefreshCw } from 'lucide-react';
+import { Search, Filter, Check, X, Ban, RotateCcw, Shield, RefreshCw, UserPlus, Eye, EyeOff, ChevronDown } from 'lucide-react';
 
 export default function UsersPage() {
   const { refreshProfile } = useAuth();
   const [users, setUsers] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [subDepartments, setSubDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -16,6 +18,78 @@ export default function UsersPage() {
   const [showConfirm, setShowConfirm] = useState(null);
   const [showRoleModal, setShowRoleModal] = useState(null);
   const [newRole, setNewRole] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCreatePassword, setShowCreatePassword] = useState(false);
+  const [showCreateRoleOptions, setShowCreateRoleOptions] = useState(false);
+  const [showCreateDepartmentOptions, setShowCreateDepartmentOptions] = useState(false);
+  const [showCreateSubDepartmentOptions, setShowCreateSubDepartmentOptions] = useState(false);
+  const [showEditRoleOptions, setShowEditRoleOptions] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    full_name: '',
+    email: '',
+    password: '',
+    phone: '',
+    department: '',
+    department_id: '',
+    sub_department_id: '',
+    position: '',
+    role: 'pelaksana'
+  });
+
+  const closeCreateModal = (force = false) => {
+    if (createLoading && !force) return;
+    setShowCreateModal(false);
+    setShowCreatePassword(false);
+    setShowCreateRoleOptions(false);
+    setShowCreateDepartmentOptions(false);
+    setShowCreateSubDepartmentOptions(false);
+    setCreateForm({
+      full_name: '',
+      email: '',
+      password: '',
+      phone: '',
+      department: '',
+      department_id: '',
+      sub_department_id: '',
+      position: '',
+      role: 'pelaksana'
+    });
+  };
+
+  const handleCreateUser = async (event) => {
+    event.preventDefault();
+    if (createForm.password.length < 8) {
+      toast.error('Password minimal 8 karakter');
+      return;
+    }
+
+    setCreateLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: createForm
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Gagal membuat pengguna');
+
+      toast.success(`Akun ${createForm.full_name} berhasil dibuat dan sudah aktif`);
+      closeCreateModal(true);
+      await fetchUsers();
+    } catch (error) {
+      let message = error.message || 'Gagal membuat pengguna';
+      if (error.context) {
+        try {
+          const payload = await error.context.json();
+          message = payload?.error || message;
+        } catch {
+          // Response bukan JSON; gunakan pesan standar.
+        }
+      }
+      toast.error(message);
+    } finally {
+      setCreateLoading(false);
+    }
+  };
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -74,6 +148,46 @@ export default function UsersPage() {
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+  const fetchDepartments = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .select('id, department_name, department_code')
+        .eq('is_active', true)
+        .order('department_name', { ascending: true });
+
+      if (error) throw error;
+      setDepartments(data || []);
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+      toast.error('Gagal memuat daftar departemen');
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDepartments();
+  }, [fetchDepartments]);
+
+  const fetchSubDepartments = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('sub_departments')
+        .select('id, department_id, sub_department_name, sub_department_code')
+        .eq('is_active', true)
+        .order('sub_department_name', { ascending: true });
+
+      if (error) throw error;
+      setSubDepartments(data || []);
+    } catch (error) {
+      console.error('Error fetching sub departments:', error);
+      toast.error('Gagal memuat daftar subdepartemen');
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSubDepartments();
+  }, [fetchSubDepartments]);
 
   const handleAction = async (userId, action) => {
     setActionLoading(userId);
@@ -137,6 +251,7 @@ export default function UsersPage() {
       toast.success(`Role ${showRoleModal.full_name} diubah ke ${ROLE_LABELS[newRole]}`);
       fetchUsers();
       setShowRoleModal(null);
+      setShowEditRoleOptions(false);
       setNewRole('');
     } catch (error) {
       toast.error(error.message);
@@ -155,6 +270,24 @@ export default function UsersPage() {
     return classes[status] || 'badge-gray';
   };
 
+  const getRoleLabel = (roleName) => ROLE_LABELS[roleName] || roleName || 'Pilih role';
+
+  const getDepartmentLabel = (departmentName) => departmentName || 'Pilih departemen';
+
+  const selectedDepartment = departments.find((dept) => dept.id === createForm.department_id);
+  const selectedSubDepartment = subDepartments.find((sub) => sub.id === createForm.sub_department_id);
+  const availableSubDepartments = subDepartments.filter((sub) => sub.department_id === createForm.department_id);
+
+  const getUserDepartmentDisplay = (user) => {
+    const department = departments.find((dept) => dept.id === user.department_id);
+    const subDepartment = subDepartments.find((sub) => sub.id === user.sub_department_id);
+    const departmentName = department?.department_name || user.department;
+
+    if (!departmentName && !subDepartment) return '-';
+    if (departmentName && subDepartment) return `${departmentName} / ${subDepartment.sub_department_name}`;
+    return departmentName || subDepartment?.sub_department_name || '-';
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -162,10 +295,16 @@ export default function UsersPage() {
           <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">Manajemen Pengguna</h1>
           <p className="text-sm text-ink-400 mt-1">Kelola pengguna, role, dan status akun</p>
         </div>
-        <button onClick={fetchUsers} className="btn-secondary text-sm" disabled={loading}>
-          <RefreshCw size={14} className={`${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={fetchUsers} className="btn-secondary text-sm" disabled={loading}>
+            <RefreshCw size={14} className={`${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+          <button onClick={() => setShowCreateModal(true)} className="btn-primary text-sm">
+            <UserPlus size={15} />
+            Tambah Pengguna
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -244,7 +383,7 @@ export default function UsersPage() {
                   <tr key={user.id} className="hover-card">
                     <td>
                       <div className="font-medium text-white">{user.full_name}</div>
-                      <div className="text-xs text-ink-400">{user.department || '-'}</div>
+                      <div className="text-xs text-ink-400">{getUserDepartmentDisplay(user)}</div>
                     </td>
                     <td className="text-sm text-ink-200 font-mono text-[12px]">{user.email}</td>
                     <td>
@@ -311,6 +450,7 @@ export default function UsersPage() {
                           onClick={() => {
                             setShowRoleModal(user);
                             setNewRole(user.role_name || '');
+                            setShowEditRoleOptions(false);
                           }}
                           className="p-1.5 text-primary-400 hover:bg-primary-500/10 rounded-md transition-all"
                           title="Ubah Role"
@@ -326,6 +466,238 @@ export default function UsersPage() {
           </div>
         )}
       </div>
+
+      {/* Confirm Dialog */}
+      {showCreateModal && (
+        <div className="modal-overlay">
+          <div className="modal-content max-w-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-primary-500/10 border border-primary-500/20">
+                  <UserPlus size={18} className="text-primary-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Tambah Pengguna</h3>
+                  <p className="text-xs text-ink-400">Akun langsung aktif dan dapat digunakan untuk login.</p>
+                </div>
+              </div>
+              <button onClick={() => closeCreateModal()} className="p-1.5 text-ink-400 hover:bg-white/5 hover:text-white rounded-md transition-all">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateUser} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="label">Nama Lengkap <span className="text-danger-400">*</span></label>
+                  <input className="input" value={createForm.full_name} onChange={(e) => setCreateForm({ ...createForm, full_name: e.target.value })} required />
+                </div>
+                <div>
+                  <label className="label">Email <span className="text-danger-400">*</span></label>
+                  <input type="email" className="input" value={createForm.email} onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })} required autoComplete="off" />
+                </div>
+                <div>
+                  <label className="label">Password Awal <span className="text-danger-400">*</span></label>
+                  <div className="relative">
+                    <input
+                      type={showCreatePassword ? 'text' : 'password'}
+                      className="input pr-11"
+                      value={createForm.password}
+                      onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                      minLength={8}
+                      required
+                      autoComplete="new-password"
+                    />
+                    <button type="button" onClick={() => setShowCreatePassword(!showCreatePassword)} className="absolute inset-y-0 right-0 px-3 text-ink-500 hover:text-ink-200">
+                      {showCreatePassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-ink-500 mt-1">Minimal 8 karakter.</p>
+                </div>
+                <div>
+                  <label className="label">Role <span className="text-danger-400">*</span></label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="input flex items-center justify-between text-left"
+                      onClick={() => {
+                        setShowCreateRoleOptions((open) => !open);
+                        setShowCreateDepartmentOptions(false);
+                      }}
+                      aria-haspopup="listbox"
+                      aria-expanded={showCreateRoleOptions}
+                    >
+                      <span>{getRoleLabel(createForm.role)}</span>
+                      <ChevronDown size={16} className={`text-ink-400 transition-transform ${showCreateRoleOptions ? 'rotate-180' : ''}`} />
+                    </button>
+                    {showCreateRoleOptions && (
+                      <div className="absolute left-0 right-0 top-full z-[70] mt-1 overflow-hidden rounded-md border border-white/10 bg-ink-900 shadow-soft-lg" role="listbox">
+                        {ROLE_OPTIONS.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            className={`w-full px-3.5 py-2 text-left text-sm transition-colors hover:bg-primary-500/10 hover:text-primary-300 ${
+                              createForm.role === option.value ? 'bg-primary-500/15 text-primary-300' : 'text-white'
+                            }`}
+                            onClick={() => {
+                              setCreateForm({ ...createForm, role: option.value });
+                              setShowCreateRoleOptions(false);
+                            }}
+                            role="option"
+                            aria-selected={createForm.role === option.value}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="label">Nomor Telepon</label>
+                  <input className="input" value={createForm.phone} onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })} />
+                </div>
+                <div>
+                  <label className="label">Departemen</label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="input flex items-center justify-between text-left"
+                      onClick={() => {
+                        setShowCreateDepartmentOptions((open) => !open);
+                        setShowCreateRoleOptions(false);
+                        setShowCreateSubDepartmentOptions(false);
+                      }}
+                      aria-haspopup="listbox"
+                      aria-expanded={showCreateDepartmentOptions}
+                    >
+                      <span className={createForm.department_id ? '' : 'text-ink-500'}>{getDepartmentLabel(selectedDepartment?.department_name)}</span>
+                      <ChevronDown size={16} className={`text-ink-400 transition-transform ${showCreateDepartmentOptions ? 'rotate-180' : ''}`} />
+                    </button>
+                    {showCreateDepartmentOptions && (
+                      <div className="absolute left-0 right-0 top-full z-[70] mt-1 max-h-56 overflow-y-auto rounded-md border border-white/10 bg-ink-900 shadow-soft-lg" role="listbox">
+                        <button
+                          type="button"
+                          className={`w-full px-3.5 py-2 text-left text-sm transition-colors hover:bg-primary-500/10 hover:text-primary-300 ${
+                            !createForm.department_id ? 'bg-primary-500/15 text-primary-300' : 'text-white'
+                          }`}
+                          onClick={() => {
+                            setCreateForm({ ...createForm, department: '', department_id: '', sub_department_id: '' });
+                            setShowCreateDepartmentOptions(false);
+                          }}
+                          role="option"
+                          aria-selected={!createForm.department_id}
+                        >
+                          Tanpa departemen
+                        </button>
+                        {departments.map((dept) => (
+                          <button
+                            key={dept.id}
+                            type="button"
+                            className={`w-full px-3.5 py-2 text-left text-sm transition-colors hover:bg-primary-500/10 hover:text-primary-300 ${
+                              createForm.department_id === dept.id ? 'bg-primary-500/15 text-primary-300' : 'text-white'
+                            }`}
+                            onClick={() => {
+                              setCreateForm({
+                                ...createForm,
+                                department: dept.department_name,
+                                department_id: dept.id,
+                                sub_department_id: ''
+                              });
+                              setShowCreateDepartmentOptions(false);
+                            }}
+                            role="option"
+                            aria-selected={createForm.department_id === dept.id}
+                          >
+                            <span className="font-medium">{dept.department_name}</span>
+                            {dept.department_code && <span className="ml-2 text-xs text-ink-500 font-mono">{dept.department_code}</span>}
+                          </button>
+                        ))}
+                        {departments.length === 0 && (
+                          <div className="px-3.5 py-2 text-sm text-ink-400">Belum ada departemen aktif</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="label">Subdepartemen</label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="input flex items-center justify-between text-left"
+                      onClick={() => {
+                        if (!createForm.department_id) return;
+                        setShowCreateSubDepartmentOptions((open) => !open);
+                        setShowCreateRoleOptions(false);
+                        setShowCreateDepartmentOptions(false);
+                      }}
+                      disabled={!createForm.department_id}
+                      aria-haspopup="listbox"
+                      aria-expanded={showCreateSubDepartmentOptions}
+                    >
+                      <span className={createForm.sub_department_id ? '' : 'text-ink-500'}>
+                        {selectedSubDepartment?.sub_department_name || (createForm.department_id ? 'Pilih subdepartemen' : 'Pilih departemen dulu')}
+                      </span>
+                      <ChevronDown size={16} className={`text-ink-400 transition-transform ${showCreateSubDepartmentOptions ? 'rotate-180' : ''}`} />
+                    </button>
+                    {showCreateSubDepartmentOptions && (
+                      <div className="absolute left-0 right-0 top-full z-[70] mt-1 max-h-56 overflow-y-auto rounded-md border border-white/10 bg-ink-900 shadow-soft-lg" role="listbox">
+                        <button
+                          type="button"
+                          className={`w-full px-3.5 py-2 text-left text-sm transition-colors hover:bg-primary-500/10 hover:text-primary-300 ${
+                            !createForm.sub_department_id ? 'bg-primary-500/15 text-primary-300' : 'text-white'
+                          }`}
+                          onClick={() => {
+                            setCreateForm({ ...createForm, sub_department_id: '' });
+                            setShowCreateSubDepartmentOptions(false);
+                          }}
+                          role="option"
+                          aria-selected={!createForm.sub_department_id}
+                        >
+                          Tanpa subdepartemen
+                        </button>
+                        {availableSubDepartments.map((sub) => (
+                          <button
+                            key={sub.id}
+                            type="button"
+                            className={`w-full px-3.5 py-2 text-left text-sm transition-colors hover:bg-primary-500/10 hover:text-primary-300 ${
+                              createForm.sub_department_id === sub.id ? 'bg-primary-500/15 text-primary-300' : 'text-white'
+                            }`}
+                            onClick={() => {
+                              setCreateForm({ ...createForm, sub_department_id: sub.id });
+                              setShowCreateSubDepartmentOptions(false);
+                            }}
+                            role="option"
+                            aria-selected={createForm.sub_department_id === sub.id}
+                          >
+                            <span className="font-medium">{sub.sub_department_name}</span>
+                            {sub.sub_department_code && <span className="ml-2 text-xs text-ink-500 font-mono">{sub.sub_department_code}</span>}
+                          </button>
+                        ))}
+                        {availableSubDepartments.length === 0 && (
+                          <div className="px-3.5 py-2 text-sm text-ink-400">Belum ada subdepartemen aktif</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="label">Jabatan</label>
+                  <input className="input" value={createForm.position} onChange={(e) => setCreateForm({ ...createForm, position: e.target.value })} />
+                </div>
+              </div>
+              <div className="flex gap-3 justify-end pt-2">
+                <button type="button" onClick={() => closeCreateModal()} className="btn-secondary" disabled={createLoading}>Batal</button>
+                <button type="submit" className="btn-primary" disabled={createLoading}>
+                  <UserPlus size={15} />
+                  {createLoading ? 'Membuat Akun...' : 'Buat Akun'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Confirm Dialog */}
       {showConfirm && (
@@ -377,23 +749,48 @@ export default function UsersPage() {
                 </div>
                 <h3 className="text-lg font-semibold text-white">Ubah Role</h3>
               </div>
-              <button onClick={() => { setShowRoleModal(null); setNewRole(''); }} className="p-1.5 text-ink-400 hover:bg-white/5 hover:text-white rounded-md transition-all"><X size={18} /></button>
+              <button onClick={() => { setShowRoleModal(null); setShowEditRoleOptions(false); setNewRole(''); }} className="p-1.5 text-ink-400 hover:bg-white/5 hover:text-white rounded-md transition-all"><X size={18} /></button>
             </div>
             <p className="text-ink-300 mb-4">
               Ubah role untuk <strong className="text-white">{showRoleModal.full_name}</strong>
             </p>
-            <select
-              className="input mb-6"
-              value={newRole}
-              onChange={(e) => setNewRole(e.target.value)}
-            >
-              {ROLE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+            <div className="relative mb-6">
+              <button
+                type="button"
+                className="input flex items-center justify-between text-left"
+                onClick={() => setShowEditRoleOptions((open) => !open)}
+                aria-haspopup="listbox"
+                aria-expanded={showEditRoleOptions}
+              >
+                <span>{getRoleLabel(newRole)}</span>
+                <ChevronDown size={16} className={`text-ink-400 transition-transform ${showEditRoleOptions ? 'rotate-180' : ''}`} />
+              </button>
+              {showEditRoleOptions && (
+                <div className="absolute left-0 right-0 top-full z-[70] mt-1 overflow-hidden rounded-md border border-white/10 bg-ink-900 shadow-soft-lg" role="listbox">
+                  {ROLE_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={`w-full px-3.5 py-2 text-left text-sm transition-colors hover:bg-primary-500/10 hover:text-primary-300 ${
+                        newRole === opt.value ? 'bg-primary-500/15 text-primary-300' : 'text-white'
+                      }`}
+                      onClick={() => {
+                        setNewRole(opt.value);
+                        setShowEditRoleOptions(false);
+                      }}
+                      role="option"
+                      aria-selected={newRole === opt.value}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => { setShowRoleModal(null); setNewRole(''); }}
+                onMouseDown={() => setShowEditRoleOptions(false)}
                 className="btn-secondary"
               >
                 Batal

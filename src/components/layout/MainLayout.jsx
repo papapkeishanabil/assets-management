@@ -4,12 +4,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
 import { ROLE_LABELS, ROLES } from '../../lib/constants';
 import ThemeToggle from '../ThemeToggle';
+import BrandLogo from '../BrandLogo';
+import HelpModal from '../HelpModal';
 import {
   Users, User, LogOut, Menu, X,
   ChevronDown, FolderTree, MapPin, Building2,
   Truck, Package, Home, Bell, Search, Settings,
   Wrench, Shield, Calendar, AlertCircle, AlertTriangle,
-  HelpCircle, Smartphone, Download, BellRing
+  HelpCircle, Smartphone, Download, BellRing, UserCheck
 } from 'lucide-react';
 
 export default function MainLayout() {
@@ -20,6 +22,7 @@ export default function MainLayout() {
   const [masterDataOpen, setMasterDataOpen] = useState(true);
   const [maintenanceOpen, setMaintenanceOpen] = useState(true);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
@@ -29,6 +32,7 @@ export default function MainLayout() {
         setSidebarOpen(false);
         setProfileOpen(false);
         setNotificationOpen(false);
+        setHelpOpen(false);
       }
     };
     window.addEventListener('keydown', handleEsc);
@@ -59,7 +63,8 @@ export default function MainLayout() {
   const masterDataItems = [
     { to: '/categories', icon: FolderTree, label: 'Kategori Aset', roles: ['super_admin', 'hrd'] },
     { to: '/locations', icon: MapPin, label: 'Lokasi Aset', roles: ['super_admin', 'hrd'] },
-    { to: '/departments', icon: Building2, label: 'Departemen', roles: ['super_admin', 'hrd'] },
+    { to: '/departments', icon: Building2, label: 'Struktur Organisasi', roles: ['super_admin'] },
+    { to: '/asset-responsibles', icon: UserCheck, label: 'Penanggung Jawab', roles: ['super_admin', 'hrd'] },
     { to: '/vendors', icon: Truck, label: 'Vendor', roles: ['super_admin', 'hrd'] },
   ];
 
@@ -123,16 +128,8 @@ export default function MainLayout() {
         <div className="absolute inset-0 dot-grid-bg opacity-30 pointer-events-none"></div>
 
         {/* Logo */}
-        <div className="relative h-16 px-5 flex items-center justify-between border-b border-white/5">
-          <div className="flex items-center gap-2.5">
-            <div className="relative w-9 h-9 rounded-lg bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center shadow-glow-blue">
-              <span className="text-white font-bold text-base">H</span>
-            </div>
-            <div className="leading-tight">
-              <h2 className="font-semibold text-sm text-white">Harmas</h2>
-              <p className="text-[11px] text-ink-400 font-mono">Asset System</p>
-            </div>
-          </div>
+        <div className="relative h-20 px-4 flex items-center justify-between border-b border-white/5">
+          <BrandLogo compact className="w-[185px] h-[58px]" />
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden text-ink-400 hover:text-white hover:bg-white/5 p-1.5 rounded-md transition-all"
@@ -143,7 +140,7 @@ export default function MainLayout() {
         </div>
 
         {/* Nav */}
-        <nav className="relative flex-1 overflow-y-auto p-3 space-y-0.5 h-[calc(100vh-13rem)]">
+        <nav className="relative flex-1 overflow-y-auto p-3 space-y-0.5 h-[calc(100vh-14rem)]">
           <SectionLabel>Menu</SectionLabel>
           {navItems.map((item) => (
             <NavLink
@@ -160,17 +157,23 @@ export default function MainLayout() {
           {canAccessMasterData && (
             <>
               <SectionLabel>Master Data</SectionLabel>
-              {masterDataItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setSidebarOpen(false)}
-                  className={navLinkClass}
-                >
-                  <item.icon size={16} className="flex-shrink-0" />
-                  {item.label}
-                </NavLink>
-              ))}
+              {masterDataItems.map((item) => {
+                const itemRoles = item.roles || ['super_admin', 'hrd'];
+                const canAccessItem = role && itemRoles.includes(role.role_name);
+                if (!canAccessItem) return null;
+
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setSidebarOpen(false)}
+                    className={navLinkClass}
+                  >
+                    <item.icon size={16} className="flex-shrink-0" />
+                    {item.label}
+                  </NavLink>
+                );
+              })}
             </>
           )}
 
@@ -340,13 +343,13 @@ export default function MainLayout() {
                           const IconMap = {
                             Calendar, AlertCircle, AlertTriangle, Bell
                           };
-                          const iconName = n.notification_type === 'REMINDER_7_DAYS' || n.notification_type === 'REMINDER_3_DAYS' || n.notification_type === 'REMINDER_1_DAY' ? 'Calendar'
+                          const iconName = n.notification_type === 'REMINDER_7_DAYS' || n.notification_type === 'REMINDER_3_DAYS' || n.notification_type === 'REMINDER_1_DAY' || n.notification_type === 'REMINDER_CUSTOM' ? 'Calendar'
                             : n.notification_type === 'DUE_TODAY' ? 'AlertCircle'
                             : n.notification_type === 'OVERDUE' ? 'AlertTriangle' : 'Bell';
                           const Icon = IconMap[iconName];
                           const colorKey = n.notification_type === 'REMINDER_7_DAYS' ? 'blue'
                             : n.notification_type === 'REMINDER_3_DAYS' ? 'yellow'
-                            : n.notification_type === 'REMINDER_1_DAY' ? 'orange' : 'red';
+                            : n.notification_type === 'REMINDER_1_DAY' ? 'orange' : n.notification_type === 'REMINDER_CUSTOM' ? 'blue' : 'red';
                           const colorMap = {
                             blue: 'text-primary-300 bg-primary-500/10 border-primary-500/20',
                             yellow: 'text-warning-300 bg-warning-500/10 border-warning-500/20',
@@ -406,8 +409,10 @@ export default function MainLayout() {
             </div>
 
             <button
+              onClick={() => setHelpOpen(true)}
               className="p-2 text-ink-300 hover:bg-white/5 hover:text-white rounded-md transition-all"
               aria-label="Bantuan"
+              aria-haspopup="dialog"
             >
               <HelpCircle size={18} />
             </button>
@@ -436,13 +441,13 @@ export default function MainLayout() {
               {profileOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-64 glass rounded-xl shadow-soft-lg z-50 py-2 animate-scale-in">
-                    <div className="px-4 py-3 border-b border-white/5">
-                      <p className="text-sm font-semibold text-white truncate">{profile?.full_name}</p>
-                      <p className="text-xs text-ink-400 mt-0.5 truncate font-mono">{profile?.email}</p>
-                      <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-primary-500/10 text-primary-300 border border-primary-500/20">
+                  <div className="absolute right-0 top-full mt-2 w-72 topbar-popover rounded-xl shadow-soft-lg z-50 py-2 animate-scale-in">
+                    <div className="px-4 py-3 border-b border-white/10">
+                      <p className="text-sm font-semibold text-white truncate leading-5">{profile?.full_name}</p>
+                      <p className="text-xs text-ink-400 mt-1 truncate font-mono leading-4">{profile?.email}</p>
+                      <div className="mt-2 inline-flex max-w-full items-center gap-1.5 px-2 py-1 rounded text-[11px] font-medium bg-primary-500/10 text-primary-300 border border-primary-500/20">
                         <Shield size={10} />
-                        {roleLabel}
+                        <span className="truncate">{roleLabel}</span>
                       </div>
                     </div>
                     <div className="py-1">
@@ -474,6 +479,8 @@ export default function MainLayout() {
           <Outlet />
         </main>
       </div>
+
+      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
     </div>
   );
 }

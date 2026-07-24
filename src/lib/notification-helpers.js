@@ -5,6 +5,7 @@ export const NOTIFICATION_TYPES = {
   REMINDER_7_DAYS: 'REMINDER_7_DAYS',
   REMINDER_3_DAYS: 'REMINDER_3_DAYS',
   REMINDER_1_DAY: 'REMINDER_1_DAY',
+  REMINDER_CUSTOM: 'REMINDER_CUSTOM',
   DUE_TODAY: 'DUE_TODAY',
   OVERDUE: 'OVERDUE'
 };
@@ -14,6 +15,7 @@ export const NOTIFICATION_TYPE_LABELS = {
   [NOTIFICATION_TYPES.REMINDER_7_DAYS]: 'Pengingatan 7 Hari',
   [NOTIFICATION_TYPES.REMINDER_3_DAYS]: 'Pengingatan 3 Hari',
   [NOTIFICATION_TYPES.REMINDER_1_DAY]: 'Pengingatan 1 Hari',
+  [NOTIFICATION_TYPES.REMINDER_CUSTOM]: 'Pengingatan',
   [NOTIFICATION_TYPES.DUE_TODAY]: 'Jatuh Tempo Hari Ini',
   [NOTIFICATION_TYPES.OVERDUE]: 'Terlambat'
 };
@@ -23,6 +25,7 @@ export const NOTIFICATION_TYPE_COLORS = {
   [NOTIFICATION_TYPES.REMINDER_7_DAYS]: 'blue',
   [NOTIFICATION_TYPES.REMINDER_3_DAYS]: 'yellow',
   [NOTIFICATION_TYPES.REMINDER_1_DAY]: 'orange',
+  [NOTIFICATION_TYPES.REMINDER_CUSTOM]: 'blue',
   [NOTIFICATION_TYPES.DUE_TODAY]: 'red',
   [NOTIFICATION_TYPES.OVERDUE]: 'red'
 };
@@ -32,6 +35,7 @@ export const NOTIFICATION_TYPE_ICONS = {
   [NOTIFICATION_TYPES.REMINDER_7_DAYS]: 'Calendar',
   [NOTIFICATION_TYPES.REMINDER_3_DAYS]: 'Calendar',
   [NOTIFICATION_TYPES.REMINDER_1_DAY]: 'Calendar',
+  [NOTIFICATION_TYPES.REMINDER_CUSTOM]: 'Calendar',
   [NOTIFICATION_TYPES.DUE_TODAY]: 'AlertCircle',
   [NOTIFICATION_TYPES.OVERDUE]: 'AlertTriangle'
 };
@@ -166,7 +170,8 @@ export function isUpcomingNotification(type) {
   return [
     NOTIFICATION_TYPES.REMINDER_7_DAYS,
     NOTIFICATION_TYPES.REMINDER_3_DAYS,
-    NOTIFICATION_TYPES.REMINDER_1_DAY
+    NOTIFICATION_TYPES.REMINDER_1_DAY,
+    NOTIFICATION_TYPES.REMINDER_CUSTOM
   ].includes(type);
 }
 
@@ -197,7 +202,7 @@ export function isOverdueNotification(type) {
  * @param {number} daysLate - Jumlah hari terlambat (untuk OVERDUE)
  * @returns {string}
  */
-export function buildNotificationMessage(maintenanceTypeName, assetCode, assetName, type, daysLate = 0) {
+export function buildNotificationMessage(maintenanceTypeName, assetCode, assetName, type, daysLate = 0, reminderDays = 0) {
   const assetLabel = `${assetCode} - ${assetName}`;
   const maintenanceLabel = maintenanceTypeName;
 
@@ -208,6 +213,8 @@ export function buildNotificationMessage(maintenanceTypeName, assetCode, assetNa
       return `${maintenanceLabel} untuk ${assetLabel} akan jatuh tempo dalam 3 hari.`;
     case NOTIFICATION_TYPES.REMINDER_1_DAY:
       return `${maintenanceLabel} untuk ${assetLabel} akan jatuh tempo besok.`;
+    case NOTIFICATION_TYPES.REMINDER_CUSTOM:
+      return `${maintenanceLabel} untuk ${assetLabel} akan jatuh tempo dalam ${reminderDays} hari.`;
     case NOTIFICATION_TYPES.DUE_TODAY:
       return `${maintenanceLabel} untuk ${assetLabel} harus dilaksanakan hari ini.`;
     case NOTIFICATION_TYPES.OVERDUE:
@@ -227,6 +234,7 @@ export function buildNotificationTitle(type) {
     case NOTIFICATION_TYPES.REMINDER_7_DAYS:
     case NOTIFICATION_TYPES.REMINDER_3_DAYS:
     case NOTIFICATION_TYPES.REMINDER_1_DAY:
+    case NOTIFICATION_TYPES.REMINDER_CUSTOM:
       return 'Jadwal Pemeliharaan Mendatang';
     case NOTIFICATION_TYPES.DUE_TODAY:
       return 'Pemeliharaan Jatuh Tempo Hari Ini';

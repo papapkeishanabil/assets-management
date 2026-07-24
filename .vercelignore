@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+node_modules
+dist
+dev-dist
+.dev-dist
+*.log
+*.backup
+*.bak
+.git

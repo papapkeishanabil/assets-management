@@ -125,6 +125,7 @@ export function useNotifications() {
           next_maintenance_date,
           is_active,
           responsible_user_id,
+          reminder_days_before,
           asset:assets!inner(id, asset_code, asset_name, is_active),
           maintenance_type:maintenance_types!inner(id, maintenance_code, maintenance_name)
         `)
@@ -139,7 +140,6 @@ export function useNotifications() {
         .from('user_profiles')
         .select(`
           id,
-          auth_user_id,
           account_status,
           role:roles!inner(id, role_name)
         `)
@@ -153,22 +153,29 @@ export function useNotifications() {
 
       for (const schedule of schedules) {
         const daysDiff = getDayDiff(schedule.next_maintenance_date, today);
+        const reminderDays = Number(schedule.reminder_days_before) || 0;
         let notificationType = null;
         let daysLate = 0;
 
-        // Tentukan tipe notifikasi berdasarkan selisih hari
-        if (daysDiff === 7) {
-          notificationType = NOTIFICATION_TYPES.REMINDER_7_DAYS;
-        } else if (daysDiff === 3) {
-          notificationType = NOTIFICATION_TYPES.REMINDER_3_DAYS;
-        } else if (daysDiff === 1) {
-          notificationType = NOTIFICATION_TYPES.REMINDER_1_DAY;
-        } else if (daysDiff === 0) {
+        // Tentukan tipe notifikasi berdasarkan selisih hari.
+        // Urutan penting: jatuh tempo & terlambat dicek lebih dulu, lalu
+        // tangga reminder standar (7/3/1), terakhir reminder khusus sesuai
+        // pengaturan reminder_days_before jadwal.
+        if (daysDiff === 0) {
           notificationType = NOTIFICATION_TYPES.DUE_TODAY;
         } else if (daysDiff < 0) {
           // Terlambat - hanya buat notifikasi pertama kali memasuki status terlambat
           notificationType = NOTIFICATION_TYPES.OVERDUE;
           daysLate = Math.abs(daysDiff);
+        } else if (daysDiff === 7) {
+          notificationType = NOTIFICATION_TYPES.REMINDER_7_DAYS;
+        } else if (daysDiff === 3) {
+          notificationType = NOTIFICATION_TYPES.REMINDER_3_DAYS;
+        } else if (daysDiff === 1) {
+          notificationType = NOTIFICATION_TYPES.REMINDER_1_DAY;
+        } else if (reminderDays > 0 && daysDiff === reminderDays) {
+          // Pengingat khusus sesuai pengaturan "reminder_days_before" jadwal
+          notificationType = NOTIFICATION_TYPES.REMINDER_CUSTOM;
         }
 
         if (!notificationType) continue;
@@ -180,17 +187,19 @@ export function useNotifications() {
           schedule.asset?.asset_code || '-',
           schedule.asset?.asset_name || '-',
           notificationType,
-          daysLate
+          daysLate,
+          reminderDays
         );
 
         // Tentukan penerima
         const recipientUserIds = new Set();
 
-        // Semua user dengan role berhak
+        // Semua user dengan role berhak.
+        // Pakai user_profiles.id (bukan auth_user_id) karena
+        // notifications.user_id -> user_profiles(id), dan notifikasi
+        // dibaca berdasarkan profile.id.
         users.forEach(u => {
-          if (u.auth_user_id) {
-            recipientUserIds.add(u.auth_user_id);
-          }
+          recipientUserIds.add(u.id);
         });
 
         // Jika ada responsible_user_id, tambahkan ke penerima

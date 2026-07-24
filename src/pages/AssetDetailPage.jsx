@@ -14,13 +14,17 @@ export default function AssetDetailPage() {
   const [photos, setPhotos] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [logs, setLogs] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [responsibleAssignments, setResponsibleAssignments] = useState([]);
   const [activeTab, setActiveTab] = useState('info');
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [serviceForm, setServiceForm] = useState({
     description: '',
     service_date: new Date().toISOString().split('T')[0],
     cost: '',
+    vendor_id: '',
     vendor_name: '',
+    vendor_mode: 'master',
     notes: ''
   });
   const [savingService, setSavingService] = useState(false);
@@ -32,6 +36,8 @@ export default function AssetDetailPage() {
     fetchPhotos();
     fetchDocuments();
     fetchLogs();
+    fetchVendors();
+    fetchResponsibleAssignments();
   }, [id]);
 
   const fetchAsset = async () => {
@@ -99,6 +105,24 @@ export default function AssetDetailPage() {
     setLogs(data || []);
   };
 
+  const fetchVendors = async () => {
+    const { data } = await supabase
+      .from('vendors')
+      .select('id, vendor_name, vendor_code, vendor_type, service_type')
+      .eq('is_active', true)
+      .order('vendor_name', { ascending: true });
+    setVendors(data || []);
+  };
+
+  const fetchResponsibleAssignments = async () => {
+    const { data } = await supabase
+      .from('asset_responsible_assignments')
+      .select('id, responsibility_type, is_primary, responsible:asset_responsibles(id, responsible_name, role_title, responsible_code)')
+      .eq('asset_id', id)
+      .order('is_primary', { ascending: false });
+    setResponsibleAssignments(data || []);
+  };
+
   const handleServiceSubmit = async (e) => {
     e.preventDefault();
     if (!serviceForm.description) {
@@ -121,6 +145,7 @@ export default function AssetDetailPage() {
         new_data: {
           service_date: serviceForm.service_date,
           cost: serviceForm.cost ? parseInt(serviceForm.cost) : null,
+          vendor_id: serviceForm.vendor_id || null,
           vendor_name: serviceForm.vendor_name || null
         }
       }]);
@@ -133,7 +158,9 @@ export default function AssetDetailPage() {
         description: '',
         service_date: new Date().toISOString().split('T')[0],
         cost: '',
+        vendor_id: '',
         vendor_name: '',
+        vendor_mode: 'master',
         notes: ''
       });
       fetchLogs();
@@ -198,6 +225,11 @@ export default function AssetDetailPage() {
       <p className="font-medium text-white text-sm">{value || '-'}</p>
     </div>
   );
+
+  const responsibleNames = responsibleAssignments
+    .map(item => item.responsible?.responsible_name)
+    .filter(Boolean)
+    .join(', ');
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -276,8 +308,21 @@ export default function AssetDetailPage() {
               <Field label="Nomor Seri" value={asset.serial_number} />
               <Field label="Tahun Produksi" value={asset.manufacture_year} />
               <Field label="Departemen" value={asset.department?.department_name} />
-              <Field label="Penanggung Jawab" value={asset.responsible?.full_name} />
+              <Field label="Penanggung Jawab" value={responsibleNames || asset.responsible?.full_name} />
             </div>
+            {responsibleAssignments.length > 0 && (
+              <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-2">Daftar Penanggung Jawab</p>
+                <div className="flex flex-wrap gap-2">
+                  {responsibleAssignments.map(item => (
+                    <span key={item.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-primary-500/10 border border-primary-500/20 text-primary-300">
+                      {item.responsible?.responsible_name}
+                      {item.responsible?.role_title && <span className="text-ink-400">({item.responsible.role_title})</span>}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
             {asset.notes && (
               <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
                 <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Catatan</p>
@@ -295,13 +340,25 @@ export default function AssetDetailPage() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {asset.vehicle_registration_number && (
-                <Field label="Nomor Polisi" value={asset.vehicle_registration_number} />
+                <Field label="Plat Nomor" value={asset.vehicle_registration_number} />
+              )}
+              {asset.vehicle_owner_name && (
+                <Field label="Nama Pemilik" value={asset.vehicle_owner_name} />
+              )}
+              {asset.chassis_number && (
+                <Field label="Nomor Rangka" value={asset.chassis_number} />
               )}
               {asset.engine_number && (
                 <Field label="Nomor Mesin" value={asset.engine_number} />
               )}
-              {asset.chassis_number && (
-                <Field label="Nomor Rangka" value={asset.chassis_number} />
+              {asset.vehicle_color && (
+                <Field label="Warna" value={asset.vehicle_color} />
+              )}
+              {asset.fuel_type && (
+                <Field label="Bahan Bakar / Sumber Energi" value={asset.fuel_type} />
+              )}
+              {asset.manufacture_year && (
+                <Field label="Tahun Pembuatan" value={asset.manufacture_year} />
               )}
               {asset.current_odometer && (
                 <Field label="Kilometer Saat Ini" value={`${asset.current_odometer} km`} />
@@ -533,13 +590,49 @@ export default function AssetDetailPage() {
               </div>
               <div>
                 <label className="label">Vendor/Tempat Service</label>
-                <input
-                  type="text"
+                <select
                   className="input"
-                  value={serviceForm.vendor_name}
-                  onChange={(e) => setServiceForm({...serviceForm, vendor_name: e.target.value})}
-                  placeholder="Contoh: Service Center, Toko Komputer..."
-                />
+                  value={serviceForm.vendor_mode === 'manual' ? '__manual' : serviceForm.vendor_id}
+                  onChange={(e) => {
+                    if (e.target.value === '__manual') {
+                      setServiceForm({
+                        ...serviceForm,
+                        vendor_id: '',
+                        vendor_name: '',
+                        vendor_mode: 'manual'
+                      });
+                      return;
+                    }
+
+                    const selectedVendor = vendors.find((vendor) => vendor.id === e.target.value);
+                    setServiceForm({
+                      ...serviceForm,
+                      vendor_id: selectedVendor?.id || '',
+                      vendor_name: selectedVendor?.vendor_name || '',
+                      vendor_mode: 'master'
+                    });
+                  }}
+                >
+                  <option value="">Pilih vendor/tempat service...</option>
+                  {vendors.map((vendor) => (
+                    <option key={vendor.id} value={vendor.id}>
+                      {vendor.vendor_name}{vendor.vendor_code ? ` (${vendor.vendor_code})` : ''}
+                    </option>
+                  ))}
+                  <option value="__manual">Input manual / belum terdaftar</option>
+                </select>
+                {serviceForm.vendor_mode === 'manual' && (
+                  <input
+                    type="text"
+                    className="input mt-2"
+                    value={serviceForm.vendor_name}
+                    onChange={(e) => setServiceForm({...serviceForm, vendor_name: e.target.value})}
+                    placeholder="Contoh: Escape Computer"
+                  />
+                )}
+                {vendors.length === 0 && (
+                  <p className="text-xs text-ink-500 mt-1">Belum ada vendor aktif. Daftarkan di menu Vendor atau gunakan input manual.</p>
+                )}
               </div>
               <div>
                 <label className="label">Catatan Tambahan</label>

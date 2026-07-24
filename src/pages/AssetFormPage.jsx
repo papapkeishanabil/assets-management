@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Save, X, Upload, Check } from 'lucide-react';
+import { ArrowLeft, Save, X, Upload, Check, Loader2 } from 'lucide-react';
 
 export default function AssetFormPage() {
   const { id } = useParams();
@@ -19,7 +19,10 @@ export default function AssetFormPage() {
   const [conditions, setConditions] = useState([]);
   const [statuses, setStatuses] = useState([]);
   const [users, setUsers] = useState([]);
+  const [assetResponsibles, setAssetResponsibles] = useState([]);
+  const [selectedResponsibleIds, setSelectedResponsibleIds] = useState([]);
   const [previewCode, setPreviewCode] = useState('');
+  const [generatingCode, setGeneratingCode] = useState(false);
   const [photos, setPhotos] = useState([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [form, setForm] = useState({
@@ -42,8 +45,11 @@ export default function AssetFormPage() {
     condition_id: '',
     status_id: '',
     vehicle_registration_number: '',
+    vehicle_owner_name: '',
     engine_number: '',
     chassis_number: '',
+    vehicle_color: '',
+    fuel_type: '',
     current_odometer: '',
     current_operating_hours: '',
     technical_specification: '',
@@ -52,7 +58,24 @@ export default function AssetFormPage() {
     is_draft: false
   });
 
-  const isVehicle = form.category_id && (categories.find(c => c.id === form.category_id)?.category_code === 'MBL' || categories.find(c => c.id === form.category_id)?.category_code === 'MTR');
+  const selectedCategory = categories.find(category => category.id === form.category_id);
+  const selectedCategoryParent = categories.find(category => category.id === selectedCategory?.parent_category_id);
+  const isVehicle = Boolean(
+    selectedCategory &&
+    (selectedCategory.category_code === 'KEND' || selectedCategoryParent?.category_code === 'KEND')
+  );
+  const rootCategories = categories.filter(category => !category.parent_category_id);
+  const orphanCategories = categories.filter(category =>
+    category.parent_category_id &&
+    !categories.some(parent => parent.id === category.parent_category_id)
+  );
+
+  const getCategoryLabel = (categoryId) => {
+    const category = categories.find(item => item.id === categoryId);
+    if (!category) return '';
+    const parent = categories.find(item => item.id === category.parent_category_id);
+    return parent ? `${parent.category_name} → ${category.category_name}` : category.category_name;
+  };
 
   useEffect(() => {
     fetchMasterData();
@@ -62,20 +85,24 @@ export default function AssetFormPage() {
   }, [id]);
 
   useEffect(() => {
-    if (form.category_id && form.asset_code === '') {
+    if (!isEdit && form.category_id) {
       generateAssetCode();
+    } else if (!isEdit && !form.category_id) {
+      setPreviewCode('');
+      setForm(prev => ({ ...prev, asset_code: '' }));
     }
-  }, [form.category_id]);
+  }, [form.category_id, categories, isEdit]);
 
   const fetchMasterData = async () => {
-    const [catRes, locRes, deptRes, venRes, condRes, statRes, userRes] = await Promise.all([
+    const [catRes, locRes, deptRes, venRes, condRes, statRes, userRes, responsibleRes] = await Promise.all([
       supabase.from('asset_categories').select('*').eq('is_active', true).order('display_order'),
       supabase.from('asset_locations').select('*').eq('is_active', true).order('location_name'),
       supabase.from('departments').select('*').eq('is_active', true).order('department_name'),
       supabase.from('vendors').select('*').eq('is_active', true).order('vendor_name'),
       supabase.from('asset_conditions').select('*').eq('is_active', true).order('display_order'),
       supabase.from('asset_statuses').select('*').eq('is_active', true).order('display_order'),
-      supabase.from('user_profiles').select('id, full_name').eq('account_status', 'ACTIVE').order('full_name')
+      supabase.from('user_profiles').select('id, full_name').eq('account_status', 'ACTIVE').order('full_name'),
+      supabase.from('asset_responsibles').select('*').eq('is_active', true).order('responsible_name')
     ]);
 
     if (catRes.data) setCategories(catRes.data);
@@ -85,6 +112,7 @@ export default function AssetFormPage() {
     if (condRes.data) setConditions(condRes.data);
     if (statRes.data) setStatuses(statRes.data);
     if (userRes.data) setUsers(userRes.data);
+    if (responsibleRes.data) setAssetResponsibles(responsibleRes.data);
   };
 
   const fetchAsset = async () => {
@@ -111,8 +139,11 @@ export default function AssetFormPage() {
         condition_id: data.condition_id || '',
         status_id: data.status_id || '',
         vehicle_registration_number: data.vehicle_registration_number || '',
+        vehicle_owner_name: data.vehicle_owner_name || '',
         engine_number: data.engine_number || '',
         chassis_number: data.chassis_number || '',
+        vehicle_color: data.vehicle_color || '',
+        fuel_type: data.fuel_type || '',
         current_odometer: data.current_odometer || '',
         current_operating_hours: data.current_operating_hours || '',
         technical_specification: data.technical_specification || '',
@@ -127,6 +158,14 @@ export default function AssetFormPage() {
         .eq('asset_id', id)
         .order('created_at');
       if (photosData) setPhotos(photosData);
+
+      const { data: responsibleData } = await supabase
+        .from('asset_responsible_assignments')
+        .select('responsible_id')
+        .eq('asset_id', id);
+      if (responsibleData) {
+        setSelectedResponsibleIds(responsibleData.map(item => item.responsible_id));
+      }
     } catch (error) {
       toast.error('Gagal memuat data aset');
       navigate('/assets');
@@ -137,16 +176,26 @@ export default function AssetFormPage() {
     const category = categories.find(c => c.id === form.category_id);
     if (!category) return;
 
-    const year = new Date().getFullYear();
-    const { data } = await supabase.rpc('generate_asset_code', {
-      cat_code: category.category_code,
-      year_val: year
-    });
-    if (data) {
+    setGeneratingCode(true);
+    setPreviewCode('');
+    setForm(prev => ({ ...prev, asset_code: '' }));
+    try {
+      const year = new Date().getFullYear();
+      const { data, error } = await supabase.rpc('generate_asset_code', {
+        cat_code: category.category_code,
+        year_val: year
+      });
+      if (error) throw error;
+      if (!data) throw new Error('Kode aset tidak berhasil dibuat');
+
       setPreviewCode(data);
       if (!isEdit) {
         setForm(prev => ({ ...prev, asset_code: data }));
       }
+    } catch (error) {
+      toast.error(`Gagal membuat kode aset: ${error.message}`);
+    } finally {
+      setGeneratingCode(false);
     }
   };
 
@@ -255,6 +304,7 @@ export default function AssetFormPage() {
 
       const dataToSubmit = {
         ...cleanedForm,
+        responsible_user_id: getPrimaryResponsibleUserId(),
         manufacture_year: form.manufacture_year ? parseInt(form.manufacture_year) : null,
         purchase_price: form.purchase_price ? parseFloat(form.purchase_price) : null,
         current_odometer: form.current_odometer ? parseFloat(form.current_odometer) : null,
@@ -268,11 +318,13 @@ export default function AssetFormPage() {
       if (isEdit) {
         const { error } = await supabase.from('assets').update(dataToSubmit).eq('id', id);
         if (error) throw error;
+        await saveResponsibleAssignments(assetId);
         toast.success(asDraft ? 'Draft berhasil disimpan' : 'Aset berhasil diperbarui');
       } else {
         const { data, error } = await supabase.from('assets').insert([dataToSubmit]).select('id').single();
         if (error) throw error;
         assetId = data.id;
+        await saveResponsibleAssignments(assetId);
 
         if (photos.length > 0) {
           const photoInserts = photos.map(photo => ({
@@ -304,7 +356,71 @@ export default function AssetFormPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const steps = ['Identitas', 'Pembelian', 'Penempatan', 'Teknis', 'Foto', 'Review'];
+  const toggleResponsible = (responsibleId) => {
+    setSelectedResponsibleIds(prev =>
+      prev.includes(responsibleId)
+        ? prev.filter(id => id !== responsibleId)
+        : [...prev, responsibleId]
+    );
+  };
+
+  const getPrimaryResponsibleUserId = () => {
+    const selected = selectedResponsibleIds
+      .map(responsibleId => assetResponsibles.find(item => item.id === responsibleId))
+      .filter(Boolean);
+    return selected.find(item => item.user_profile_id)?.user_profile_id || null;
+  };
+
+  const saveResponsibleAssignments = async (assetId) => {
+    const { error: deleteError } = await supabase
+      .from('asset_responsible_assignments')
+      .delete()
+      .eq('asset_id', assetId);
+    if (deleteError) throw deleteError;
+
+    if (selectedResponsibleIds.length === 0) return;
+
+    const assignments = selectedResponsibleIds.map((responsibleId, index) => ({
+      asset_id: assetId,
+      responsible_id: responsibleId,
+      responsibility_type: index === 0 ? 'utama' : 'pendukung',
+      is_primary: index === 0,
+      created_by: profile?.id
+    }));
+
+    const { error: insertError } = await supabase
+      .from('asset_responsible_assignments')
+      .insert(assignments);
+    if (insertError) throw insertError;
+  };
+
+  const handleNextStep = () => {
+    if (step === 1) {
+      if (!form.asset_name.trim()) {
+        toast.error('Nama aset wajib diisi');
+        return;
+      }
+      if (!form.category_id) {
+        toast.error('Kategori aset wajib dipilih');
+        return;
+      }
+      if (generatingCode) {
+        toast.error('Tunggu hingga kode aset selesai dibuat');
+        return;
+      }
+      if (!form.asset_code) {
+        toast.error('Kode aset belum berhasil dibuat. Pilih ulang kategori.');
+        return;
+      }
+    }
+    if (step === 4 && selectedResponsibleIds.length === 0) {
+      toast.error('Pilih minimal satu penanggung jawab aset');
+      return;
+    }
+    setStep(step + 1);
+  };
+
+  const steps = ['Identitas', 'Teknis', 'Pembelian', 'Penempatan', 'Foto', 'Review'];
 
   const ReviewField = ({ label, value }) => (
     <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
@@ -359,18 +475,61 @@ export default function AssetFormPage() {
                   <input type="text" name="asset_name" className="input" value={form.asset_name} onChange={handleChange} required />
                 </div>
                 <div>
-                  <label className="label">Kode Aset</label>
-                  <input type="text" name="asset_code" className="input font-mono" value={form.asset_code} onChange={handleChange} readOnly={!isEdit} />
-                  {previewCode && <p className="text-xs text-ink-500 mt-1.5 font-mono">Preview: <span className="text-primary-300">{previewCode}</span></p>}
-                </div>
-                <div>
-                  <label className="label">Kategori <span className="text-danger-400">*</span></label>
+                  <label className="label">Kategori Aset <span className="text-danger-400">*</span></label>
                   <select name="category_id" className="input" value={form.category_id} onChange={handleChange} required>
                     <option value="">Pilih kategori...</option>
-                    {categories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.category_name} ({cat.category_code})</option>
+                    {rootCategories.map(parent => {
+                      const children = categories.filter(category => category.parent_category_id === parent.id);
+                      if (children.length === 0) {
+                        return (
+                          <option key={parent.id} value={parent.id}>
+                            {parent.category_name} ({parent.category_code})
+                          </option>
+                        );
+                      }
+                      return (
+                        <optgroup key={parent.id} label={parent.category_name}>
+                          {children.map(child => (
+                            <option key={child.id} value={child.id}>
+                              {child.category_name} ({child.category_code})
+                            </option>
+                          ))}
+                        </optgroup>
+                      );
+                    })}
+                    {orphanCategories.map(category => (
+                      <option key={category.id} value={category.id}>
+                        {category.category_name} ({category.category_code})
+                      </option>
                     ))}
                   </select>
+                  <p className="text-xs text-ink-500 mt-1.5">Pilih jenis aset yang paling spesifik.</p>
+                </div>
+                <div>
+                  <label className="label">Kode Aset <span className="text-danger-400">*</span></label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="asset_code"
+                      className="input font-mono pr-10"
+                      value={form.asset_code}
+                      onChange={handleChange}
+                      placeholder={form.category_id ? 'Membuat kode otomatis...' : 'Pilih kategori terlebih dahulu'}
+                      readOnly={!isEdit}
+                    />
+                    {generatingCode && (
+                      <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-400 animate-spin" />
+                    )}
+                  </div>
+                  {!isEdit && (
+                    <p className="text-xs text-ink-500 mt-1.5">
+                      {generatingCode
+                        ? 'Sedang membuat kode berdasarkan kategori...'
+                        : previewCode
+                          ? <>Dibuat otomatis: <span className="text-primary-400 font-mono">{previewCode}</span></>
+                          : 'Kode dibuat otomatis setelah kategori dipilih.'}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="label">Merek</label>
@@ -384,15 +543,17 @@ export default function AssetFormPage() {
                   <label className="label">Nomor Seri</label>
                   <input type="text" name="serial_number" className="input font-mono" value={form.serial_number} onChange={handleChange} />
                 </div>
-                <div>
-                  <label className="label">Tahun Produksi</label>
-                  <input type="number" name="manufacture_year" className="input" value={form.manufacture_year} onChange={handleChange} />
-                </div>
+                {!isVehicle && (
+                  <div>
+                    <label className="label">Tahun Produksi</label>
+                    <input type="number" name="manufacture_year" className="input" value={form.manufacture_year} onChange={handleChange} />
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <div className="space-y-4 animate-fade-in">
               <h3 className="section-title text-base">Pembelian & Garansi</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -429,7 +590,7 @@ export default function AssetFormPage() {
             </div>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <div className="space-y-4 animate-fade-in">
               <h3 className="section-title text-base">Penempatan</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -451,14 +612,37 @@ export default function AssetFormPage() {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="label">Penanggung Jawab</label>
-                  <select name="responsible_user_id" className="input" value={form.responsible_user_id} onChange={handleChange}>
-                    <option value="">Pilih penanggung jawab...</option>
-                    {users.map(u => (
-                      <option key={u.id} value={u.id}>{u.full_name}</option>
-                    ))}
-                  </select>
+                <div className="md:col-span-2">
+                  <label className="label">Penanggung Jawab <span className="text-danger-400">*</span></label>
+                  {assetResponsibles.length === 0 ? (
+                    <div className="p-3 rounded-lg border border-warning-500/20 bg-warning-500/10 text-sm text-warning-300">
+                      Belum ada master penanggung jawab aktif. Tambahkan dulu di menu Master Data &gt; Penanggung Jawab.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {assetResponsibles.map(item => (
+                        <label
+                          key={item.id}
+                          className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-all ${
+                            selectedResponsibleIds.includes(item.id)
+                              ? 'border-primary-500/40 bg-primary-500/10'
+                              : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.06]'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="mt-0.5 w-4 h-4 rounded border-white/10 bg-white/5 text-primary-500 focus:ring-primary-500/30"
+                            checked={selectedResponsibleIds.includes(item.id)}
+                            onChange={() => toggleResponsible(item.id)}
+                          />
+                          <span className="min-w-0">
+                            <span className="block text-sm font-medium text-white">{item.responsible_name}</span>
+                            <span className="block text-xs text-ink-400 truncate">{item.role_title || item.responsible_code}</span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="label">Kondisi</label>
@@ -482,23 +666,39 @@ export default function AssetFormPage() {
             </div>
           )}
 
-          {step === 4 && (
+          {step === 2 && (
             <div className="space-y-4 animate-fade-in">
               <h3 className="section-title text-base">Data Teknis</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {isVehicle && (
                   <>
                     <div>
-                      <label className="label">Nomor Polisi</label>
-                      <input type="text" name="vehicle_registration_number" className="input font-mono" value={form.vehicle_registration_number} onChange={handleChange} />
+                      <label className="label">Plat Nomor</label>
+                      <input type="text" name="vehicle_registration_number" className="input font-mono uppercase" value={form.vehicle_registration_number} onChange={handleChange} placeholder="Contoh: B 1234 XYZ" />
                     </div>
                     <div>
-                      <label className="label">Nomor Mesin</label>
-                      <input type="text" name="engine_number" className="input font-mono" value={form.engine_number} onChange={handleChange} />
+                      <label className="label">Nama Pemilik</label>
+                      <input type="text" name="vehicle_owner_name" className="input uppercase" value={form.vehicle_owner_name} onChange={handleChange} placeholder="Sesuai STNK" />
                     </div>
                     <div>
                       <label className="label">Nomor Rangka</label>
-                      <input type="text" name="chassis_number" className="input font-mono" value={form.chassis_number} onChange={handleChange} />
+                      <input type="text" name="chassis_number" className="input font-mono uppercase" value={form.chassis_number} onChange={handleChange} placeholder="NIK/VIN sesuai STNK" />
+                    </div>
+                    <div>
+                      <label className="label">Nomor Mesin</label>
+                      <input type="text" name="engine_number" className="input font-mono uppercase" value={form.engine_number} onChange={handleChange} placeholder="Sesuai STNK" />
+                    </div>
+                    <div>
+                      <label className="label">Warna</label>
+                      <input type="text" name="vehicle_color" className="input" value={form.vehicle_color} onChange={handleChange} placeholder="Sesuai STNK" />
+                    </div>
+                    <div>
+                      <label className="label">Bahan Bakar / Sumber Energi</label>
+                      <input type="text" name="fuel_type" className="input" value={form.fuel_type} onChange={handleChange} placeholder="Contoh: Bensin, Solar, Listrik" />
+                    </div>
+                    <div>
+                      <label className="label">Tahun Pembuatan</label>
+                      <input type="number" name="manufacture_year" className="input" value={form.manufacture_year} onChange={handleChange} min="1900" max={new Date().getFullYear() + 1} placeholder="Sesuai STNK" />
                     </div>
                     <div>
                       <label className="label">Kilometer Saat Ini</label>
@@ -580,12 +780,24 @@ export default function AssetFormPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <ReviewField label="Nama Aset" value={form.asset_name} />
                 <ReviewField label="Kode Aset" value={form.asset_code} />
-                <ReviewField label="Kategori" value={categories.find(c => c.id === form.category_id)?.category_name} />
+                <ReviewField label="Kategori" value={getCategoryLabel(form.category_id)} />
                 <ReviewField label="Merek" value={form.brand} />
                 <ReviewField label="Lokasi" value={locations.find(l => l.id === form.location_id)?.location_name} />
                 <ReviewField label="Departemen" value={departments.find(d => d.id === form.department_id)?.department_name} />
+                <ReviewField label="Penanggung Jawab" value={selectedResponsibleIds.map(responsibleId => assetResponsibles.find(item => item.id === responsibleId)?.responsible_name).filter(Boolean).join(', ')} />
                 <ReviewField label="Kondisi" value={conditions.find(c => c.id === form.condition_id)?.condition_name} />
                 <ReviewField label="Status" value={statuses.find(s => s.id === form.status_id)?.status_name} />
+                {isVehicle && (
+                  <>
+                    <ReviewField label="Plat Nomor" value={form.vehicle_registration_number} />
+                    <ReviewField label="Nama Pemilik" value={form.vehicle_owner_name} />
+                    <ReviewField label="Nomor Rangka" value={form.chassis_number} />
+                    <ReviewField label="Nomor Mesin" value={form.engine_number} />
+                    <ReviewField label="Warna" value={form.vehicle_color} />
+                    <ReviewField label="Bahan Bakar / Sumber Energi" value={form.fuel_type} />
+                    <ReviewField label="Tahun Pembuatan" value={form.manufacture_year} />
+                  </>
+                )}
                 <ReviewField label="Foto" value={`${photos.length} foto`} />
               </div>
             </div>
@@ -601,7 +813,7 @@ export default function AssetFormPage() {
             </div>
             <div className="flex gap-3">
               {step < 6 ? (
-                <button type="button" onClick={() => setStep(step + 1)} className="btn-primary">
+                <button type="button" onClick={handleNextStep} className="btn-primary" disabled={generatingCode}>
                   Lanjut
                 </button>
               ) : (
