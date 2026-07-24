@@ -1,0 +1,1 @@
+# Dependencies`r`nnode_modules/`r`n`r`n# Build output`r`ndist/`r`n.dev-dist/`r`n`r`n# Environment variables`r`n.env`r`n.env.local`r`n.env.*.local`r`n`r`n# IDE`r`n.vscode/`r`n.idea/`r`n`r`n# OS`r`nThumbs.db`r`n.DS_Store`r`n`r`n# Logs`r`n*.log`r`nnpm-debug.log*`r`n
