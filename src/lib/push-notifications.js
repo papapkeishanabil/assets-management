@@ -62,14 +62,16 @@ export async function subscribeUserToPush(userId) {
  * Simpan subscription ke Supabase
  */
 async function saveSubscription(userId, subscription) {
+  const sub = subscription.toJSON();
   const { error } = await supabase
     .from('push_subscriptions')
     .upsert({
       user_id: userId,
-      subscription: subscription.toJSON(),
+      endpoint: sub.endpoint,
+      subscription: sub,
       updated_at: new Date().toISOString()
     }, {
-      onConflict: 'user_id'
+      onConflict: 'endpoint'
     });
 
   if (error) throw error;
@@ -78,18 +80,19 @@ async function saveSubscription(userId, subscription) {
 /**
  * Unsubscribe dari Push API
  */
-export async function unsubscribeUserFromPush(userId) {
+export async function unsubscribeUserFromPush() {
   const registration = await navigator.serviceWorker.ready;
   const subscription = await registration.pushManager.getSubscription();
 
   if (subscription) {
+    // Hapus baris untuk perangkat INI saja (berdasarkan endpoint),
+    // jangan sentuh langganan perangkat lain milik user yang sama.
+    await supabase
+      .from('push_subscriptions')
+      .delete()
+      .eq('endpoint', subscription.endpoint);
     await subscription.unsubscribe();
   }
-
-  await supabase
-    .from('push_subscriptions')
-    .delete()
-    .eq('user_id', userId);
 }
 
 /**

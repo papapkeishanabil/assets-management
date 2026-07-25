@@ -135,16 +135,24 @@ export function useNotifications() {
       if (schedError) throw schedError;
       if (!schedules || schedules.length === 0) return;
 
-      // 2. Ambil semua user aktif dengan role yang berhak
+      // 2. Ambil id role yang berhak (super_admin/hrd/direksi)
+      //    Pakai dua langkah agar tidak ambigu (PGRST201) — di skema ini
+      //    ada lebih dari satu relasi antara user_profiles dan roles.
+      const { data: allowedRoles, error: rolesError } = await supabase
+        .from('roles')
+        .select('id, role_name')
+        .in('role_name', ['super_admin', 'hrd', 'direksi']);
+
+      if (rolesError) throw rolesError;
+
+      const allowedRoleIds = (allowedRoles || []).map(r => r.id);
+
+      // 3. Ambil user aktif dengan role berhak
       const { data: users, error: userError } = await supabase
         .from('user_profiles')
-        .select(`
-          id,
-          account_status,
-          role:roles!inner(id, role_name)
-        `)
+        .select('id, account_status')
         .eq('account_status', 'ACTIVE')
-        .in('role.role_name', ['super_admin', 'hrd', 'direksi']);
+        .in('role_id', allowedRoleIds);
 
       if (userError) throw userError;
 
@@ -226,7 +234,8 @@ export function useNotifications() {
         const { error: insertError } = await supabase
           .from('notifications')
           .upsert(notificationsToCreate, {
-            onConflict: 'user_id,maintenance_schedule_id,notification_type,notification_date'
+            onConflict: 'user_id,maintenance_schedule_id,notification_type,notification_date',
+            ignoreDuplicates: true
           });
 
         if (insertError) throw insertError;

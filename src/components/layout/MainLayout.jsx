@@ -303,10 +303,13 @@ export default function MainLayout() {
                 aria-label={`Notifikasi${unreadCount > 0 ? `, ${unreadCount} belum dibaca` : ''}`}
                 aria-expanded={notificationOpen}
               >
-                <Bell size={18} />
+                <Bell size={18} className={unreadCount > 0 ? 'bell-ring text-white' : ''} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[10px] font-bold text-white bg-rose-500 rounded-full ring-2 ring-ink-950 shadow-glow-rose">
-                    {unreadCount > 99 ? '99+' : unreadCount}
+                  <span className="absolute top-0 right-0 flex items-center justify-center">
+                    <span className="absolute inline-flex h-4 w-4 rounded-full bg-rose-500 opacity-60 animate-ping"></span>
+                    <span className="relative inline-flex items-center justify-center min-w-[16px] h-4 px-1 text-[10px] font-bold text-white bg-rose-500 rounded-full ring-2 ring-ink-950 shadow-glow-rose">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
                   </span>
                 )}
               </button>
@@ -314,7 +317,7 @@ export default function MainLayout() {
               {notificationOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setNotificationOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 glass rounded-xl shadow-soft-lg z-50 animate-scale-in max-h-[480px] flex flex-col">
+                  <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 topbar-popover rounded-xl shadow-soft-lg z-50 animate-scale-in max-h-[480px] flex flex-col">
                     <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between flex-shrink-0">
                       <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                         Notifikasi

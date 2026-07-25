@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usePWA } from '../hooks/usePWA';
 import { useAuth } from '../contexts/AuthContext';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useNavigate } from 'react-router-dom';
 import { ROLES } from '../lib/constants';
 import { Bell, BellOff, BellRing, CheckCircle2, XCircle, AlertTriangle, Shield, RefreshCw, Info, Send } from 'lucide-react';
@@ -28,6 +29,7 @@ function StatusRow({ label, status, detail }) {
 export default function SystemNotificationTestPage() {
   const navigate = useNavigate();
   const { role } = useAuth();
+  const push = usePushNotifications();
 
   const h = usePWA();
   const registration = h.registration;
@@ -211,6 +213,43 @@ export default function SystemNotificationTestPage() {
       <div>
         <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">Tes Notifikasi Sistem</h1>
         <p className="text-sm text-ink-400 mt-1">Uji coba notifikasi sistem melalui Notifications API dan service worker</p>
+      </div>
+
+      {/* Notifikasi Perangkat (Web Push) */}
+      <div className="card">
+        <h3 className="text-base font-semibold text-white mb-2">Notifikasi Perangkat (Push)</h3>
+        <p className="text-xs text-ink-400 mb-4">
+          Berlangganan untuk menerima pengingat jadwal langsung di perangkat — bahkan saat aplikasi tidak dibuka. Aktif per-user per-perangkat.
+        </p>
+        {!push.supported ? (
+          <div className="flex items-center gap-2 p-3 bg-warning-500/10 border border-warning-500/20 rounded-lg">
+            <BellOff size={18} className="text-warning-400 flex-shrink-0" />
+            <p className="text-sm text-warning-300">
+              Push belum tersedia. Pastikan VAPID key (VITE_VAPID_PUBLIC_KEY) sudah dikonfigurasi dan halaman via HTTPS/localhost.
+            </p>
+          </div>
+        ) : push.subscribed ? (
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 size={18} className="text-success-400" />
+              <span className="text-sm text-success-300">Perangkat ini sudah berlangganan push.</span>
+            </div>
+            <button onClick={() => push.unsubscribe()} disabled={push.loading} className="btn-secondary btn-sm">
+              {push.loading ? 'Memproses...' : 'Berhenti Berlangganan'}
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <BellRing size={18} className="text-primary-400" />
+              <span className="text-sm text-ink-300">Belum berlangganan di perangkat ini.</span>
+            </div>
+            <button onClick={() => push.subscribe()} disabled={push.loading} className="btn-primary btn-sm">
+              <BellRing size={14} /> {push.loading ? 'Memproses...' : 'Aktifkan Push'}
+            </button>
+          </div>
+        )}
+        {push.error && <p className="text-xs text-danger-400 mt-2">{push.error}</p>}
       </div>
 
       {/* Panel Diagnostik */}

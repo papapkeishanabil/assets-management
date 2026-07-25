@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Edit, Upload, FileText, Trash2, Wrench, X, Save, Package } from 'lucide-react';
+import { ArrowLeft, Edit, Upload, FileText, Trash2, Wrench, X, Save, Package, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 
 export default function AssetDetailPage() {
   const { id } = useParams();
@@ -18,6 +18,8 @@ export default function AssetDetailPage() {
   const [responsibleAssignments, setResponsibleAssignments] = useState([]);
   const [activeTab, setActiveTab] = useState('info');
   const [showServiceModal, setShowServiceModal] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [selectedLog, setSelectedLog] = useState(null);
   const [serviceForm, setServiceForm] = useState({
     description: '',
     service_date: new Date().toISOString().split('T')[0],
@@ -39,6 +41,18 @@ export default function AssetDetailPage() {
     fetchVendors();
     fetchResponsibleAssignments();
   }, [id]);
+
+  // Navigasi lightbox foto via keyboard (Esc / panah kiri-kanan)
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKey = (e) => {
+      if (e.key === 'Escape') setLightboxIndex(null);
+      else if (e.key === 'ArrowLeft' && photos.length > 1) setLightboxIndex(i => (i - 1 + photos.length) % photos.length);
+      else if (e.key === 'ArrowRight' && photos.length > 1) setLightboxIndex(i => (i + 1) % photos.length);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [lightboxIndex, photos.length]);
 
   const fetchAsset = async () => {
     try {
@@ -231,6 +245,13 @@ export default function AssetDetailPage() {
     .filter(Boolean)
     .join(', ');
 
+  const formatLogValue = (key, value) => {
+    if (value === null || value === undefined || value === '') return '-';
+    if (key === 'cost') return `Rp ${Number(value).toLocaleString('id-ID')}`;
+    if (typeof value === 'boolean') return value ? 'Ya' : 'Tidak';
+    return String(value);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-start justify-between gap-4">
@@ -414,16 +435,31 @@ export default function AssetDetailPage() {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {photos.map(photo => (
-                  <div key={photo.id} className="relative group rounded-lg overflow-hidden">
+                {photos.map((photo, idx) => (
+                  <div
+                    key={photo.id}
+                    onClick={() => setLightboxIndex(idx)}
+                    className="relative group rounded-lg overflow-hidden cursor-zoom-in"
+                  >
                     <img src={photo.photo_url} alt={photo.caption || 'Foto aset'} className="w-full h-40 object-cover" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center pointer-events-none">
+                      <ZoomIn size={22} className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                    </div>
                     {photo.is_primary && (
                       <span className="absolute top-2 left-2 badge badge-yellow text-[10px]">Utama</span>
                     )}
                     {canEdit && (
-                      <button onClick={() => handleDeletePhoto(photo.id)} className="absolute top-2 right-2 p-1.5 bg-danger-500/90 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeletePhoto(photo.id); }}
+                        className="absolute top-2 right-2 p-1.5 bg-danger-500/90 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
                         <Trash2 size={12} />
                       </button>
+                    )}
+                    {photo.caption && (
+                      <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
+                        <p className="text-xs text-white/90 truncate">{photo.caption}</p>
+                      </div>
                     )}
                   </div>
                 ))}
@@ -498,9 +534,13 @@ export default function AssetDetailPage() {
             ) : (
               <div className="space-y-2">
                 {logs.map(log => (
-                  <div key={log.id} className={`flex gap-3 p-3 rounded-lg border ${
-                    log.action_type === 'SERVICE' ? 'bg-warning-500/[0.05] border-warning-500/15' : 'bg-white/[0.03] border-white/5'
-                  }`}>
+                  <div
+                    key={log.id}
+                    onClick={() => setSelectedLog(log)}
+                    className={`flex gap-3 p-3 rounded-lg border cursor-pointer hover:bg-white/[0.06] transition-colors ${
+                      log.action_type === 'SERVICE' ? 'bg-warning-500/[0.05] border-warning-500/15' : 'bg-white/[0.03] border-white/5'
+                    }`}
+                  >
                     <div className={`p-2 rounded-md flex-shrink-0 ${
                       log.action_type === 'SERVICE' ? 'bg-warning-500/10 border border-warning-500/20' : 'bg-white/5 border border-white/10'
                     }`}>
@@ -664,6 +704,118 @@ export default function AssetDetailPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox foto (klik untuk memperbesar) */}
+      {lightboxIndex !== null && photos[lightboxIndex] && (
+        <div
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setLightboxIndex(null)}
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
+            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-all"
+            aria-label="Tutup"
+          >
+            <X size={24} />
+          </button>
+          {photos.length > 1 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i - 1 + photos.length) % photos.length); }}
+                className="absolute left-4 p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-all"
+                aria-label="Sebelumnya"
+              >
+                <ChevronLeft size={28} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i + 1) % photos.length); }}
+                className="absolute right-4 p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-all"
+                aria-label="Berikutnya"
+              >
+                <ChevronRight size={28} />
+              </button>
+            </>
+          )}
+          <div className="max-w-[90vw] max-h-[85vh] flex flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={photos[lightboxIndex].photo_url}
+              alt={photos[lightboxIndex].caption || 'Foto aset'}
+              className="max-w-full max-h-[78vh] object-contain rounded-lg shadow-2xl"
+            />
+            <div className="text-center">
+              {photos[lightboxIndex].caption && (
+                <p className="text-sm text-white/90">{photos[lightboxIndex].caption}</p>
+              )}
+              {photos.length > 1 && (
+                <p className="text-xs text-white/50 font-mono mt-1">{lightboxIndex + 1} / {photos.length}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Detail riwayat (klik baris untuk melihat detail) */}
+      {selectedLog && (
+        <div className="modal-overlay" onClick={() => setSelectedLog(null)}>
+          <div className="modal-content max-w-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className={`p-2.5 rounded-xl border ${selectedLog.action_type === 'SERVICE' ? 'bg-warning-500/10 border-warning-500/20' : 'bg-primary-500/10 border-primary-500/20'}`}>
+                  {selectedLog.action_type === 'SERVICE' ? <Wrench size={18} className="text-warning-400" /> : <FileText size={18} className="text-primary-400" />}
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-white">Detail Riwayat</h3>
+                  <p className="text-xs text-ink-400 font-mono">{selectedLog.action_type}</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedLog(null)} className="p-1.5 text-ink-400 hover:bg-white/5 hover:text-white rounded-md transition-all">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Deskripsi</p>
+                <p className="text-sm text-white whitespace-pre-wrap">{selectedLog.description}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                  <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Oleh</p>
+                  <p className="text-sm text-white">{selectedLog.user?.full_name || 'System'}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                  <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Waktu</p>
+                  <p className="text-sm text-white">{new Date(selectedLog.created_at).toLocaleString('id-ID')}</p>
+                </div>
+              </div>
+              {selectedLog.reason && (
+                <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                  <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Catatan</p>
+                  <p className="text-sm text-ink-200 whitespace-pre-wrap">{selectedLog.reason}</p>
+                </div>
+              )}
+              {selectedLog.new_data && Object.keys(selectedLog.new_data).length > 0 && (
+                <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                  <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-2">Detail Perubahan</p>
+                  <div className="space-y-1.5">
+                    {Object.entries(selectedLog.new_data).map(([k, v]) => (
+                      <div key={k} className="flex justify-between gap-3 text-sm">
+                        <span className="text-ink-400 capitalize">{k.replace(/_/g, ' ')}</span>
+                        <span className="text-white text-right">{formatLogValue(k, v)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {selectedLog.old_data && Object.keys(selectedLog.old_data).length > 0 && (
+                <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                  <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Data Sebelum</p>
+                  <pre className="text-xs text-ink-300 whitespace-pre-wrap font-mono">{JSON.stringify(selectedLog.old_data, null, 2)}</pre>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
