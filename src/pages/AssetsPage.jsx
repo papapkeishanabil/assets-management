@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ROLES } from '../lib/constants';
 import toast from 'react-hot-toast';
-import { Plus, Search, RefreshCw, Eye, Edit, Trash2, Ban, Filter, Package, X } from 'lucide-react';
+import { Plus, Search, RefreshCw, Eye, Edit, Trash2, Ban, Filter, Package, X, Truck } from 'lucide-react';
 import { permanentDeleteAsset } from '../lib/asset-helpers';
 
 export default function AssetsPage() {
@@ -20,6 +20,7 @@ export default function AssetsPage() {
     department_id: '',
     condition_id: '',
     status_id: '',
+    vendor_id: '',
     is_active: ''
   });
   const [categories, setCategories] = useState([]);
@@ -27,6 +28,7 @@ export default function AssetsPage() {
   const [departments, setDepartments] = useState([]);
   const [conditions, setConditions] = useState([]);
   const [statuses, setStatuses] = useState([]);
+  const [vendors, setVendors] = useState([]);
   const [photosMap, setPhotosMap] = useState({});
   const [usersMap, setUsersMap] = useState({});
   const [responsiblesMap, setResponsiblesMap] = useState({});
@@ -36,12 +38,13 @@ export default function AssetsPage() {
   const canDelete = role && role.role_name === ROLES.SUPER_ADMIN;
 
   const fetchMasterData = useCallback(async () => {
-    const [catRes, locRes, deptRes, condRes, statRes] = await Promise.all([
+    const [catRes, locRes, deptRes, condRes, statRes, vendorRes] = await Promise.all([
       supabase.from('asset_categories').select('*').eq('is_active', true).order('category_name'),
       supabase.from('asset_locations').select('*').eq('is_active', true).order('location_name'),
       supabase.from('departments').select('*').eq('is_active', true).order('department_name'),
       supabase.from('asset_conditions').select('*').eq('is_active', true).order('display_order'),
-      supabase.from('asset_statuses').select('*').eq('is_active', true).order('display_order')
+      supabase.from('asset_statuses').select('*').eq('is_active', true).order('display_order'),
+      supabase.from('vendors').select('id, vendor_name, vendor_code, vendor_type').eq('is_active', true).order('vendor_name')
     ]);
 
     if (catRes.data) setCategories(catRes.data);
@@ -49,6 +52,7 @@ export default function AssetsPage() {
     if (deptRes.data) setDepartments(deptRes.data);
     if (condRes.data) setConditions(condRes.data);
     if (statRes.data) setStatuses(statRes.data);
+    if (vendorRes.data) setVendors(vendorRes.data);
   }, []);
 
   const fetchAssets = useCallback(async () => {
@@ -68,6 +72,7 @@ export default function AssetsPage() {
       if (filters.department_id) query = query.eq('department_id', filters.department_id);
       if (filters.condition_id) query = query.eq('condition_id', filters.condition_id);
       if (filters.status_id) query = query.eq('status_id', filters.status_id);
+      if (filters.vendor_id) query = query.eq('vendor_id', filters.vendor_id);
       if (filters.is_active !== '') query = query.eq('is_active', filters.is_active === 'true');
 
       const { data, error } = await query;
@@ -214,6 +219,7 @@ export default function AssetsPage() {
       department_id: '',
       condition_id: '',
       status_id: '',
+      vendor_id: '',
       is_active: ''
     });
     setSearch('');
@@ -265,6 +271,20 @@ export default function AssetsPage() {
 
         {showFilters && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-white/5 animate-fade-in">
+            <div>
+              <label className="label flex items-center gap-1.5">
+                <Truck size={12} className="text-ink-500" />
+                Vendor
+              </label>
+              <select className="input" value={filters.vendor_id} onChange={(e) => setFilters({...filters, vendor_id: e.target.value})}>
+                <option value="">Semua</option>
+                {vendors.map(vendor => (
+                  <option key={vendor.id} value={vendor.id}>
+                    {vendor.vendor_name}{vendor.vendor_type ? ` (${vendor.vendor_type})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div>
               <label className="label">Kategori</label>
               <select className="input" value={filters.category_id} onChange={(e) => setFilters({...filters, category_id: e.target.value})}>
