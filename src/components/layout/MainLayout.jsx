@@ -2,6 +2,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
+import { useRolePermissions } from '../../hooks/useRolePermissions';
 import { ROLE_LABELS, ROLES } from '../../lib/constants';
 import ThemeToggle from '../ThemeToggle';
 import BrandLogo from '../BrandLogo';
@@ -12,7 +13,7 @@ import {
   Truck, Package, Home, Bell, Search, Settings,
   Wrench, Shield, Calendar, AlertCircle, AlertTriangle,
   HelpCircle, Smartphone, Download, BellRing, UserCheck,
-  FileText, History
+  FileText, History, Lock
 } from 'lucide-react';
 
 export default function MainLayout() {
@@ -57,6 +58,7 @@ export default function MainLayout() {
       ? [
           { to: '/users', icon: Users, label: 'Pengguna' },
           { to: '/roles', icon: Shield, label: 'Role & Hak Akses' },
+          { to: '/roles/permissions', icon: Lock, label: 'Akses Modul per Role' },
         ]
       : []),
   ];
@@ -80,6 +82,7 @@ export default function MainLayout() {
     { to: '/maintenance/types', icon: FolderTree, label: 'Jenis Pemeliharaan', roles: ['super_admin', 'hrd'] },
   ];
 
+  const { hasAccess } = useRolePermissions();
   const canAccessMasterData = role && ['super_admin', 'hrd'].includes(role.role_name);
   const canAccessMaintenance = role && ['super_admin', 'hrd', 'direksi', 'pelaksana'].includes(role.role_name);
 

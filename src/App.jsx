@@ -15,6 +15,7 @@ import MaintenanceScheduleForm from './pages/MaintenanceScheduleForm';
 import MaintenanceScheduleDetailPage from './pages/MaintenanceScheduleDetailPage';
 import MaintenanceDraftsPage from './pages/MaintenanceDraftsPage';
 import MaintenanceExecutionsPage from './pages/MaintenanceExecutionsPage';
+import RolePermissionsPage from './pages/RolePermissionsPage';
 import CategoriesPage from './pages/CategoriesPage';
 import LocationsPage from './pages/LocationsPage';
 import DepartmentsPage from './pages/DepartmentsPage';
@@ -201,6 +202,11 @@ export default function App() {
           </HRDRoute>
         } />
         <Route path="maintenance/executions" element={<MaintenanceExecutionsPage />} />
+        <Route path="roles/permissions" element={
+          <AdminRoute>
+            <RolePermissionsPage />
+          </AdminRoute>
+        } />
         <Route path="maintenance/schedules/:id/edit" element={
           <HRDRoute>
             <MaintenanceScheduleForm />
