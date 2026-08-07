@@ -7,7 +7,8 @@ export const NOTIFICATION_TYPES = {
   REMINDER_1_DAY: 'REMINDER_1_DAY',
   REMINDER_CUSTOM: 'REMINDER_CUSTOM',
   DUE_TODAY: 'DUE_TODAY',
-  OVERDUE: 'OVERDUE'
+  OVERDUE: 'OVERDUE',
+  DRAFT_SUBMITTED: 'DRAFT_SUBMITTED'
 };
 
 // Label untuk setiap tipe notifikasi
@@ -17,7 +18,8 @@ export const NOTIFICATION_TYPE_LABELS = {
   [NOTIFICATION_TYPES.REMINDER_1_DAY]: 'Pengingatan 1 Hari',
   [NOTIFICATION_TYPES.REMINDER_CUSTOM]: 'Pengingatan',
   [NOTIFICATION_TYPES.DUE_TODAY]: 'Jatuh Tempo Hari Ini',
-  [NOTIFICATION_TYPES.OVERDUE]: 'Terlambat'
+  [NOTIFICATION_TYPES.OVERDUE]: 'Terlambat',
+  [NOTIFICATION_TYPES.DRAFT_SUBMITTED]: 'Draft Menunggu Penilaian'
 };
 
 // Warna badge untuk setiap tipe notifikasi
@@ -27,7 +29,8 @@ export const NOTIFICATION_TYPE_COLORS = {
   [NOTIFICATION_TYPES.REMINDER_1_DAY]: 'orange',
   [NOTIFICATION_TYPES.REMINDER_CUSTOM]: 'blue',
   [NOTIFICATION_TYPES.DUE_TODAY]: 'red',
-  [NOTIFICATION_TYPES.OVERDUE]: 'red'
+  [NOTIFICATION_TYPES.OVERDUE]: 'red',
+  [NOTIFICATION_TYPES.DRAFT_SUBMITTED]: 'yellow'
 };
 
 // Ikon untuk setiap tipe notifikasi (nama icon lucide-react)
@@ -37,7 +40,8 @@ export const NOTIFICATION_TYPE_ICONS = {
   [NOTIFICATION_TYPES.REMINDER_1_DAY]: 'Calendar',
   [NOTIFICATION_TYPES.REMINDER_CUSTOM]: 'Calendar',
   [NOTIFICATION_TYPES.DUE_TODAY]: 'AlertCircle',
-  [NOTIFICATION_TYPES.OVERDUE]: 'AlertTriangle'
+  [NOTIFICATION_TYPES.OVERDUE]: 'AlertTriangle',
+  [NOTIFICATION_TYPES.DRAFT_SUBMITTED]: 'FileText'
 };
 
 /**
@@ -129,7 +133,8 @@ export function getNotificationFilterLabel(filter) {
     read: 'Sudah Dibaca',
     upcoming: 'Mendatang',
     due: 'Jatuh Tempo',
-    overdue: 'Terlambat'
+    overdue: 'Terlambat',
+    drafts: 'Draft'
   };
   return labels[filter] || 'Semua';
 }
@@ -219,6 +224,8 @@ export function buildNotificationMessage(maintenanceTypeName, assetCode, assetNa
       return `${maintenanceLabel} untuk ${assetLabel} harus dilaksanakan hari ini.`;
     case NOTIFICATION_TYPES.OVERDUE:
       return `${maintenanceLabel} untuk ${assetLabel} telah terlambat ${daysLate} hari.`;
+    case NOTIFICATION_TYPES.DRAFT_SUBMITTED:
+      return `Draft hasil pemeriksaan ${maintenanceLabel} untuk ${assetLabel} telah disubmit dan menunggu penilaian.`;
     default:
       return `${maintenanceLabel} untuk ${assetLabel}.`;
   }
@@ -240,6 +247,8 @@ export function buildNotificationTitle(type) {
       return 'Pemeliharaan Jatuh Tempo Hari Ini';
     case NOTIFICATION_TYPES.OVERDUE:
       return 'Pemeliharaan Terlambat';
+    case NOTIFICATION_TYPES.DRAFT_SUBMITTED:
+      return 'Draft Menunggu Penilaian';
     default:
       return 'Notifikasi';
   }

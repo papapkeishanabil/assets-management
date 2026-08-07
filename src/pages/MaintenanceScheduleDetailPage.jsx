@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Edit, X, RefreshCw, Calendar, Package, User, FileText, AlertCircle, Shield, Gauge, CheckCircle2, History } from 'lucide-react';
+import { ArrowLeft, Edit, X, RefreshCw, Calendar, Package, User, FileText, AlertCircle, Shield, Gauge, CheckCircle2, History, ClipboardCheck } from 'lucide-react';
 import {
   getScheduleStatus,
   getOdometerScheduleStatus,
@@ -32,6 +32,10 @@ export default function MaintenanceScheduleDetailPage() {
   const [showExecutionForm, setShowExecutionForm] = useState(false);
   const [executions, setExecutions] = useState([]);
   const [executionsLoading, setExecutionsLoading] = useState(false);
+  const [assessDraft, setAssessDraft] = useState(null);
+  const [assessmentResult, setAssessmentResult] = useState('');
+  const [assessmentNotes, setAssessmentNotes] = useState('');
+  const [assessing, setAssessing] = useState(false);
 
   const canWrite = role && ['super_admin', 'hrd'].includes(role.role_name);
   const canExecute = role && ['super_admin', 'hrd', 'pelaksana'].includes(role.role_name);
@@ -108,6 +112,40 @@ export default function MaintenanceScheduleDetailPage() {
     setShowExecutionForm(false);
     fetchExecutions();
     fetchSchedule();
+  };
+
+  const handleAssessDraft = async (e) => {
+    e.preventDefault();
+    if (!assessDraft) return;
+    if (!assessmentResult) {
+      toast.error('Hasil penilaian wajib dipilih');
+      return;
+    }
+
+    setAssessing(true);
+    try {
+      const { error } = await supabase
+        .from('maintenance_executions')
+        .update({
+          assessment_result: assessmentResult,
+          assessment_notes: assessmentNotes || null,
+          assessed_by: profile?.id || null,
+          assessed_at: new Date().toISOString()
+        })
+        .eq('id', assessDraft.id);
+
+      if (error) throw error;
+      toast.success('Penilaian draft berhasil disimpan');
+      setAssessDraft(null);
+      setAssessmentResult('');
+      setAssessmentNotes('');
+      fetchExecutions();
+    } catch (error) {
+      console.error('Error assessing draft:', error);
+      toast.error('Gagal menyimpan penilaian: ' + (error.message || 'Unknown error'));
+    } finally {
+      setAssessing(false);
+    }
   };
 
   const handleToggleActive = async () => {
@@ -501,7 +539,37 @@ export default function MaintenanceScheduleDetailPage() {
                         {isDraft && (
                           <span className="text-warning-300">Menunggu penilaian dan persetujuan</span>
                         )}
+                        {isDraft && execution.assessment_result && (
+                          <span className="text-success-300">
+                            Hasil: {execution.assessment_result === 'normal' && 'Normal'}
+                            {execution.assessment_result === 'perlu_perbaikan' && 'Perlu Perbaikan'}
+                            {execution.assessment_result === 'perlu_penggantian' && 'Perlu Penggantian'}
+                            {execution.assessment_result === 'perlu_monitoring' && 'Perlu Monitoring'}
+                            {execution.assessment_result === 'lainnya' && 'Lainnya'}
+                          </span>
+                        )}
                       </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                      {isDraft && canWrite && !execution.assessment_result && (
+                        <button
+                          onClick={() => {
+                            setAssessDraft(execution);
+                            setAssessmentResult('');
+                            setAssessmentNotes('');
+                          }}
+                          className="btn-warning text-white text-xs px-3 py-1.5"
+                        >
+                          <ClipboardCheck size={14} />
+                          Beri Penilaian
+                        </button>
+                      )}
+                      {isDraft && execution.assessment_result && (
+                        <span className="badge badge-green">
+                          <CheckCircle2 size={12} className="mr-1" />
+                          Sudah Dinilai
+                        </span>
+                      )}
                     </div>
                     {photos.length > 0 && (
                       <div className="flex gap-2 flex-shrink-0">
@@ -534,6 +602,105 @@ export default function MaintenanceScheduleDetailPage() {
           onClose={() => setShowExecutionForm(false)}
           onSaved={handleExecutionSaved}
         />
+      )}
+
+      {/* Modal Penilaian Draft */}
+      {assessDraft && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setAssessDraft(null)} />
+          <div className="relative w-full max-w-lg card animate-scale-in">
+            <div className="flex items-center justify-between p-5 border-b border-white/5">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-warning-500/10 border border-warning-500/20">
+                  <ClipboardCheck size={18} className="text-warning-300" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Penilaian Draft</h3>
+                  <p className="text-xs text-ink-400">
+                    {schedule?.asset?.asset_name} — {schedule?.maintenance_type?.maintenance_name}
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => setAssessDraft(null)} className="p-1.5 text-ink-400 hover:bg-white/5 hover:text-white rounded-md transition-all">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAssessDraft} className="p-5 space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-ink-400 uppercase">Hasil Pemeriksaan Surveyor</label>
+                <p className="text-sm text-ink-200 mt-1 whitespace-pre-wrap bg-white/5 border border-white/10 rounded-lg p-3">
+                  {assessDraft.result || '-'}
+                </p>
+              </div>
+
+              {assessDraft.notes && (
+                <div>
+                  <label className="text-xs font-semibold text-ink-400 uppercase">Catatan Surveyor</label>
+                  <p className="text-sm text-ink-200 mt-1 whitespace-pre-wrap bg-white/5 border border-white/10 rounded-lg p-3">
+                    {assessDraft.notes}
+                  </p>
+                </div>
+              )}
+
+              {assessDraft.photos && assessDraft.photos.length > 0 && (
+                <div>
+                  <label className="text-xs font-semibold text-ink-400 uppercase">Foto Bukti</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+                    {assessDraft.photos.map((url, idx) => (
+                      <a
+                        key={idx}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block w-full h-20 rounded-lg overflow-hidden border border-white/10 hover:border-primary-500/40 transition-all"
+                      >
+                        <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="label">Hasil Penilaian <span className="text-danger-400">*</span></label>
+                <select
+                  className="input"
+                  value={assessmentResult}
+                  onChange={(e) => setAssessmentResult(e.target.value)}
+                  required
+                >
+                  <option value="">Pilih hasil penilaian...</option>
+                  <option value="normal">Normal - Mesin dalam kondisi baik</option>
+                  <option value="perlu_perbaikan">Perlu Perbaikan</option>
+                  <option value="perlu_penggantian">Perlu Penggantian</option>
+                  <option value="perlu_monitoring">Perlu Monitoring</option>
+                  <option value="lainnya">Lainnya</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="label">Catatan Penilaian</label>
+                <textarea
+                  className="input"
+                  rows="3"
+                  value={assessmentNotes}
+                  onChange={(e) => setAssessmentNotes(e.target.value)}
+                  placeholder="Catatan dari HRD dan tim teknis: misal jarum sering patah, perlu ganti bagian X, dll..."
+                />
+              </div>
+
+              <div className="flex gap-3 justify-end pt-2 border-t border-white/5">
+                <button type="button" onClick={() => setAssessDraft(null)} className="btn-secondary">
+                  Batal
+                </button>
+                <button type="submit" className="btn-primary" disabled={assessing}>
+                  {assessing ? 'Menyimpan...' : <><CheckCircle2 size={16} /> Simpan Penilaian</>}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

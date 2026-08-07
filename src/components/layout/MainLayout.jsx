@@ -75,6 +75,7 @@ export default function MainLayout() {
 
   const maintenanceItems = [
     { to: '/maintenance/schedules', icon: Calendar, label: 'Jadwal Pemeliharaan' },
+    { to: '/maintenance/drafts', icon: FileText, label: 'Draft Pemeliharaan', roles: ['super_admin', 'hrd'] },
     { to: '/maintenance/types', icon: FolderTree, label: 'Jenis Pemeliharaan', roles: ['super_admin', 'hrd'] },
   ];
 
@@ -378,13 +379,16 @@ export default function MainLayout() {
                             Calendar, AlertCircle, AlertTriangle, Bell, FileText
                           };
                           const isContractNotif = n.notification_type?.startsWith('CONTRACT_');
+                          const isDraftNotif = n.notification_type === 'DRAFT_SUBMITTED';
                           const iconName = isContractNotif ? 'FileText'
+                            : isDraftNotif ? 'FileText'
                             : n.notification_type === 'REMINDER_7_DAYS' || n.notification_type === 'REMINDER_3_DAYS' || n.notification_type === 'REMINDER_1_DAY' || n.notification_type === 'REMINDER_CUSTOM' ? 'Calendar'
                             : n.notification_type === 'DUE_TODAY' ? 'AlertCircle'
                             : n.notification_type === 'OVERDUE' ? 'AlertTriangle' : 'Bell';
                           const Icon = IconMap[iconName];
                           const colorKey = isContractNotif
                             ? (n.notification_type === 'CONTRACT_DUE_TODAY' || n.notification_type === 'CONTRACT_OVERDUE' ? 'red' : 'blue')
+                            : isDraftNotif ? 'yellow'
                             : n.notification_type === 'REMINDER_7_DAYS' ? 'blue'
                             : n.notification_type === 'REMINDER_3_DAYS' ? 'yellow'
                             : n.notification_type === 'REMINDER_1_DAY' ? 'orange' : n.notification_type === 'REMINDER_CUSTOM' ? 'blue' : 'red';

@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { X, Calendar, Gauge, FileText, User, Camera, Trash2, Save, CheckCircle2, Shield } from 'lucide-react';
 import { INTERVAL_TYPE, calculateNextScheduleAfterExecution } from '../lib/maintenance-helpers';
+import { NOTIFICATION_TYPES, buildNotificationMessage, buildNotificationTitle } from '../lib/notification-helpers';
 
 export default function MaintenanceExecutionForm({ schedule, onClose, onSaved }) {
   const { profile } = useAuth();
@@ -176,7 +177,58 @@ export default function MaintenanceExecutionForm({ schedule, onClose, onSaved })
         .single();
       if (execError) throw execError;
 
-      // 2. Update jadwal otomatis hanya jika bukan draft
+      // 2. Buat notifikasi ke HRD/Super Admin jika ini draft
+      if (isDraft) {
+        try {
+          // Ambil semua user dengan role super_admin dan hrd
+          const { data: allowedRoles, error: rolesError } = await supabase
+            .from('roles')
+            .select('id, role_name')
+            .in('role_name', ['super_admin', 'hrd']);
+
+          if (!rolesError && allowedRoles) {
+            const allowedRoleIds = allowedRoles.map(r => r.id);
+
+            const { data: users, error: userError } = await supabase
+              .from('user_profiles')
+              .select('id')
+              .eq('account_status', 'ACTIVE')
+              .in('role_id', allowedRoleIds);
+
+            if (!userError && users && users.length > 0) {
+              const title = buildNotificationTitle(NOTIFICATION_TYPES.DRAFT_SUBMITTED);
+              const message = buildNotificationMessage(
+                schedule.maintenance_type?.maintenance_name || '-',
+                schedule.asset?.asset_code || '-',
+                schedule.asset?.asset_name || '-',
+                NOTIFICATION_TYPES.DRAFT_SUBMITTED
+              );
+
+              const notificationsToCreate = users.map(u => ({
+                user_id: u.id,
+                maintenance_schedule_id: schedule.id,
+                notification_type: NOTIFICATION_TYPES.DRAFT_SUBMITTED,
+                title,
+                message,
+                notification_date: new Date().toISOString().split('T')[0],
+                reference_url: '/maintenance/drafts'
+              }));
+
+              const { error: notifError } = await supabase
+                .from('notifications')
+                .insert(notificationsToCreate);
+
+              if (notifError) {
+                console.error('Error creating draft notifications:', notifError);
+              }
+            }
+          }
+        } catch (notifErr) {
+          console.error('Error creating draft notifications:', notifErr);
+        }
+      }
+
+      // 3. Update jadwal otomatis hanya jika bukan draft
       if (!isDraft) {
         const scheduleUpdates = calculateNextScheduleAfterExecution(schedule, {
           execution_date: form.execution_date,

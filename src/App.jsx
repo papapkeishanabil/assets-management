@@ -13,6 +13,7 @@ import MaintenanceTypesPage from './pages/MaintenanceTypesPage';
 import MaintenanceSchedulesPage from './pages/MaintenanceSchedulesPage';
 import MaintenanceScheduleForm from './pages/MaintenanceScheduleForm';
 import MaintenanceScheduleDetailPage from './pages/MaintenanceScheduleDetailPage';
+import MaintenanceDraftsPage from './pages/MaintenanceDraftsPage';
 import CategoriesPage from './pages/CategoriesPage';
 import LocationsPage from './pages/LocationsPage';
 import DepartmentsPage from './pages/DepartmentsPage';
@@ -193,6 +194,11 @@ export default function App() {
           </HRDRoute>
         } />
         <Route path="maintenance/schedules/:id" element={<MaintenanceScheduleDetailPage />} />
+        <Route path="maintenance/drafts" element={
+          <HRDRoute>
+            <MaintenanceDraftsPage />
+          </HRDRoute>
+        } />
         <Route path="maintenance/schedules/:id/edit" element={
           <HRDRoute>
             <MaintenanceScheduleForm />

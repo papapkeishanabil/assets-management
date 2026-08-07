@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { Bell, CheckCheck, Filter, X, Calendar, AlertCircle, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Bell, CheckCheck, Filter, X, Calendar, AlertCircle, AlertTriangle, ExternalLink, FileText } from 'lucide-react';
 import { formatDateTime } from '../lib/constants';
 import {
   getNotificationFilterLabel,
@@ -21,7 +21,8 @@ const FILTER_OPTIONS = [
   { value: 'read', label: 'Sudah Dibaca' },
   { value: 'upcoming', label: 'Mendatang' },
   { value: 'due', label: 'Jatuh Tempo' },
-  { value: 'overdue', label: 'Terlambat' }
+  { value: 'overdue', label: 'Terlambat' },
+  { value: 'drafts', label: 'Draft' }
 ];
 
 export default function NotificationsPage() {
@@ -116,6 +117,8 @@ export default function NotificationsPage() {
           return isDueNotification(n.notification_type);
         case 'overdue':
           return isOverdueNotification(n.notification_type);
+        case 'drafts':
+          return n.notification_type === 'DRAFT_SUBMITTED';
         default:
           return true;
       }
@@ -196,7 +199,8 @@ export default function NotificationsPage() {
                 Calendar: Calendar,
                 AlertCircle: AlertCircle,
                 AlertTriangle: AlertTriangle,
-                Bell: Bell
+                Bell: Bell,
+                FileText: FileText
               };
               const Icon = IconMap[IconName] || Bell;
               const color = getNotificationColor(n.notification_type);
