@@ -24,6 +24,7 @@ export default function AssetDetailPage() {
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [selectedLog, setSelectedLog] = useState(null);
+  const [selectedExecution, setSelectedExecution] = useState(null);
   const [serviceForm, setServiceForm] = useState({
     description: '',
     service_date: new Date().toISOString().split('T')[0],
@@ -131,7 +132,8 @@ export default function AssetDetailPage() {
       .select(`
         *,
         schedule:maintenance_schedules!inner(id, maintenance_type:maintenance_types!inner(maintenance_name, maintenance_code)),
-        performer:performed_by (id, full_name)
+        performer:performed_by (id, full_name),
+        assessor:assessed_by (id, full_name)
       `)
       .eq('schedule.asset_id', id)
       .order('execution_date', { ascending: false })
@@ -590,7 +592,11 @@ export default function AssetDetailPage() {
                   const isVisit = isVendorVisitExecution(execution);
                   const isKerjaBakti = isKerjaBaktiExecution(execution);
                   return (
-                    <div key={execution.id} className="border border-white/5 rounded-xl p-4 hover:bg-white/[0.02] transition-all">
+                    <div
+                      key={execution.id}
+                      onClick={() => setSelectedExecution(execution)}
+                      className="border border-white/5 rounded-xl p-4 hover:bg-white/[0.04] hover:border-primary-500/30 cursor-pointer transition-all"
+                    >
                       <div className="flex flex-col md:flex-row md:items-start gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -940,6 +946,220 @@ export default function AssetDetailPage() {
               {photos.length > 1 && (
                 <p className="text-xs text-white/50 font-mono mt-1">{lightboxIndex + 1} / {photos.length}</p>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Detail Riwayat Pemeliharaan (klik untuk melihat detail) */}
+      {selectedExecution && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setSelectedExecution(null)} />
+          <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto card animate-scale-in">
+            <div className="flex items-center justify-between p-5 border-b border-white/5 sticky top-0 bg-ink-950/95 backdrop-blur-xl z-10">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-primary-500/10 border border-primary-500/20">
+                  <CheckCircle2 size={18} className="text-primary-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Detail Pemeliharaan</h3>
+                  <p className="text-xs text-ink-400">
+                    {selectedExecution.schedule?.maintenance_type?.maintenance_name || 'Pemeliharaan'} — {formatDateID(selectedExecution.execution_date)}
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedExecution(null)} className="p-1.5 text-ink-400 hover:bg-white/5 hover:text-white rounded-md transition-all">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-5">
+              {/* Badges */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={`badge ${selectedExecution.is_draft ? 'badge-yellow' : 'badge-green'}`}>
+                  <CheckCircle2 size={12} className="mr-1" />
+                  {selectedExecution.is_draft ? 'Draft' : 'Selesai'}
+                </span>
+                {isVendorVisitExecution(selectedExecution) && (
+                  <span className="badge badge-purple text-[10px]">
+                    <Package size={10} className="mr-1" />
+                    Kunjungan Vendor
+                  </span>
+                )}
+                {isKerjaBaktiExecution(selectedExecution) && (
+                  <span className="badge badge-yellow text-[10px]">
+                    <Package size={10} className="mr-1" />
+                    Kerja Bakti
+                  </span>
+                )}
+                {selectedExecution.assessment_result && (
+                  <span className="badge badge-blue">
+                    <CheckCircle2 size={12} className="mr-1" />
+                    Sudah Dinilai
+                  </span>
+                )}
+              </div>
+
+              {/* Info Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                  <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Jenis Pemeliharaan</p>
+                  <p className="text-sm text-white font-medium">
+                    {selectedExecution.schedule?.maintenance_type?.maintenance_name || '-'}
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                  <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Tanggal Pelaksanaan</p>
+                  <p className="text-sm text-white font-medium">{formatDateID(selectedExecution.execution_date)}</p>
+                </div>
+                {selectedExecution.odometer_at_execution && (
+                  <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                    <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Odometer</p>
+                    <p className="text-sm text-white font-medium">
+                      {Number(selectedExecution.odometer_at_execution).toLocaleString('id-ID')} km
+                    </p>
+                  </div>
+                )}
+                {selectedExecution.cost != null && (
+                  <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                    <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Biaya</p>
+                    <p className="text-sm text-white font-medium">{formatCurrency(selectedExecution.cost)}</p>
+                  </div>
+                )}
+                {selectedExecution.performer?.full_name && (
+                  <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                    <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Pelaksana</p>
+                    <p className="text-sm text-white font-medium">{selectedExecution.performer.full_name}</p>
+                  </div>
+                )}
+                {selectedExecution.assessor?.full_name && (
+                  <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                    <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Dinilai Oleh</p>
+                    <p className="text-sm text-white font-medium">{selectedExecution.assessor.full_name}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Hasil Pelaksanaan */}
+              <div>
+                <label className="text-xs font-semibold text-ink-400 uppercase">Hasil Pelaksanaan</label>
+                <p className="text-sm text-ink-200 mt-1 whitespace-pre-wrap bg-white/[0.03] border border-white/5 rounded-lg p-3">
+                  {selectedExecution.result || '-'}
+                </p>
+              </div>
+
+              {/* Catatan */}
+              {selectedExecution.notes && (
+                <div>
+                  <label className="text-xs font-semibold text-ink-400 uppercase">Catatan</label>
+                  <p className="text-sm text-ink-200 mt-1 whitespace-pre-wrap bg-white/[0.03] border border-white/5 rounded-lg p-3">
+                    {selectedExecution.notes}
+                  </p>
+                </div>
+              )}
+
+              {/* Info Kunjungan Vendor */}
+              {isVendorVisitExecution(selectedExecution) && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {selectedExecution.visit_condition && (
+                    <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                      <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Kondisi Mesin</p>
+                      <p className="text-sm text-white font-medium">{selectedExecution.visit_condition}</p>
+                    </div>
+                  )}
+                  {selectedExecution.recommendation && (
+                    <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                      <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Rekomendasi</p>
+                      <p className="text-sm text-white font-medium">{selectedExecution.recommendation}</p>
+                    </div>
+                  )}
+                  {selectedExecution.vendor_contact_name && (
+                    <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                      <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Kontak Vendor</p>
+                      <p className="text-sm text-white font-medium">{selectedExecution.vendor_contact_name}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Info Kerja Bakti */}
+              {isKerjaBaktiExecution(selectedExecution) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {selectedExecution.work_area && (
+                    <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                      <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Area Lokasi</p>
+                      <p className="text-sm text-white font-medium">{selectedExecution.work_area}</p>
+                    </div>
+                  )}
+                  {selectedExecution.participant_count && (
+                    <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                      <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Jumlah Peserta</p>
+                      <p className="text-sm text-white font-medium">{selectedExecution.participant_count} orang</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Hasil Penilaian */}
+              {selectedExecution.assessment_result && (
+                <div className="p-4 rounded-lg bg-primary-500/5 border border-primary-500/20 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-primary-400" />
+                    <p className="text-sm font-semibold text-primary-300">Hasil Penilaian HRD / Teknisi</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="badge badge-blue">
+                      {selectedExecution.assessment_result === 'normal' && 'Normal'}
+                      {selectedExecution.assessment_result === 'perlu_perbaikan' && 'Perlu Perbaikan'}
+                      {selectedExecution.assessment_result === 'perlu_penggantian' && 'Perlu Penggantian'}
+                      {selectedExecution.assessment_result === 'perlu_monitoring' && 'Perlu Monitoring'}
+                      {selectedExecution.assessment_result === 'lainnya' && 'Lainnya'}
+                    </span>
+                    {selectedExecution.assessor?.full_name && (
+                      <span className="text-xs text-ink-400">
+                        oleh <span className="text-white font-medium">{selectedExecution.assessor.full_name}</span>
+                      </span>
+                    )}
+                  </div>
+                  {selectedExecution.assessment_notes && (
+                    <p className="text-sm text-ink-200 whitespace-pre-wrap bg-white/[0.03] border border-white/5 rounded-lg p-3">
+                      {selectedExecution.assessment_notes}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Foto Bukti */}
+              {selectedExecution.photos && selectedExecution.photos.length > 0 ? (
+                <div>
+                  <label className="text-xs font-semibold text-ink-400 uppercase">Foto Bukti Pelaksanaan ({selectedExecution.photos.length})</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+                    {selectedExecution.photos.map((url, idx) => (
+                      <a
+                        key={idx}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block w-full h-32 rounded-lg overflow-hidden border border-white/10 hover:border-primary-500/40 transition-all"
+                      >
+                        <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="text-xs font-semibold text-ink-400 uppercase">Foto Bukti Pelaksanaan</label>
+                  <p className="text-sm text-ink-500 mt-1">Tidak ada foto</p>
+                </div>
+              )}
+
+              {/* Footer */}
+              <div className="flex gap-3 justify-end pt-4 border-t border-white/5">
+                <button onClick={() => setSelectedExecution(null)} className="btn-secondary text-sm">
+                  Tutup
+                </button>
+              </div>
             </div>
           </div>
         </div>
