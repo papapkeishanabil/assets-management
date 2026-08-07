@@ -12,7 +12,7 @@ import {
   Truck, Package, Home, Bell, Search, Settings,
   Wrench, Shield, Calendar, AlertCircle, AlertTriangle,
   HelpCircle, Smartphone, Download, BellRing, UserCheck,
-  FileText
+  FileText, History
 } from 'lucide-react';
 
 export default function MainLayout() {
@@ -75,6 +75,7 @@ export default function MainLayout() {
 
   const maintenanceItems = [
     { to: '/maintenance/schedules', icon: Calendar, label: 'Jadwal Pemeliharaan' },
+    { to: '/maintenance/executions', icon: History, label: 'Pelaksanaan Pemeliharaan' },
     { to: '/maintenance/drafts', icon: FileText, label: 'Draft Pemeliharaan', roles: ['super_admin', 'hrd'] },
     { to: '/maintenance/types', icon: FolderTree, label: 'Jenis Pemeliharaan', roles: ['super_admin', 'hrd'] },
   ];
