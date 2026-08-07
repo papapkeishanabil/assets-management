@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { ArrowLeft, Edit, Upload, FileText, Trash2, Wrench, X, Save, Package, ChevronLeft, ChevronRight, ZoomIn, CheckCircle2, History } from 'lucide-react';
 import { formatCurrency, ROLES } from '../lib/constants';
 import { permanentDeleteAsset } from '../lib/asset-helpers';
+import { formatDateID } from '../lib/maintenance-helpers';
 
 export default function AssetDetailPage() {
   const { id } = useParams();
