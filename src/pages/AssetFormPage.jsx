@@ -44,6 +44,7 @@ export default function AssetFormPage() {
     responsible_user_id: '',
     condition_id: '',
     status_id: '',
+    vendor_contact_name: '',
     vehicle_registration_number: '',
     vehicle_owner_name: '',
     engine_number: '',
@@ -59,12 +60,14 @@ export default function AssetFormPage() {
   });
 
   const selectedCategory = categories.find(category => category.id === form.category_id);
-  const selectedCategoryParent = categories.find(category => category.id === selectedCategory?.parent_category_id);
+  const selectedCategoryParent = selectedCategory?.parent_category_id 
+    ? categories.find(category => category.id === selectedCategory.parent_category_id)
+    : null;
   const isVehicle = Boolean(
     selectedCategory &&
     (selectedCategory.category_code === 'KEND' || selectedCategoryParent?.category_code === 'KEND')
   );
-  const rootCategories = categories.filter(category => !category.parent_category_id);
+  const rootCategories = categories.filter(category => !category.parent_category_id || category.category_code === 'KEND');
   const orphanCategories = categories.filter(category =>
     category.parent_category_id &&
     !categories.some(parent => parent.id === category.parent_category_id)
@@ -76,6 +79,9 @@ export default function AssetFormPage() {
     const parent = categories.find(item => item.id === category.parent_category_id);
     return parent ? `${parent.category_name} → ${category.category_name}` : category.category_name;
   };
+
+  const selectedLocation = locations.find(loc => loc.id === form.location_id);
+  const isVendorLocation = selectedLocation?.location_type === 'Lokasi Vendor';
 
   useEffect(() => {
     fetchMasterData();
@@ -138,6 +144,7 @@ export default function AssetFormPage() {
         responsible_user_id: data.responsible_user_id || '',
         condition_id: data.condition_id || '',
         status_id: data.status_id || '',
+        vendor_contact_name: data.vendor_contact_name || '',
         vehicle_registration_number: data.vehicle_registration_number || '',
         vehicle_owner_name: data.vehicle_owner_name || '',
         engine_number: data.engine_number || '',
@@ -292,6 +299,13 @@ export default function AssetFormPage() {
       return;
     }
 
+    // Validasi: vendor wajib dipilih ketika status "Dipinjamkan"
+    const selectedStatus = statuses.find(s => s.id === form.status_id);
+    if (selectedStatus?.status_name === 'Dipinjamkan' && !form.vendor_id) {
+      toast.error('Vendor wajib dipilih ketika status "Dipinjamkan"');
+      return;
+    }
+
     setLoading(true);
     try {
       const nullFields = ['category_id', 'vendor_id', 'location_id', 'department_id', 'responsible_user_id', 'condition_id', 'status_id', 'purchase_date', 'warranty_start_date', 'warranty_end_date', 'current_odometer', 'current_operating_hours'];
@@ -412,10 +426,6 @@ export default function AssetFormPage() {
         toast.error('Kode aset belum berhasil dibuat. Pilih ulang kategori.');
         return;
       }
-    }
-    if (step === 4 && selectedResponsibleIds.length === 0) {
-      toast.error('Pilih minimal satu penanggung jawab aset');
-      return;
     }
     setStep(step + 1);
   };
@@ -613,34 +623,61 @@ export default function AssetFormPage() {
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="label">Penanggung Jawab <span className="text-danger-400">*</span></label>
-                  {assetResponsibles.length === 0 ? (
+                  <label className="label">Penanggung Jawab</label>
+                  {isVendorLocation ? (
+                    <div className="p-3 rounded-lg border border-primary-500/20 bg-primary-500/5">
+                      <p className="text-xs text-primary-300 mb-2">Lokasi vendor terdeteksi. Pilih vendor sebagai penanggung jawab:</p>
+                      <select
+                        name="vendor_id"
+                        className="input"
+                        value={form.vendor_id}
+                        onChange={handleChange}
+                      >
+                        <option value="">Pilih vendor...</option>
+                        {vendors.map(v => (
+                          <option key={v.id} value={v.id}>{v.vendor_name}</option>
+                        ))}
+                      </select>
+                      {form.vendor_id && (
+                        <div className="mt-2">
+                          <label className="label">Nama Kontak di Vendor</label>
+                          <input
+                            type="text"
+                            name="vendor_contact_name"
+                            className="input"
+                            value={form.vendor_contact_name}
+                            onChange={handleChange}
+                            placeholder="Nama orang yang bisa dihubungi di vendor"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ) : assetResponsibles.length === 0 ? (
                     <div className="p-3 rounded-lg border border-warning-500/20 bg-warning-500/10 text-sm text-warning-300">
-                      Belum ada master penanggung jawab aktif. Tambahkan dulu di menu Master Data &gt; Penanggung Jawab.
+                      Belum ada master penanggung jawab aktif. Tambahkan dulu di menu Master Data > Penanggung Jawab.
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {assetResponsibles.map(item => (
-                        <label
-                          key={item.id}
-                          className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-all ${
-                            selectedResponsibleIds.includes(item.id)
-                              ? 'border-primary-500/40 bg-primary-500/10'
-                              : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.06]'
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            className="mt-0.5 w-4 h-4 rounded border-white/10 bg-white/5 text-primary-500 focus:ring-primary-500/30"
-                            checked={selectedResponsibleIds.includes(item.id)}
-                            onChange={() => toggleResponsible(item.id)}
-                          />
-                          <span className="min-w-0">
-                            <span className="block text-sm font-medium text-white">{item.responsible_name}</span>
-                            <span className="block text-xs text-ink-400 truncate">{item.role_title || item.responsible_code}</span>
-                          </span>
-                        </label>
-                      ))}
+                    <div>
+                      <select
+                        className="input"
+                        value={selectedResponsibleIds[0] || ''}
+                        onChange={(e) => {
+                          const selectedId = e.target.value;
+                          if (selectedId) {
+                            setSelectedResponsibleIds([selectedId]);
+                          } else {
+                            setSelectedResponsibleIds([]);
+                          }
+                        }}
+                      >
+                        <option value="">Pilih penanggung jawab...</option>
+                        {assetResponsibles.map(item => (
+                          <option key={item.id} value={item.id}>
+                            {item.responsible_name} {item.role_title ? `(${item.role_title})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-ink-400 mt-1">Pilih satu penanggung jawab utama untuk aset ini</p>
                     </div>
                   )}
                 </div>

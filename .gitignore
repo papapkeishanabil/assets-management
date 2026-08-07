@@ -33,3 +33,9 @@ supabase/.temp/
 
 # Vercel
 .vercel
+
+# Claude
+.claude/
+
+# Temp files
+$null

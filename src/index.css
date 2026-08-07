@@ -112,6 +112,17 @@
     transform: translateY(-1px);
   }
 
+  /* Light theme: solid background for cards/modals */
+  [data-theme="light"] .glass,
+  [data-theme="light"] .card {
+    background: rgb(248 250 252 / 0.95);
+    border-color: rgb(15 23 42 / 0.08);
+  }
+  [data-theme="light"] .glass-hover:hover {
+    background: rgb(241 245 249 / 0.95);
+    border-color: rgb(15 23 42 / 0.14);
+  }
+
   /* ===== BUTTONS ===== */
   .btn {
     @apply px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 inline-flex items-center justify-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none;

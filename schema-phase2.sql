@@ -261,7 +261,7 @@ CREATE POLICY "Update assets" ON assets FOR UPDATE USING (
   EXISTS (SELECT 1 FROM user_profiles up JOIN roles r ON up.role_id = r.id WHERE up.auth_user_id = auth.uid() AND r.role_name IN ('super_admin','hrd') AND up.account_status = 'ACTIVE')
 );
 CREATE POLICY "Delete assets" ON assets FOR DELETE USING (
-  EXISTS (SELECT 1 FROM user_profiles up JOIN roles r ON up.role_id = r.id WHERE up.auth_user_id = auth.uid() AND r.role_name = 'super_admin' AND up.account_status = 'ACTIVE')
+  EXISTS (SELECT 1 FROM user_profiles up JOIN roles r ON up.role_id = r.id WHERE up.auth_user_id = auth.uid() AND r.role_name IN ('super_admin','hrd') AND up.account_status = 'ACTIVE')
 );
 
 -- Documents, Photos, Logs

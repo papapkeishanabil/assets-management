@@ -386,3 +386,40 @@ export async function checkDuplicateSchedule(supabase, assetId, maintenanceTypeI
   if (error) return false;
   return data && data.length > 0;
 }
+
+/**
+ * Hitung ulang jadwal setelah pelaksanaan dicatat.
+ * Jadwal bersifat rutin, sehingga tidak perlu dibuat ulang —
+ * cukup update last_* dan next_* berdasarkan tanggal/odometer pelaksanaan.
+ *
+ * @param {object} schedule - Data jadwal saat ini (dari maintenance_schedules)
+ * @param {object} execution - Data pelaksanaan { execution_date, odometer_at_execution }
+ * @returns {object} Update object untuk maintenance_schedules
+ */
+export function calculateNextScheduleAfterExecution(schedule, execution) {
+  const updates = {};
+
+  // Update tanggal terakhir & hitung tanggal berikutnya (time-based)
+  if (schedule.interval_type === INTERVAL_TYPE.TIME || schedule.interval_type === INTERVAL_TYPE.BOTH) {
+    const lastDate = execution.execution_date || schedule.last_maintenance_date;
+    const { nextDate } = calculateNextMaintenanceDate(
+      lastDate,
+      schedule.interval_value,
+      schedule.interval_unit
+    );
+    updates.last_maintenance_date = lastDate;
+    updates.next_maintenance_date = formatDateID(nextDate).split('-').reverse().join('-'); // YYYY-MM-DD
+  }
+
+  // Update odometer terakhir & hitung odometer berikutnya (odometer-based)
+  if (schedule.interval_type === INTERVAL_TYPE.ODOMETER || schedule.interval_type === INTERVAL_TYPE.BOTH) {
+    const lastOdometer = execution.odometer_at_execution || schedule.last_odometer;
+    if (lastOdometer && schedule.odometer_interval_value) {
+      const nextOdometer = calculateNextOdometer(lastOdometer, schedule.odometer_interval_value);
+      updates.last_odometer = parseFloat(lastOdometer);
+      updates.next_odometer_due = nextOdometer;
+    }
+  }
+
+  return updates;
+}

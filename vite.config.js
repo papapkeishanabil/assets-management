@@ -28,10 +28,8 @@ export default defineConfig({
         lang: 'id-ID',
         categories: ['business', 'productivity'],
         icons: [
-          { src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
-          { src: '/icon-maskable-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
-          { src: '/icon-maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+          { src: '/harmas-logo.png', sizes: '192x192', type: 'image/png' },
+          { src: '/harmas-logo.png', sizes: '512x512', type: 'image/png' }
         ]
       },
       injectManifest: {

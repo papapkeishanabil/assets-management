@@ -50,6 +50,9 @@ export default function MaintenanceScheduleForm() {
 
   const canWrite = role && ['super_admin', 'hrd'].includes(role.role_name);
 
+  const selectedType = maintenanceTypes.find(t => t.id === form.maintenance_type_id);
+  const isKerjaBakti = selectedType?.maintenance_code === 'KERJA-BAKTI';
+
   const fetchMasterData = useCallback(async () => {
     setLoadingData(true);
     try {
@@ -164,7 +167,10 @@ export default function MaintenanceScheduleForm() {
     e.preventDefault();
 
     // Validasi
-    if (!form.asset_id) {
+    const selectedType = maintenanceTypes.find(t => t.id === form.maintenance_type_id);
+    const isKerjaBakti = selectedType?.maintenance_code === 'KERJA-BAKTI';
+    
+    if (!isKerjaBakti && !form.asset_id) {
       toast.error('Aset wajib dipilih');
       return;
     }
@@ -206,23 +212,27 @@ export default function MaintenanceScheduleForm() {
       return;
     }
 
-    // Cek aset aktif
-    const selectedAsset = assets.find(a => a.id === form.asset_id);
-    if (!selectedAsset || !selectedAsset.is_active) {
-      toast.error('Jadwal tidak boleh dibuat untuk aset nonaktif');
-      return;
+    // Cek aset aktif (hanya jika ada aset yang dipilih)
+    if (form.asset_id) {
+      const selectedAsset = assets.find(a => a.id === form.asset_id);
+      if (!selectedAsset || !selectedAsset.is_active) {
+        toast.error('Jadwal tidak boleh dibuat untuk aset nonaktif');
+        return;
+      }
     }
 
-    // Cek duplikat
-    const isDuplicate = await checkDuplicateSchedule(
-      supabase,
-      form.asset_id,
-      form.maintenance_type_id,
-      isEdit ? id : null
-    );
-    if (isDuplicate) {
-      toast.error('Aset ini sudah memiliki jadwal aktif untuk jenis pemeliharaan yang sama.');
-      return;
+    // Cek duplikat (hanya jika ada aset)
+    if (form.asset_id) {
+      const isDuplicate = await checkDuplicateSchedule(
+        supabase,
+        form.asset_id,
+        form.maintenance_type_id,
+        isEdit ? id : null
+      );
+      if (isDuplicate) {
+        toast.error('Aset ini sudah memiliki jadwal aktif untuk jenis pemeliharaan yang sama.');
+        return;
+      }
     }
 
     setLoading(true);
@@ -245,7 +255,7 @@ export default function MaintenanceScheduleForm() {
       }
 
       const dataToSubmit = {
-        asset_id: form.asset_id,
+        asset_id: form.asset_id || null,
         maintenance_type_id: form.maintenance_type_id,
         last_maintenance_date: form.last_maintenance_date,
         last_odometer: form.last_odometer ? parseFloat(form.last_odometer) : null,
@@ -261,6 +271,13 @@ export default function MaintenanceScheduleForm() {
         notes: form.notes || null,
         is_active: form.is_active
       };
+
+      // Clean empty strings to null for UUID fields
+      Object.keys(dataToSubmit).forEach(key => {
+        if (dataToSubmit[key] === '' && ['asset_id', 'responsible_user_id'].includes(key)) {
+          dataToSubmit[key] = null;
+        }
+      });
 
       if (isEdit) {
         const { error } = await supabase
@@ -330,25 +347,6 @@ export default function MaintenanceScheduleForm() {
       {/* Form */}
       <div className="card">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Aset */}
-          <div>
-            <label className="label">Aset <span className="text-danger-400">*</span></label>
-            <select
-              className="input"
-              value={form.asset_id}
-              onChange={(e) => setForm({...form, asset_id: e.target.value})}
-              required
-            >
-              <option value="">Pilih aset...</option>
-              {assets.map(asset => (
-                <option key={asset.id} value={asset.id}>
-                  {asset.asset_code} - {asset.asset_name}
-                  {asset.current_odometer && ` (${Number(asset.current_odometer).toLocaleString()} km)`}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Jenis Pemeliharaan */}
           <div>
             <label className="label">Jenis Pemeliharaan <span className="text-danger-400">*</span></label>
@@ -362,6 +360,30 @@ export default function MaintenanceScheduleForm() {
               {maintenanceTypes.map(type => (
                 <option key={type.id} value={type.id}>
                   {type.maintenance_code} - {type.maintenance_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Aset */}
+          <div>
+            <label className="label">
+              Aset {!isKerjaBakti && <span className="text-danger-400">*</span>}
+            </label>
+            {isKerjaBakti && (
+              <p className="text-xs text-ink-400 mb-2">Opsional untuk jenis Kerja Bakti (pekerjaan umum)</p>
+            )}
+            <select
+              className="input"
+              value={form.asset_id}
+              onChange={(e) => setForm({...form, asset_id: e.target.value})}
+              required={!isKerjaBakti}
+            >
+              <option value="">Pilih aset...</option>
+              {assets.map(asset => (
+                <option key={asset.id} value={asset.id}>
+                  {asset.asset_code} - {asset.asset_name}
+                  {asset.current_odometer && ` (${Number(asset.current_odometer).toLocaleString()} km)`}
                 </option>
               ))}
             </select>

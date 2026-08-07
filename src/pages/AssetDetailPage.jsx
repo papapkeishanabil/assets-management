@@ -3,7 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Edit, Upload, FileText, Trash2, Wrench, X, Save, Package, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
+import { ArrowLeft, Edit, Upload, FileText, Trash2, Wrench, X, Save, Package, ChevronLeft, ChevronRight, ZoomIn, CheckCircle2, History } from 'lucide-react';
+import { formatCurrency, ROLES } from '../lib/constants';
+import { permanentDeleteAsset } from '../lib/asset-helpers';
 
 export default function AssetDetailPage() {
   const { id } = useParams();
@@ -14,6 +16,7 @@ export default function AssetDetailPage() {
   const [photos, setPhotos] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [logs, setLogs] = useState([]);
+  const [maintenanceExecutions, setMaintenanceExecutions] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [responsibleAssignments, setResponsibleAssignments] = useState([]);
   const [activeTab, setActiveTab] = useState('info');
@@ -32,12 +35,14 @@ export default function AssetDetailPage() {
   const [savingService, setSavingService] = useState(false);
 
   const canEdit = role && ['super_admin', 'hrd'].includes(role.role_name);
+  const canDelete = role?.role_name === ROLES.SUPER_ADMIN;
 
   useEffect(() => {
     fetchAsset();
     fetchPhotos();
     fetchDocuments();
     fetchLogs();
+    fetchMaintenanceExecutions();
     fetchVendors();
     fetchResponsibleAssignments();
   }, [id]);
@@ -118,6 +123,25 @@ export default function AssetDetailPage() {
     }
     setLogs(data || []);
   };
+
+  const fetchMaintenanceExecutions = async () => {
+    const { data } = await supabase
+      .from('maintenance_executions')
+      .select(`
+        *,
+        schedule:maintenance_schedules!inner(id, maintenance_type:maintenance_types!inner(maintenance_name, maintenance_code)),
+        performer:performed_by (id, full_name)
+      `)
+      .eq('schedule.asset_id', id)
+      .order('execution_date', { ascending: false })
+      .limit(50);
+    setMaintenanceExecutions(data || []);
+  };
+
+  const isVendorVisitExecution = (execution) =>
+    execution.schedule?.maintenance_type?.maintenance_code === 'VISIT';
+  const isKerjaBaktiExecution = (execution) =>
+    execution.schedule?.maintenance_type?.maintenance_code === 'KERJA-BAKTI';
 
   const fetchVendors = async () => {
     const { data } = await supabase
@@ -209,6 +233,31 @@ export default function AssetDetailPage() {
     }
   };
 
+  const handlePermanentDelete = async () => {
+    if (!asset) return;
+    const input = prompt(
+      `HAPUS PERMANEN aset berikut?\n\n` +
+      `Kode: ${asset.asset_code}\n` +
+      `Nama: ${asset.asset_name}\n\n` +
+      `Tindakan ini tidak dapat dibatalkan. Semua foto, dokumen, riwayat pemeliharaan, dan log aktivitas terkait akan ikut terhapus.\n\n` +
+      `Ketik kode aset PERSIS (${asset.asset_code}) untuk konfirmasi:`
+    );
+    if (input === null) return;
+    if (input.trim() !== asset.asset_code) {
+      toast.error('Kode aset tidak cocok. Penghapusan dibatalkan.');
+      return;
+    }
+
+    const toastId = toast.loading('Menghapus aset permanen...');
+    try {
+      await permanentDeleteAsset(asset.id);
+      toast.success('Aset permanen dihapus', { id: toastId });
+      navigate('/assets');
+    } catch (error) {
+      toast.error('Gagal hapus permanen: ' + error.message, { id: toastId });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -230,6 +279,7 @@ export default function AssetDetailPage() {
     { id: 'purchase', label: 'Pembelian & Garansi' },
     { id: 'photos', label: `Foto (${photos.length})` },
     { id: 'documents', label: `Dokumen (${documents.length})` },
+    { id: 'maintenance', label: `Pemeliharaan (${maintenanceExecutions.length})` },
     { id: 'activity', label: `Riwayat (${logs.length})` }
   ];
 
@@ -276,6 +326,12 @@ export default function AssetDetailPage() {
                 Edit
               </button>
             </>
+          )}
+          {canDelete && asset && !asset.is_active && (
+            <button onClick={handlePermanentDelete} className="btn-secondary text-sm !text-danger-400 !border-danger-500/30 hover:!bg-danger-500/10">
+              <Trash2 size={14} />
+              Hapus Permanen
+            </button>
           )}
         </div>
       </div>
@@ -507,6 +563,137 @@ export default function AssetDetailPage() {
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'maintenance' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="section-title">
+                <CheckCircle2 size={16} className="text-primary-400" />
+                Pemeliharaan Rutin
+              </h3>
+            </div>
+            {maintenanceExecutions.length === 0 ? (
+              <div className="empty-state py-8">
+                <div className="empty-state-icon"><History size={32} /></div>
+                <h3 className="empty-state-title">Belum ada pemeliharaan</h3>
+                <p className="empty-state-text">Pelaksanaan jadwal pemeliharaan rutin akan tampil di sini</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {maintenanceExecutions.map(execution => {
+                  const photos = Array.isArray(execution.photos) ? execution.photos : [];
+                  const isVisit = isVendorVisitExecution(execution);
+                  const isKerjaBakti = isKerjaBaktiExecution(execution);
+                  return (
+                    <div key={execution.id} className="border border-white/5 rounded-xl p-4 hover:bg-white/[0.02] transition-all">
+                      <div className="flex flex-col md:flex-row md:items-start gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="badge badge-green">
+                              <CheckCircle2 size={12} className="mr-1" />
+                              Selesai
+                            </span>
+                            {isVisit && (
+                              <span className="badge badge-purple text-[10px]">
+                                <Package size={10} className="mr-1" />
+                                Kunjungan Vendor
+                              </span>
+                            )}
+                            {isKerjaBakti && (
+                              <span className="badge badge-yellow text-[10px]">
+                                <Package size={10} className="mr-1" />
+                                Kerja Bakti
+                              </span>
+                            )}
+                            <span className="text-sm font-medium text-white">
+                              {formatDateID(execution.execution_date)}
+                            </span>
+                            {execution.schedule?.maintenance_type?.maintenance_name && (
+                              <span className="text-xs text-ink-400">
+                                {execution.schedule.maintenance_type.maintenance_name}
+                              </span>
+                            )}
+                            {execution.odometer_at_execution && (
+                              <span className="text-xs text-ink-400 font-mono">
+                                {Number(execution.odometer_at_execution).toLocaleString('id-ID')} km
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-ink-200 mt-2">{execution.result || '-'}</p>
+                          {isVisit && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+                              {execution.visit_condition && (
+                                <div className="p-2 rounded-md bg-white/[0.03] border border-white/5">
+                                  <p className="text-[10px] font-mono uppercase text-ink-500">Kondisi</p>
+                                  <p className="text-xs text-white font-medium">{execution.visit_condition}</p>
+                                </div>
+                              )}
+                              {execution.recommendation && (
+                                <div className="p-2 rounded-md bg-white/[0.03] border border-white/5">
+                                  <p className="text-[10px] font-mono uppercase text-ink-500">Rekomendasi</p>
+                                  <p className="text-xs text-white font-medium">{execution.recommendation}</p>
+                                </div>
+                              )}
+                              {execution.vendor_contact_name && (
+                                <div className="p-2 rounded-md bg-white/[0.03] border border-white/5">
+                                  <p className="text-[10px] font-mono uppercase text-ink-500">Kontak Vendor</p>
+                                  <p className="text-xs text-white font-medium">{execution.vendor_contact_name}</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {isKerjaBakti && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                              {execution.work_area && (
+                                <div className="p-2 rounded-md bg-white/[0.03] border border-white/5">
+                                  <p className="text-[10px] font-mono uppercase text-ink-500">Area Lokasi</p>
+                                  <p className="text-xs text-white font-medium">{execution.work_area}</p>
+                                </div>
+                              )}
+                              {execution.participant_count && (
+                                <div className="p-2 rounded-md bg-white/[0.03] border border-white/5">
+                                  <p className="text-[10px] font-mono uppercase text-ink-500">Jumlah Peserta</p>
+                                  <p className="text-xs text-white font-medium">{execution.participant_count} orang</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          <div className="flex flex-wrap gap-4 mt-2 text-xs text-ink-400">
+                            {execution.cost != null && (
+                              <span>Biaya: <span className="text-white font-medium">{formatCurrency(execution.cost)}</span></span>
+                            )}
+                            {execution.performer?.full_name && (
+                              <span>Pelaksana: <span className="text-white font-medium">{execution.performer.full_name}</span></span>
+                            )}
+                            {execution.notes && (
+                              <span>Catatan: <span className="text-white font-medium">{execution.notes}</span></span>
+                            )}
+                          </div>
+                        </div>
+                        {photos.length > 0 && (
+                          <div className="flex gap-2 flex-shrink-0">
+                            {photos.map((url, idx) => (
+                              <a
+                                key={idx}
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block w-16 h-16 rounded-lg overflow-hidden border border-white/10 hover:border-primary-500/40 transition-all"
+                                title={`Foto ${idx + 1}`}
+                              >
+                                <img src={url} alt={`Foto pelaksanaan ${idx + 1}`} className="w-full h-full object-cover" />
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -26,6 +26,11 @@ import SettingsPage from './pages/SettingsPage';
 import SystemNotificationTestPage from './pages/SystemNotificationTestPage';
 import LoadingScreen from './components/LoadingScreen';
 import { ROLES } from './lib/constants';
+import ContractsPage from './pages/contracts/ContractsPage';
+import ContractFormPage from './pages/contracts/ContractFormPage';
+import ContractDetailPage from './pages/contracts/ContractDetailPage';
+import ContractTypesPage from './pages/contracts/ContractTypesPage';
+import EmployeesPage from './pages/contracts/EmployeesPage';
 
 function LogoutButton() {
   const handleLogout = async () => {
@@ -191,6 +196,28 @@ export default function App() {
         <Route path="maintenance/schedules/:id/edit" element={
           <HRDRoute>
             <MaintenanceScheduleForm />
+          </HRDRoute>
+        } />
+        <Route path="employees" element={
+          <HRDRoute>
+            <EmployeesPage />
+          </HRDRoute>
+        } />
+        <Route path="contracts" element={<ContractsPage />} />
+        <Route path="contracts/types" element={
+          <HRDRoute>
+            <ContractTypesPage />
+          </HRDRoute>
+        } />
+        <Route path="contracts/new" element={
+          <HRDRoute>
+            <ContractFormPage />
+          </HRDRoute>
+        } />
+        <Route path="contracts/:id" element={<ContractDetailPage />} />
+        <Route path="contracts/:id/edit" element={
+          <HRDRoute>
+            <ContractFormPage />
           </HRDRoute>
         } />
         <Route path="settings" element={

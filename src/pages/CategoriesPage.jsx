@@ -55,8 +55,22 @@ export default function CategoriesPage() {
     }
 
     try {
+      let displayOrder = form.display_order;
+
+      // Auto-assign sequential order for new child categories
+      if (!editingId && form.parent_category_id) {
+        const { data: siblings } = await supabase
+          .from('asset_categories')
+          .select('display_order')
+          .eq('parent_category_id', form.parent_category_id)
+          .order('display_order', { ascending: false })
+          .limit(1);
+        displayOrder = (siblings?.[0]?.display_order ?? 0) + 1;
+      }
+
       const dataToSubmit = {
         ...form,
+        display_order: displayOrder,
         parent_category_id: form.parent_category_id || null,
         created_by: profile?.id
       };
@@ -240,6 +254,7 @@ export default function CategoriesPage() {
                     </tr>
                     {childCategories
                       .filter(child => child.parent_category_id === parent.id)
+                      .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
                       .map((child) => (
                         <tr key={child.id}>
                           <td className="pl-10 text-ink-300 font-mono text-[13px]">{child.category_code}</td>

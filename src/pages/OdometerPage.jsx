@@ -20,11 +20,34 @@ export default function OdometerPage() {
 
   const fetchVehicleAssets = async () => {
     try {
+      const { data: kendCategory } = await supabase
+        .from('asset_categories')
+        .select('id')
+        .eq('category_code', 'KEND')
+        .single();
+
+      if (!kendCategory) {
+        setAssets([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data: vehicleCategoryIds } = await supabase
+        .from('asset_categories')
+        .select('id')
+        .eq('parent_category_id', kendCategory.id);
+
+      if (!vehicleCategoryIds?.length) {
+        setAssets([]);
+        setLoading(false);
+        return;
+      }
+
       const { data } = await supabase
         .from('assets')
         .select(`*, categories:category_id (category_name)`)
         .eq('is_active', true)
-        .in('category_id', supabase.from('asset_categories').select('id').or('category_name.ilike.%kendaraan%,category_name.ilike.%mobil%,category_name.ilike.%motor%'))
+        .in('category_id', vehicleCategoryIds.map(c => c.id))
         .order('asset_name');
       setAssets(data || []);
       if (data?.length > 0) setSelectedAsset(data[0].id);

@@ -106,6 +106,8 @@ export const VENDOR_TYPES = {
   TEKNISI_LISTRIK: 'Teknisi Listrik',
   TEKNISI_KOMPUTER: 'Teknisi Komputer',
   VENDOR_MAINTENANCE: 'Vendor Maintenance',
+  MAKLUN_JAHIT: 'Maklun Jahit',
+  MAKLUN_BORDIR: 'Maklun Bordir',
   SUPPLIER_UMUM: 'Supplier Umum',
   LAINNYA: 'Lainnya'
 };

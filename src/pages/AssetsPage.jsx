@@ -4,7 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ROLES } from '../lib/constants';
 import toast from 'react-hot-toast';
-import { Plus, Search, RefreshCw, Eye, Edit, Trash2, Filter, Package, X } from 'lucide-react';
+import { Plus, Search, RefreshCw, Eye, Edit, Trash2, Ban, Filter, Package, X } from 'lucide-react';
+import { permanentDeleteAsset } from '../lib/asset-helpers';
 
 export default function AssetsPage() {
   const navigate = useNavigate();
@@ -179,6 +180,30 @@ export default function AssetsPage() {
       fetchAssets();
     } catch (error) {
       toast.error(error.message);
+    }
+  };
+
+  const handlePermanentDelete = async (asset) => {
+    const input = prompt(
+      `HAPUS PERMANEN aset berikut?\n\n` +
+      `Kode: ${asset.asset_code}\n` +
+      `Nama: ${asset.asset_name}\n\n` +
+      `Tindakan ini tidak dapat dibatalkan. Semua foto, dokumen, riwayat pemeliharaan, dan log aktivitas terkait akan ikut terhapus.\n\n` +
+      `Ketik kode aset PERSIS (${asset.asset_code}) untuk konfirmasi:`
+    );
+    if (input === null) return;
+    if (input.trim() !== asset.asset_code) {
+      toast.error('Kode aset tidak cocok. Penghapusan dibatalkan.');
+      return;
+    }
+
+    const toastId = toast.loading('Menghapus aset permanen...');
+    try {
+      await permanentDeleteAsset(asset.id);
+      toast.success('Aset permanen dihapus', { id: toastId });
+      fetchAssets();
+    } catch (error) {
+      toast.error('Gagal hapus permanen: ' + error.message, { id: toastId });
     }
   };
 
@@ -383,12 +408,19 @@ export default function AssetsPage() {
                           )}
                           {asset.is_active ? (
                             <button onClick={() => handleDeactivate(asset)} className="p-1.5 text-orange-400 hover:bg-orange-500/10 rounded-md transition-all" title="Nonaktifkan">
-                              <Trash2 size={14} />
+                              <Ban size={14} />
                             </button>
-                          ) : canDelete && (
-                            <button onClick={() => handleActivate(asset)} className="p-1.5 text-success-400 hover:bg-success-500/10 rounded-md transition-all" title="Aktifkan">
-                              <RefreshCw size={14} />
-                            </button>
+                          ) : (
+                            <>
+                              <button onClick={() => handleActivate(asset)} className="p-1.5 text-success-400 hover:bg-success-500/10 rounded-md transition-all" title="Aktifkan kembali">
+                                <RefreshCw size={14} />
+                              </button>
+                              {canDelete && (
+                                <button onClick={() => handlePermanentDelete(asset)} className="p-1.5 text-danger-400 hover:bg-danger-500/10 rounded-md transition-all" title="Hapus Permanen">
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
+                            </>
                           )}
                         </div>
                       </td>

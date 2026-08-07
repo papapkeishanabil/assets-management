@@ -3,9 +3,11 @@ import { supabase } from '../lib/supabase';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../hooks/useNotifications';
+import { useContractReminders } from '../hooks/useContractReminders';
 import {
-  Package, AlertTriangle, CheckCircle, Wrench,
-  ArrowRight, Calendar, ExternalLink, TrendingUp, X
+  Package, AlertTriangle, CheckCircle, Wrench, FileText,
+  ArrowRight, Calendar, ExternalLink, TrendingUp, X,
+  FileSignature, Clock, AlertCircle
 } from 'lucide-react';
 
 // Sapaan dinamis berdasarkan waktu lokal browser
@@ -25,14 +27,18 @@ export default function DashboardPage() {
   const [recentAssets, setRecentAssets] = useState([]);
   const [upcomingSchedules, setUpcomingSchedules] = useState([]);
   const [categoryStats, setCategoryStats] = useState([]);
+  const [contractStats, setContractStats] = useState({ total: 0, active: 0, expiring: 0, expired: 0 });
+  const [expiringContracts, setExpiringContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { notifications, unreadCount, runReminderCheck, markAsRead } = useNotifications();
+  const { runContractReminderCheck } = useContractReminders();
   const [showPopup, setShowPopup] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
     runReminderCheck();
+    runContractReminderCheck();
   }, []);
 
   useEffect(() => {
@@ -123,6 +129,49 @@ export default function DashboardPage() {
           .sort((a, b) => b[1] - a[1])
           .slice(0, 5)
       );
+
+      // Fetch contract data
+      try {
+        const next30 = new Date();
+        next30.setDate(next30.getDate() + 30);
+        const next30Str = next30.toISOString().split('T')[0];
+
+        const [contractTotalRes, contractActiveRes, contractExpiringRes, contractExpiredRes, expiringRes] = await Promise.all([
+          supabase.from('contracts').select('*', { count: 'exact', head: true }),
+          supabase.from('contracts').select('*', { count: 'exact', head: true }).eq('contract_status', 'ACTIVE'),
+          supabase.from('contracts')
+            .select('*', { count: 'exact', head: true })
+            .eq('contract_status', 'ACTIVE')
+            .gte('end_date', today)
+            .lte('end_date', next30Str),
+          supabase.from('contracts')
+            .select('*', { count: 'exact', head: true })
+            .eq('contract_status', 'ACTIVE')
+            .lt('end_date', today),
+          supabase.from('contracts')
+            .select(`
+              id, contract_number, title, end_date, contract_status,
+              contract_type:contract_types!left(type_name, category),
+              employee:user_profiles!left(full_name),
+              vendor:vendors!left(vendor_name)
+            `)
+            .eq('contract_status', 'ACTIVE')
+            .gte('end_date', today)
+            .lte('end_date', next30Str)
+            .order('end_date', { ascending: true })
+            .limit(5)
+        ]);
+
+        setContractStats({
+          total: contractTotalRes.count || 0,
+          active: contractActiveRes.count || 0,
+          expiring: contractExpiringRes.count || 0,
+          expired: contractExpiredRes.count || 0
+        });
+        setExpiringContracts(expiringRes.data || []);
+      } catch (contractError) {
+        console.error('Error fetching contract data:', contractError);
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -427,6 +476,109 @@ export default function DashboardPage() {
                 Lihat semua jadwal
                 <ArrowRight size={12} />
               </Link>
+            </div>
+          </div>
+
+          {/* Expiring Contracts */}
+          <div className="glass rounded-xl p-5 relative overflow-hidden">
+            <div className="orb w-32 h-32 bg-rose-500/10 top-0 right-0"></div>
+            <div className="relative">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-white flex items-center gap-2">
+                  <FileSignature size={16} className="text-rose-400" />
+                  Kontrak Akan Habis
+                </h2>
+                <span className="text-xs text-ink-400 font-mono bg-white/5 px-1.5 py-0.5 rounded">30 HARI</span>
+              </div>
+              {expiringContracts.length === 0 ? (
+                <div className="text-center py-6">
+                  <CheckCircle size={28} className="mx-auto mb-2 text-ink-700" />
+                  <p className="text-xs text-ink-400">Tidak ada kontrak yang akan habis</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {expiringContracts.map((c) => {
+                    const d = new Date(c.end_date);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+                    const isToday = diff === 0;
+                    const isOverdue = diff < 0;
+                    const tone = isOverdue ? 'rose' : isToday ? 'amber' : diff <= 7 ? 'amber' : 'neutral';
+                    const toneMap = {
+                      rose: 'bg-rose-500/10 border-rose-500/20 text-rose-300',
+                      amber: 'bg-amber-500/10 border-amber-500/20 text-amber-300',
+                      neutral: 'bg-white/5 border-white/10 text-ink-200'
+                    };
+                    const partyName = c.employee?.full_name || c.vendor?.vendor_name || '-';
+                    return (
+                      <Link
+                        key={c.id}
+                        to={`/contracts/${c.id}`}
+                        className="flex items-start gap-3 -mx-2 p-2 rounded-md hover:bg-white/5 transition-all group"
+                      >
+                        <div className={`flex-shrink-0 w-10 h-10 border rounded-md flex flex-col items-center justify-center ${toneMap[tone]}`}>
+                          <div className="text-[10px] font-medium leading-none uppercase font-mono">
+                            {d.toLocaleDateString('id-ID', { month: 'short' })}
+                          </div>
+                          <div className="text-sm font-bold tabular-nums leading-none mt-0.5">{d.getDate()}</div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-white truncate group-hover:text-primary-300 transition-colors">
+                            {c.title}
+                          </div>
+                          <div className="text-xs text-ink-400 mt-0.5 truncate font-mono">
+                            {c.contract_number} · {partyName}
+                          </div>
+                          <div className="text-[11px] text-ink-500 mt-0.5 font-mono">
+                            {isToday ? 'Hari ini' : isOverdue ? `Terlambat ${Math.abs(diff)} hari` : `${diff} hari lagi`}
+                          </div>
+                        </div>
+                        <ArrowRight size={12} className="text-ink-600 group-hover:text-primary-400 transition-colors flex-shrink-0 mt-1" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+              <Link
+                to="/contracts"
+                className="mt-4 flex items-center justify-center gap-1.5 w-full py-2 text-xs font-medium text-rose-300 hover:text-rose-200 bg-rose-500/10 hover:bg-rose-500/15 border border-rose-500/20 rounded-md transition-all"
+              >
+                Lihat semua kontrak
+                <ArrowRight size={12} />
+              </Link>
+            </div>
+          </div>
+
+          {/* Contract Stats Mini Cards */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="glass rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <FileSignature size={14} className="text-primary-400" />
+                <span className="text-[10px] font-medium text-ink-400 uppercase">Total Kontrak</span>
+              </div>
+              <div className="text-xl font-semibold text-white tabular-nums">{contractStats.total}</div>
+            </div>
+            <div className="glass rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle size={14} className="text-success-400" />
+                <span className="text-[10px] font-medium text-ink-400 uppercase">Aktif</span>
+              </div>
+              <div className="text-xl font-semibold text-white tabular-nums">{contractStats.active}</div>
+            </div>
+            <div className="glass rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Clock size={14} className="text-amber-400" />
+                <span className="text-[10px] font-medium text-ink-400 uppercase">Akan Habis</span>
+              </div>
+              <div className="text-xl font-semibold text-amber-300 tabular-nums">{contractStats.expiring}</div>
+            </div>
+            <div className="glass rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <AlertCircle size={14} className="text-rose-400" />
+                <span className="text-[10px] font-medium text-ink-400 uppercase">Habis</span>
+              </div>
+              <div className="text-xl font-semibold text-rose-300 tabular-nums">{contractStats.expired}</div>
             </div>
           </div>
 

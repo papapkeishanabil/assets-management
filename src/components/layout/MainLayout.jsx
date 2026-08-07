@@ -11,7 +11,8 @@ import {
   ChevronDown, FolderTree, MapPin, Building2,
   Truck, Package, Home, Bell, Search, Settings,
   Wrench, Shield, Calendar, AlertCircle, AlertTriangle,
-  HelpCircle, Smartphone, Download, BellRing, UserCheck
+  HelpCircle, Smartphone, Download, BellRing, UserCheck,
+  FileText
 } from 'lucide-react';
 
 export default function MainLayout() {
@@ -190,6 +191,36 @@ export default function MainLayout() {
             </NavLink>
           ))}
 
+          <SectionLabel>SDM & Kontrak</SectionLabel>
+          {canAccessMasterData && (
+            <NavLink
+              to="/employees"
+              onClick={() => setSidebarOpen(false)}
+              className={navLinkClass}
+            >
+              <Users size={16} className="flex-shrink-0" />
+              Data Karyawan
+            </NavLink>
+          )}
+          <NavLink
+            to="/contracts"
+            onClick={() => setSidebarOpen(false)}
+            className={navLinkClass}
+          >
+            <FileText size={16} className="flex-shrink-0" />
+            Daftar Kontrak
+          </NavLink>
+          {canAccessMasterData && (
+            <><NavLink
+              to="/contracts/types"
+              onClick={() => setSidebarOpen(false)}
+              className={navLinkClass}
+            >
+              <FolderTree size={16} className="flex-shrink-0" />
+              Jenis Kontrak
+            </NavLink></>
+          )}
+
           {canAccessMaintenance && (
             <>
               <SectionLabel>Pemeliharaan</SectionLabel>
@@ -344,13 +375,17 @@ export default function MainLayout() {
                       ) : (
                         notifications.slice(0, 8).map(n => {
                           const IconMap = {
-                            Calendar, AlertCircle, AlertTriangle, Bell
+                            Calendar, AlertCircle, AlertTriangle, Bell, FileText
                           };
-                          const iconName = n.notification_type === 'REMINDER_7_DAYS' || n.notification_type === 'REMINDER_3_DAYS' || n.notification_type === 'REMINDER_1_DAY' || n.notification_type === 'REMINDER_CUSTOM' ? 'Calendar'
+                          const isContractNotif = n.notification_type?.startsWith('CONTRACT_');
+                          const iconName = isContractNotif ? 'FileText'
+                            : n.notification_type === 'REMINDER_7_DAYS' || n.notification_type === 'REMINDER_3_DAYS' || n.notification_type === 'REMINDER_1_DAY' || n.notification_type === 'REMINDER_CUSTOM' ? 'Calendar'
                             : n.notification_type === 'DUE_TODAY' ? 'AlertCircle'
                             : n.notification_type === 'OVERDUE' ? 'AlertTriangle' : 'Bell';
                           const Icon = IconMap[iconName];
-                          const colorKey = n.notification_type === 'REMINDER_7_DAYS' ? 'blue'
+                          const colorKey = isContractNotif
+                            ? (n.notification_type === 'CONTRACT_DUE_TODAY' || n.notification_type === 'CONTRACT_OVERDUE' ? 'red' : 'blue')
+                            : n.notification_type === 'REMINDER_7_DAYS' ? 'blue'
                             : n.notification_type === 'REMINDER_3_DAYS' ? 'yellow'
                             : n.notification_type === 'REMINDER_1_DAY' ? 'orange' : n.notification_type === 'REMINDER_CUSTOM' ? 'blue' : 'red';
                           const colorMap = {

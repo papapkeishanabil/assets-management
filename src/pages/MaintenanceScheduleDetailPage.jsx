@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Edit, X, RefreshCw, Calendar, Package, User, FileText, AlertCircle, Shield, Gauge } from 'lucide-react';
+import { ArrowLeft, Edit, X, RefreshCw, Calendar, Package, User, FileText, AlertCircle, Shield, Gauge, CheckCircle2, History } from 'lucide-react';
 import {
   getScheduleStatus,
   getOdometerScheduleStatus,
@@ -18,6 +18,8 @@ import {
   INTERVAL_TYPE,
   INTERVAL_TYPE_LABELS
 } from '../lib/maintenance-helpers';
+import MaintenanceExecutionForm from '../components/MaintenanceExecutionForm';
+import { formatCurrency } from '../lib/constants';
 
 export default function MaintenanceScheduleDetailPage() {
   const { id } = useParams();
@@ -27,8 +29,12 @@ export default function MaintenanceScheduleDetailPage() {
   const [loading, setLoading] = useState(true);
   const [usersMap, setUsersMap] = useState({});
   const [assetCurrentOdometer, setAssetCurrentOdometer] = useState(null);
+  const [showExecutionForm, setShowExecutionForm] = useState(false);
+  const [executions, setExecutions] = useState([]);
+  const [executionsLoading, setExecutionsLoading] = useState(false);
 
   const canWrite = role && ['super_admin', 'hrd'].includes(role.role_name);
+  const canExecute = role && ['super_admin', 'hrd', 'pelaksana'].includes(role.role_name);
 
   const fetchSchedule = useCallback(async () => {
     setLoading(true);
@@ -69,9 +75,40 @@ export default function MaintenanceScheduleDetailPage() {
     }
   }, [id]);
 
+  const fetchExecutions = useCallback(async () => {
+    if (!id) return;
+    setExecutionsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('maintenance_executions')
+        .select(`
+          *,
+          performer:performed_by (id, full_name)
+        `)
+        .eq('schedule_id', id)
+        .order('execution_date', { ascending: false });
+      if (error) throw error;
+      setExecutions(data || []);
+    } catch (error) {
+      console.error('Error fetching executions:', error);
+    } finally {
+      setExecutionsLoading(false);
+    }
+  }, [id]);
+
   useEffect(() => {
     fetchSchedule();
   }, [fetchSchedule]);
+
+  useEffect(() => {
+    if (id) fetchExecutions();
+  }, [id, fetchExecutions]);
+
+  const handleExecutionSaved = () => {
+    setShowExecutionForm(false);
+    fetchExecutions();
+    fetchSchedule();
+  };
 
   const handleToggleActive = async () => {
     if (!schedule) return;
@@ -172,7 +209,9 @@ export default function MaintenanceScheduleDetailPage() {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-white">Detail Jadwal Pemeliharaan</h1>
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-white">
+              Detail Jadwal Pemeliharaan
+            </h1>
             <p className="text-sm text-ink-400 mt-1">Informasi lengkap jadwal pemeliharaan</p>
           </div>
         </div>
@@ -269,7 +308,7 @@ export default function MaintenanceScheduleDetailPage() {
           {/* Kolom Kanan */}
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-semibold text-ink-400 uppercase">Penanggung Jawawab</label>
+              <label className="text-xs font-semibold text-ink-400 uppercase">Penanggung Jawab</label>
               <p className="text-sm font-medium text-white mt-1">
                 {usersMap[schedule.responsible_user_id] || '-'}
               </p>
@@ -351,27 +390,150 @@ export default function MaintenanceScheduleDetailPage() {
       </div>
 
       {/* Action Buttons */}
-      {canWrite && (
-        <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
+        {canExecute && schedule.is_active && (
           <button
-            onClick={() => navigate(`/maintenance/schedules/${schedule.id}/edit`)}
-            className="btn-secondary text-sm"
+            onClick={() => setShowExecutionForm(true)}
+            className="btn-primary text-sm"
           >
-            <Edit size={16} />
-            Edit Jadwal
+            <CheckCircle2 size={16} />
+            Catat Pelaksanaan
           </button>
-          <button
-            onClick={handleToggleActive}
-            className={`btn ${
-              schedule.is_active
-                ? 'btn-warning text-white'
-                : 'btn-success text-white'
-            }`}
-          >
-            {schedule.is_active ? <X size={16} /> : <RefreshCw size={16} />}
-            {schedule.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-          </button>
+        )}
+        {canWrite && (
+          <>
+            <button
+              onClick={() => navigate(`/maintenance/schedules/${schedule.id}/edit`)}
+              className="btn-secondary text-sm"
+            >
+              <Edit size={16} />
+              Edit Jadwal
+            </button>
+            <button
+              onClick={handleToggleActive}
+              className={`btn ${
+                schedule.is_active
+                  ? 'btn-warning text-white'
+                  : 'btn-success text-white'
+              }`}
+            >
+              {schedule.is_active ? <X size={16} /> : <RefreshCw size={16} />}
+              {schedule.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Riwayat Pelaksanaan */}
+      <div className="card">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary-500/10 border border-primary-500/20">
+              <History size={18} className="text-primary-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-white">Riwayat Pelaksanaan</h2>
+              <p className="text-xs text-ink-400">Catatan setiap pelaksanaan kegiatan dari jadwal rutin ini</p>
+            </div>
+          </div>
+          {executions.length > 0 && (
+            <span className="badge badge-blue">{executions.length} pelaksanaan</span>
+          )}
         </div>
+
+        {executionsLoading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="h-16 bg-white/5 rounded-md animate-pulse"></div>
+            ))}
+          </div>
+        ) : executions.length === 0 ? (
+          <div className="empty-state py-8">
+            <div className="empty-state-icon"><History size={40} /></div>
+            <h3 className="empty-state-title">Belum ada pelaksanaan</h3>
+            <p className="empty-state-text">
+              Klik tombol "Catat Pelaksanaan" untuk mencatat kegiatan yang sudah dilakukan
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {executions.map((execution) => {
+              const photos = Array.isArray(execution.photos) ? execution.photos : [];
+              const isDraft = execution.is_draft;
+              return (
+                <div key={execution.id} className={`border rounded-xl p-4 hover:bg-white/[0.02] transition-all ${
+                  isDraft ? 'border-warning-500/30 bg-warning-500/5' : 'border-white/5'
+                }`}>
+                  <div className="flex flex-col md:flex-row md:items-start gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {isDraft ? (
+                          <span className="badge badge-yellow">
+                            <FileText size={12} className="mr-1" />
+                            Draft
+                          </span>
+                        ) : (
+                          <span className="badge badge-green">
+                            <CheckCircle2 size={12} className="mr-1" />
+                            Selesai
+                          </span>
+                        )}
+                        <span className="text-sm font-medium text-white">
+                          {formatDateLongID(execution.execution_date)}
+                        </span>
+                        {execution.odometer_at_execution && (
+                          <span className="text-xs text-ink-400 font-mono">
+                            {Number(execution.odometer_at_execution).toLocaleString('id-ID')} km
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-ink-200 mt-2">{execution.result || '-'}</p>
+                      <div className="flex flex-wrap gap-4 mt-2 text-xs text-ink-400">
+                        {execution.cost != null && (
+                          <span>Biaya: <span className="text-white font-medium">{formatCurrency(execution.cost)}</span></span>
+                        )}
+                        {execution.performer?.full_name && (
+                          <span>Pelaksana: <span className="text-white font-medium">{execution.performer.full_name}</span></span>
+                        )}
+                        {execution.notes && (
+                          <span>Catatan: <span className="text-white font-medium">{execution.notes}</span></span>
+                        )}
+                        {isDraft && (
+                          <span className="text-warning-300">Menunggu penilaian dan persetujuan</span>
+                        )}
+                      </div>
+                    </div>
+                    {photos.length > 0 && (
+                      <div className="flex gap-2 flex-shrink-0">
+                        {photos.map((url, idx) => (
+                          <a
+                            key={idx}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-16 h-16 rounded-lg overflow-hidden border border-white/10 hover:border-primary-500/40 transition-all"
+                            title={`Foto ${idx + 1}`}
+                          >
+                            <img src={url} alt={`Foto pelaksanaan ${idx + 1}`} className="w-full h-full object-cover" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Modal Catat Pelaksanaan */}
+      {showExecutionForm && schedule && (
+        <MaintenanceExecutionForm
+          schedule={schedule}
+          onClose={() => setShowExecutionForm(false)}
+          onSaved={handleExecutionSaved}
+        />
       )}
     </div>
   );
