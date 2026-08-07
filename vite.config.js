@@ -11,7 +11,10 @@ export default defineConfig({
       filename: 'sw.js',
       registerType: 'autoUpdate',
       devOptions: {
-        enabled: true,
+        // Nonaktifkan service worker di mode dev.
+        // Penyebab: SW dev (injectManifest) sering menyimpan cache basi dan
+        // menampilkan halaman blank saat banyak edit/HMR. PWA tetap aktif di build produksi.
+        enabled: false,
         type: 'module',
       },
       includeAssets: ['favicon.ico', 'favicon.svg', 'robots.txt', 'apple-touch-icon.png'],

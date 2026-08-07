@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { Bell, CheckCheck, Filter, X, Calendar, AlertCircle, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Bell, CheckCheck, Filter, X, Calendar, AlertCircle, AlertTriangle, ExternalLink, ClipboardList, CheckCircle2 } from 'lucide-react';
 import { formatDateTime } from '../lib/constants';
 import {
   getNotificationFilterLabel,
@@ -196,7 +196,9 @@ export default function NotificationsPage() {
                 Calendar: Calendar,
                 AlertCircle: AlertCircle,
                 AlertTriangle: AlertTriangle,
-                Bell: Bell
+                Bell: Bell,
+                ClipboardList: ClipboardList,
+                CheckCircle2: CheckCircle2
               };
               const Icon = IconMap[IconName] || Bell;
               const color = getNotificationColor(n.notification_type);
