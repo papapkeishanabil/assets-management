@@ -8,12 +8,9 @@ export const NOTIFICATION_TYPES = {
   REMINDER_CUSTOM: 'REMINDER_CUSTOM',
   DUE_TODAY: 'DUE_TODAY',
   OVERDUE: 'OVERDUE',
-<<<<<<< HEAD
-  DRAFT_SUBMITTED: 'DRAFT_SUBMITTED'
-=======
+  DRAFT_SUBMITTED: 'DRAFT_SUBMITTED',
   INSPECTION_SUBMITTED: 'INSPECTION_SUBMITTED',
   INSPECTION_ASSESSED: 'INSPECTION_ASSESSED'
->>>>>>> modul-PPM
 };
 
 // Label untuk setiap tipe notifikasi
@@ -24,12 +21,9 @@ export const NOTIFICATION_TYPE_LABELS = {
   [NOTIFICATION_TYPES.REMINDER_CUSTOM]: 'Pengingatan',
   [NOTIFICATION_TYPES.DUE_TODAY]: 'Jatuh Tempo Hari Ini',
   [NOTIFICATION_TYPES.OVERDUE]: 'Terlambat',
-<<<<<<< HEAD
-  [NOTIFICATION_TYPES.DRAFT_SUBMITTED]: 'Draft Menunggu Penilaian'
-=======
+  [NOTIFICATION_TYPES.DRAFT_SUBMITTED]: 'Draft Menunggu Penilaian',
   [NOTIFICATION_TYPES.INSPECTION_SUBMITTED]: 'Hasil Pemeriksaan Perlu Dinilai',
   [NOTIFICATION_TYPES.INSPECTION_ASSESSED]: 'Hasil Pemeriksaan Telah Dinilai'
->>>>>>> modul-PPM
 };
 
 // Warna badge untuk setiap tipe notifikasi
@@ -40,12 +34,9 @@ export const NOTIFICATION_TYPE_COLORS = {
   [NOTIFICATION_TYPES.REMINDER_CUSTOM]: 'blue',
   [NOTIFICATION_TYPES.DUE_TODAY]: 'red',
   [NOTIFICATION_TYPES.OVERDUE]: 'red',
-<<<<<<< HEAD
-  [NOTIFICATION_TYPES.DRAFT_SUBMITTED]: 'yellow'
-=======
+  [NOTIFICATION_TYPES.DRAFT_SUBMITTED]: 'yellow',
   [NOTIFICATION_TYPES.INSPECTION_SUBMITTED]: 'yellow',
   [NOTIFICATION_TYPES.INSPECTION_ASSESSED]: 'blue'
->>>>>>> modul-PPM
 };
 
 // Ikon untuk setiap tipe notifikasi (nama icon lucide-react)
@@ -56,12 +47,9 @@ export const NOTIFICATION_TYPE_ICONS = {
   [NOTIFICATION_TYPES.REMINDER_CUSTOM]: 'Calendar',
   [NOTIFICATION_TYPES.DUE_TODAY]: 'AlertCircle',
   [NOTIFICATION_TYPES.OVERDUE]: 'AlertTriangle',
-<<<<<<< HEAD
-  [NOTIFICATION_TYPES.DRAFT_SUBMITTED]: 'FileText'
-=======
+  [NOTIFICATION_TYPES.DRAFT_SUBMITTED]: 'FileText',
   [NOTIFICATION_TYPES.INSPECTION_SUBMITTED]: 'ClipboardList',
-  [NOTIFICATION_TYPES.INSPECTION_ASSESSED]: 'CheckCircle'
->>>>>>> modul-PPM
+  [NOTIFICATION_TYPES.INSPECTION_ASSESSED]: 'CheckCircle2'
 };
 
 /**

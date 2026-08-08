@@ -18,6 +18,8 @@ export const MODULES = [
   { key: 'maintenance_executions', label: 'Pelaksanaan Pemeliharaan', icon: 'History' },
   { key: 'maintenance_drafts', label: 'Draft Pemeliharaan', icon: 'FileText' },
   { key: 'maintenance_types', label: 'Jenis Pemeliharaan', icon: 'FolderTree' },
+  { key: 'ppm', label: 'PPM / Produksi', icon: 'MessageSquare' },
+  { key: 'inspections', label: 'Hasil Pemeriksaan', icon: 'ClipboardCheck' },
   { key: 'notifications', label: 'Notifikasi', icon: 'Bell' },
   { key: 'settings', label: 'Instalasi Aplikasi', icon: 'Settings' },
   { key: 'system_notification_test', label: 'Tes Notifikasi Sistem', icon: 'BellRing' },

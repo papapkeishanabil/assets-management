@@ -7,7 +7,7 @@ const MODULES_ALL_KEYS = new Set([
   'departments', 'asset_responsibles', 'vendors', 'assets',
   'employees', 'contracts', 'contract_types', 'maintenance_schedules',
   'maintenance_executions', 'maintenance_drafts', 'maintenance_types',
-  'notifications', 'settings', 'system_notification_test', 'profile'
+  'ppm', 'inspections', 'notifications', 'settings', 'system_notification_test', 'profile'
 ]);
 
 /**

@@ -96,47 +96,60 @@ export function AuthProvider({ children }) {
     let mounted = true;
 
     const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!mounted) return;
-      
-      const authUser = session?.user ?? null;
-      setUser(authUser);
-      
-      if (authUser) {
-        await fetchProfile(authUser);
-      }
-      
-      if (mounted) {
-        initialLoadDone.current = true;
-        setLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
+
+        const authUser = session?.user ?? null;
+        setUser(authUser);
+
+        if (authUser) {
+          await fetchProfile(authUser);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+        if (mounted) {
+          initialLoadDone.current = true;
+          setLoading(false);
+        }
       }
     };
 
     init();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        const authUser = session?.user ?? null;
-        setUser(authUser);
-        
-        if (event === 'SIGNED_IN' && authUser) {
-          await fetchProfile(authUser);
-          if (mounted) setLoading(false);
-        } else if (event === 'SIGNED_OUT') {
-          setProfile(null);
-          setRole(null);
-          if (mounted) setLoading(false);
-        } else if (event === 'USER_UPDATED' && authUser) {
-          await fetchProfile(authUser);
-        } else if (event === 'TOKEN_REFRESHED' && authUser) {
-          await fetchProfile(authUser);
+    let subscription = null;
+
+    try {
+      const authSubscription = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          const authUser = session?.user ?? null;
+          setUser(authUser);
+
+          if (event === 'SIGNED_IN' && authUser) {
+            await fetchProfile(authUser);
+            if (mounted) setLoading(false);
+          } else if (event === 'SIGNED_OUT') {
+            setProfile(null);
+            setRole(null);
+            if (mounted) setLoading(false);
+          } else if (event === 'USER_UPDATED' && authUser) {
+            await fetchProfile(authUser);
+          } else if (event === 'TOKEN_REFRESHED' && authUser) {
+            await fetchProfile(authUser);
+          }
         }
-      }
-    );
+      );
+      subscription = authSubscription?.data?.subscription ?? null;
+    } catch (error) {
+      console.error('Error setting up auth listener:', error);
+    }
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      if (subscription?.unsubscribe) {
+        subscription.unsubscribe();
+      }
     };
   }, [fetchProfile]);
 

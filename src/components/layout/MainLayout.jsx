@@ -2,11 +2,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
-<<<<<<< HEAD
 import { useRolePermissions } from '../../hooks/useRolePermissions';
-=======
-import { supabase } from '../../lib/supabase';
->>>>>>> modul-PPM
 import { ROLE_LABELS, ROLES } from '../../lib/constants';
 import ThemeToggle from '../ThemeToggle';
 import BrandLogo from '../BrandLogo';
@@ -15,14 +11,9 @@ import {
   Users, User, LogOut, Menu, X,
   ChevronDown, FolderTree, MapPin, Building2,
   Truck, Package, Home, Bell, Search, Settings,
-<<<<<<< HEAD
   Wrench, Shield, Calendar, AlertCircle, AlertTriangle,
-  HelpCircle, Smartphone, Download, BellRing, UserCheck,
-  FileText, History, Lock
-=======
-  Wrench, Shield, Calendar, CalendarDays, AlertCircle, AlertTriangle,
-  HelpCircle, Smartphone, Download, BellRing, UserCheck, ClipboardCheck, MessageSquare
->>>>>>> modul-PPM
+  HelpCircle, Smartphone, Download, BellRing, UserCheck, FileText,
+  MessageSquare, ClipboardCheck, Lock
 } from 'lucide-react';
 
 export default function MainLayout() {
@@ -84,42 +75,36 @@ export default function MainLayout() {
   const roleLabel = role ? ROLE_LABELS[role.role_name] || role.role_name : '-';
 
   const navItems = [
-    { to: '/dashboard', icon: Home, label: 'Dashboard' },
-    ...(role?.role_name === ROLES.SUPER_ADMIN
-      ? [
-          { to: '/users', icon: Users, label: 'Pengguna' },
-          { to: '/roles', icon: Shield, label: 'Role & Hak Akses' },
-          { to: '/roles/permissions', icon: Lock, label: 'Akses Modul per Role' },
-        ]
-      : []),
+    { to: '/dashboard', icon: Home, label: 'Dashboard', moduleKey: 'dashboard' },
+    { to: '/users', icon: Users, label: 'Pengguna', moduleKey: 'users' },
+    { to: '/roles', icon: Shield, label: 'Role & Hak Akses', moduleKey: 'roles' },
+    { to: '/roles/permissions', icon: Lock, label: 'Akses Modul per Role', moduleKey: 'roles' },
   ];
 
   const masterDataItems = [
-    { to: '/categories', icon: FolderTree, label: 'Kategori Aset', roles: ['super_admin', 'hrd'] },
-    { to: '/locations', icon: MapPin, label: 'Lokasi Aset', roles: ['super_admin', 'hrd'] },
-    { to: '/departments', icon: Building2, label: 'Struktur Organisasi', roles: ['super_admin'] },
-    { to: '/asset-responsibles', icon: UserCheck, label: 'Penanggung Jawab', roles: ['super_admin', 'hrd'] },
-    { to: '/vendors', icon: Truck, label: 'Vendor', roles: ['super_admin', 'hrd'] },
+    { to: '/categories', icon: FolderTree, label: 'Kategori Aset', moduleKey: 'categories' },
+    { to: '/locations', icon: MapPin, label: 'Lokasi Aset', moduleKey: 'locations' },
+    { to: '/departments', icon: Building2, label: 'Struktur Organisasi', moduleKey: 'departments' },
+    { to: '/asset-responsibles', icon: UserCheck, label: 'Penanggung Jawab', moduleKey: 'asset_responsibles' },
+    { to: '/vendors', icon: Truck, label: 'Vendor', moduleKey: 'vendors' },
   ];
 
   const assetItems = [
-    { to: '/assets', icon: Package, label: 'Daftar Aset' },
+    { to: '/assets', icon: Package, label: 'Daftar Aset', moduleKey: 'assets' },
   ];
 
   const maintenanceItems = [
-    { to: '/maintenance/schedules', icon: Calendar, label: 'Jadwal Pemeliharaan' },
-<<<<<<< HEAD
-    { to: '/maintenance/executions', icon: History, label: 'Pelaksanaan Pemeliharaan' },
-    { to: '/maintenance/drafts', icon: FileText, label: 'Draft Pemeliharaan', roles: ['super_admin', 'hrd'] },
-=======
-    { to: '/schedule-executions', icon: CalendarDays, label: 'Pelaksanaan Jadwal' },
->>>>>>> modul-PPM
-    { to: '/maintenance/types', icon: FolderTree, label: 'Jenis Pemeliharaan', roles: ['super_admin', 'hrd'] },
+    { to: '/maintenance/schedules', icon: Calendar, label: 'Jadwal Pemeliharaan', moduleKey: 'maintenance_schedules' },
+    { to: '/maintenance/types', icon: FolderTree, label: 'Jenis Pemeliharaan', moduleKey: 'maintenance_types' },
   ];
 
   const { hasAccess } = useRolePermissions();
-  const canAccessMasterData = role && ['super_admin', 'hrd'].includes(role.role_name);
-  const canAccessMaintenance = role && ['super_admin', 'hrd', 'direksi', 'pelaksana'].includes(role.role_name);
+  const visibleNavItems = navItems.filter(item => !item.moduleKey || hasAccess(item.moduleKey));
+  const visibleMasterDataItems = masterDataItems.filter(item => !item.moduleKey || hasAccess(item.moduleKey));
+  const visibleAssetItems = assetItems.filter(item => !item.moduleKey || hasAccess(item.moduleKey));
+  const visibleMaintenanceItems = maintenanceItems.filter(item => !item.moduleKey || hasAccess(item.moduleKey));
+  const showMasterDataSection = visibleMasterDataItems.length > 0;
+  const showMaintenanceSection = visibleMaintenanceItems.length > 0;
 
   const initials = profile?.full_name?.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'U';
 
@@ -183,7 +168,7 @@ export default function MainLayout() {
         {/* Nav */}
         <nav className="relative flex-1 overflow-y-auto p-3 space-y-0.5 h-[calc(100vh-14rem)]">
           <SectionLabel>Menu</SectionLabel>
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -195,31 +180,25 @@ export default function MainLayout() {
             </NavLink>
           ))}
 
-          {canAccessMasterData && (
+          {showMasterDataSection && (
             <>
               <SectionLabel>Master Data</SectionLabel>
-              {masterDataItems.map((item) => {
-                const itemRoles = item.roles || ['super_admin', 'hrd'];
-                const canAccessItem = role && itemRoles.includes(role.role_name);
-                if (!canAccessItem) return null;
-
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => setSidebarOpen(false)}
-                    className={navLinkClass}
-                  >
-                    <item.icon size={16} className="flex-shrink-0" />
-                    {item.label}
-                  </NavLink>
-                );
-              })}
+              {visibleMasterDataItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setSidebarOpen(false)}
+                  className={navLinkClass}
+                >
+                  <item.icon size={16} className="flex-shrink-0" />
+                  {item.label}
+                </NavLink>
+              ))}
             </>
           )}
 
           <SectionLabel>Aset</SectionLabel>
-          {assetItems.map((item) => (
+          {visibleAssetItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -232,7 +211,7 @@ export default function MainLayout() {
           ))}
 
           <SectionLabel>SDM & Kontrak</SectionLabel>
-          {canAccessMasterData && (
+          {hasAccess('employees') && (
             <NavLink
               to="/employees"
               onClick={() => setSidebarOpen(false)}
@@ -242,69 +221,74 @@ export default function MainLayout() {
               Data Karyawan
             </NavLink>
           )}
-          <NavLink
-            to="/contracts"
-            onClick={() => setSidebarOpen(false)}
-            className={navLinkClass}
-          >
-            <FileText size={16} className="flex-shrink-0" />
-            Daftar Kontrak
-          </NavLink>
-          {canAccessMasterData && (
-            <><NavLink
+          {hasAccess('contracts') && (
+            <NavLink
+              to="/contracts"
+              onClick={() => setSidebarOpen(false)}
+              className={navLinkClass}
+            >
+              <FileText size={16} className="flex-shrink-0" />
+              Daftar Kontrak
+            </NavLink>
+          )}
+          {hasAccess('contract_types') && (
+            <NavLink
               to="/contracts/types"
               onClick={() => setSidebarOpen(false)}
               className={navLinkClass}
             >
               <FolderTree size={16} className="flex-shrink-0" />
               Jenis Kontrak
-            </NavLink></>
+            </NavLink>
           )}
 
-          {canAccessMaintenance && (
+          {showMaintenanceSection && (
             <>
               <SectionLabel>Pemeliharaan</SectionLabel>
-              {maintenanceItems.map((item) => {
-                const itemRoles = item.roles || ['super_admin', 'hrd', 'direksi', 'pelaksana'];
-                const canAccessItem = role && itemRoles.includes(role.role_name);
-                if (!canAccessItem) return null;
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => setSidebarOpen(false)}
-                    className={navLinkClass}
-                  >
-                    <item.icon size={16} className="flex-shrink-0" />
-                    {item.label}
-                  </NavLink>
-                );
-              })}
+              {visibleMaintenanceItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setSidebarOpen(false)}
+                  className={navLinkClass}
+                >
+                  <item.icon size={16} className="flex-shrink-0" />
+                  {item.label}
+                </NavLink>
+              ))}
             </>
           )}
-          <SectionLabel>PPM / Produksi</SectionLabel>
-          <NavLink
-            to="/ppm"
-            onClick={() => setSidebarOpen(false)}
-            className={navLinkClass}
-          >
-            <MessageSquare size={16} className="flex-shrink-0" />
-            <span className="flex-1">Meeting PPM</span>
-          </NavLink>
-          <SectionLabel>Pemeriksaan</SectionLabel>
-          <NavLink
-            to="/inspections"
-            onClick={() => setSidebarOpen(false)}
-            className={navLinkClass}
-          >
-            <ClipboardCheck size={16} className="flex-shrink-0" />
-            <span className="flex-1">Hasil Pemeriksaan</span>
-            {isInspectionReviewer && inspectionPending > 0 && (
-              <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-ink-950 bg-warning-400">
-                {inspectionPending > 99 ? '99+' : inspectionPending}
-              </span>
-            )}
-          </NavLink>
+          {hasAccess('ppm') && (
+            <>
+              <SectionLabel>PPM / Produksi</SectionLabel>
+              <NavLink
+                to="/ppm"
+                onClick={() => setSidebarOpen(false)}
+                className={navLinkClass}
+              >
+                <MessageSquare size={16} className="flex-shrink-0" />
+                <span className="flex-1">Meeting PPM</span>
+              </NavLink>
+            </>
+          )}
+          {hasAccess('inspections') && (
+            <>
+              <SectionLabel>Pemeriksaan</SectionLabel>
+              <NavLink
+                to="/inspections"
+                onClick={() => setSidebarOpen(false)}
+                className={navLinkClass}
+              >
+                <ClipboardCheck size={16} className="flex-shrink-0" />
+                <span className="flex-1">Hasil Pemeriksaan</span>
+                {isInspectionReviewer && inspectionPending > 0 && (
+                  <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-ink-950 bg-warning-400">
+                    {inspectionPending > 99 ? '99+' : inspectionPending}
+                  </span>
+                )}
+              </NavLink>
+            </>
+          )}
                   {role?.role_name === ROLES.SUPER_ADMIN && (
             <>
               <SectionLabel>Pengaturan</SectionLabel>

@@ -654,7 +654,7 @@ export default function AssetFormPage() {
                     </div>
                   ) : assetResponsibles.length === 0 ? (
                     <div className="p-3 rounded-lg border border-warning-500/20 bg-warning-500/10 text-sm text-warning-300">
-                      Belum ada master penanggung jawab aktif. Tambahkan dulu di menu Master Data > Penanggung Jawab.
+                      Belum ada master penanggung jawab aktif. Tambahkan dulu di menu Master Data &gt; Penanggung Jawab.
                     </div>
                   ) : (
                     <div>

@@ -34,6 +34,8 @@ CROSS JOIN (
   SELECT 'maintenance_executions' UNION ALL
   SELECT 'maintenance_drafts' UNION ALL
   SELECT 'maintenance_types' UNION ALL
+  SELECT 'ppm' UNION ALL
+  SELECT 'inspections' UNION ALL
   SELECT 'notifications' UNION ALL
   SELECT 'settings' UNION ALL
   SELECT 'system_notification_test' UNION ALL
@@ -60,6 +62,8 @@ CROSS JOIN (
   SELECT 'maintenance_executions' UNION ALL
   SELECT 'maintenance_drafts' UNION ALL
   SELECT 'maintenance_types' UNION ALL
+  SELECT 'ppm' UNION ALL
+  SELECT 'inspections' UNION ALL
   SELECT 'notifications' UNION ALL
   SELECT 'profile'
 ) m
@@ -76,6 +80,8 @@ CROSS JOIN (
   SELECT 'contracts' UNION ALL
   SELECT 'maintenance_schedules' UNION ALL
   SELECT 'maintenance_executions' UNION ALL
+  SELECT 'ppm' UNION ALL
+  SELECT 'inspections' UNION ALL
   SELECT 'notifications' UNION ALL
   SELECT 'profile'
 ) m
@@ -91,6 +97,8 @@ CROSS JOIN (
   SELECT 'assets' UNION ALL
   SELECT 'maintenance_schedules' UNION ALL
   SELECT 'maintenance_executions' UNION ALL
+  SELECT 'ppm' UNION ALL
+  SELECT 'inspections' UNION ALL
   SELECT 'notifications' UNION ALL
   SELECT 'profile'
 ) m
@@ -107,7 +115,18 @@ CREATE POLICY "Super admin can view all role permissions"
     EXISTS (
       SELECT 1 FROM user_profiles up
       JOIN roles r ON up.role_id = r.id
-      WHERE up.id = auth.uid() AND r.role_name = 'super_admin'
+      WHERE up.auth_user_id = auth.uid() AND r.role_name = 'super_admin'
+    )
+  );
+
+-- Policy: Role member can view permissions for their own role
+CREATE POLICY "Role member can view own role permissions"
+  ON role_permissions FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM user_profiles up
+      WHERE up.auth_user_id = auth.uid()
+        AND up.role_id = role_permissions.role_id
     )
   );
 
@@ -118,13 +137,13 @@ CREATE POLICY "Super admin can manage role permissions"
     EXISTS (
       SELECT 1 FROM user_profiles up
       JOIN roles r ON up.role_id = r.id
-      WHERE up.id = auth.uid() AND r.role_name = 'super_admin'
+      WHERE up.auth_user_id = auth.uid() AND r.role_name = 'super_admin'
     )
   )
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM user_profiles up
       JOIN roles r ON up.role_id = r.id
-      WHERE up.id = auth.uid() AND r.role_name = 'super_admin'
+      WHERE up.auth_user_id = auth.uid() AND r.role_name = 'super_admin'
     )
   );
