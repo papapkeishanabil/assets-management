@@ -1,17 +1,38 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { ArrowLeft } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { ArrowLeft, Settings2, Pencil, Trash2, Plus, Layers, ChevronUp, ChevronDown } from 'lucide-react';
 import { formatDateLongID, PPM_PO_STATUS_LABELS, PPM_PO_STATUS_COLORS, BADGE_COLOR_CLASSES, isImageDocument } from '../lib/constants';
+import ProductItemModal from '../components/ppm/ProductItemModal';
+import ComponentManagerModal from '../components/ppm/ComponentManagerModal';
+import {
+  fetchPOItems,
+  deletePOItem,
+  swapPOItemSort
+} from '../lib/ppm-m1-helpers';
 
 export default function PPMPoDetailPage() {
   const { meetingId, poId } = useParams();
+  const { profile, role } = useAuth();
   const [po, setPO] = useState(null);
   const [meeting, setMeeting] = useState(null);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [itemModalOpen, setItemModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [componentModalItem, setComponentModalItem] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [expandedItemId, setExpandedItemId] = useState(null);
 
-  const fetchPO = async () => {
+  // Permission check: meeting creator or super_admin can manage items
+  const canManage = role && (
+    role.role_name === 'super_admin' ||
+    (meeting && profile && meeting.created_by === profile.id)
+  );
+
+  const fetchPO = useCallback(async () => {
     setLoading(true);
     try {
       const { data: poData, error: poError } = await supabase
@@ -29,14 +50,66 @@ export default function PPMPoDetailPage() {
         .single();
       if (meetingError) throw meetingError;
       setMeeting(meetingData);
+
+      const poItems = await fetchPOItems(poId, true);
+      setItems(poItems);
     } catch (error) {
       console.error('Error fetching PO:', error);
     } finally {
       setLoading(false);
     }
+  }, [meetingId, poId]);
+
+  useEffect(() => { fetchPO(); }, [fetchPO]);
+
+  // Light refresh - update items/components without full-page loading spinner
+  // Used after adding/editing/deleting components or items so the UI updates
+  // instantly without a page "refresh" feel.
+  const refreshItems = useCallback(async () => {
+    try {
+      const poItems = await fetchPOItems(poId, true);
+      setItems(poItems);
+    } catch (error) {
+      console.error('Error refreshing items:', error);
+    }
+  }, [poId]);
+
+  const handleItemSaved = () => {
+    refreshItems();
   };
 
-  useEffect(() => { fetchPO(); }, [meetingId, poId]);
+  const toggleExpand = (itemId) => {
+    setExpandedItemId(prev => prev === itemId ? null : itemId);
+  };
+
+  const handleDeleteItem = async (item) => {
+    if (!window.confirm('Hapus Item Produk?\n\nSemua komponen pada item ini juga akan dihapus.')) return;
+    setDeletingId(item.id);
+    try {
+      await deletePOItem(item.id);
+      toast.success('Item produk dihapus');
+      refreshItems();
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      toast.error('Gagal menghapus item produk');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const moveItem = async (index, direction) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= items.length) return;
+    const current = items[index];
+    const target = items[targetIndex];
+    try {
+      await swapPOItemSort(current.id, target.id);
+      refreshItems();
+    } catch (error) {
+      console.error('Error reordering items:', error);
+      toast.error('Gagal mengubah urutan item');
+    }
+  };
 
   if (loading) {
     return (
@@ -76,8 +149,13 @@ export default function PPMPoDetailPage() {
         <h1 className="page-title mb-1">{po.po_number}</h1>
         <p className="text-sm text-ink-400">{po.customer_name}</p>
         {po.project_name && <p className="text-sm text-ink-300 mt-1">{po.project_name}</p>}
-        <div className="mt-2">
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <span className={'badge ' + statusBadgeClass}>{statusLabel}</span>
+          {items.length > 0 ? (
+            <span className="badge badge-green">{items.length} Item Produk</span>
+          ) : (
+            <span className="badge badge-yellow">Setup Item Produk Belum Lengkap</span>
+          )}
         </div>
       </div>
 
@@ -112,6 +190,159 @@ export default function PPMPoDetailPage() {
         </div>
       </div>
 
+      {/* ============ PRODUCT ITEM SECTION ============ */}
+      <div className="card mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2">
+            <Layers size={18} className="text-primary-400" />
+            <h2 className="card-title">Produk dalam PO ini</h2>
+          </div>
+          {canManage && (
+            <button
+              onClick={() => { setEditingItem(null); setItemModalOpen(true); }}
+              className="btn-primary"
+            >
+              <Plus size={16} />
+              + Tambah Item Produk
+            </button>
+          )}
+        </div>
+
+        {items.length === 0 ? (
+          <div className="text-center py-10 border border-dashed border-white/10 rounded-lg">
+            <p className="text-sm text-ink-400 mb-1">Belum ada Item Produk</p>
+            {canManage && (
+              <p className="text-xs text-ink-500 mb-3">Tambahkan item produk untuk mulai menyusun komponen</p>
+            )}
+            {canManage && (
+              <button
+                onClick={() => { setEditingItem(null); setItemModalOpen(true); }}
+                className="btn-secondary btn-sm"
+              >
+                <Plus size={14} />Tambah Item Produk
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {items.map((item, index) => {
+              const isExpanded = expandedItemId === item.id;
+              return (
+                <div key={item.id} className="border border-white/10 rounded-lg overflow-hidden">
+                  {/* Header row - clickable to expand */}
+                  <button
+                    onClick={() => toggleExpand(item.id)}
+                    className="w-full text-left p-4 hover:bg-white/[0.02] transition-colors"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary-500/10 text-primary-400 font-bold text-sm flex-shrink-0">
+                          {String(index + 1).padStart(2, '0')}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-base font-semibold text-white mb-1 break-words">{item.item_name}</h3>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-300">
+                            {item.product_types?.name && <span>Jenis: {item.product_types.name}</span>}
+                            {item.quantity != null && <span>Qty: {item.quantity} pcs</span>}
+                            {item.gender_category && <span>Gender: {item.gender_category}</span>}
+                          </div>
+                          <div className="mt-1.5 flex items-center gap-2">
+                            <span className="text-xs text-ink-400">{item.component_count} komponen</span>
+                          </div>
+                          {item.notes && (
+                            <p className="text-xs text-ink-500 mt-1">{item.notes}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="text-ink-400">
+                          {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Action buttons row */}
+                  <div className="flex flex-wrap items-center gap-2 px-4 pb-4">
+                    <button
+                      onClick={() => setComponentModalItem(item)}
+                      className="btn-secondary btn-sm"
+                    >
+                      <Settings2 size={14} />
+                      Kelola Komponen
+                    </button>
+                    {canManage && (
+                      <>
+                        <button
+                          onClick={() => { setEditingItem(item); setItemModalOpen(true); }}
+                          className="p-1.5 text-ink-400 hover:text-white"
+                          title="Edit"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteItem(item)}
+                          disabled={deletingId === item.id}
+                          className="p-1.5 text-ink-400 hover:text-red-400 disabled:opacity-30"
+                          title="Hapus"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                        <div className="flex-1" />
+                        <button
+                          onClick={() => moveItem(index, -1)}
+                          disabled={index === 0 || !canManage}
+                          className="p-1.5 text-ink-400 hover:text-white disabled:opacity-30"
+                          title="Naik"
+                        >
+                          <ChevronUp size={16} />
+                        </button>
+                        <button
+                          onClick={() => moveItem(index, 1)}
+                          disabled={index === items.length - 1 || !canManage}
+                          className="p-1.5 text-ink-400 hover:text-white disabled:opacity-30"
+                          title="Turun"
+                        >
+                          <ChevronDown size={16} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Expandable component list */}
+                  {isExpanded && (
+                    <div className="border-t border-white/10 px-4 py-3 bg-black/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-xs font-medium text-ink-300 uppercase tracking-wide">Komponen</h4>
+                        <span className="text-xs text-ink-400">{item.component_count} komponen</span>
+                      </div>
+                      {item.components && item.components.length > 0 ? (
+                        <div className="space-y-1.5">
+                          {item.components.map((comp, ci) => (
+                            <div key={comp.id} className="flex items-center gap-2 text-sm">
+                              <span className="text-ink-500 font-mono text-xs w-5 flex-shrink-0">{String(ci + 1).padStart(2, '0')}</span>
+                              <span className="text-white truncate">{comp.component_name_snapshot}</span>
+                              {comp.is_custom && (
+                                <span className="badge badge-yellow text-[10px] px-1.5 py-0.5 flex-shrink-0">Custom</span>
+                              )}
+                              {comp.location_label && (
+                                <span className="text-ink-400 text-xs truncate">- {comp.location_label}</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-ink-400">Belum ada komponen. Klik "Kelola Komponen" untuk menambahkan.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       <div className="card">
         <h2 className="card-title mb-4">Dokumen PO</h2>
         {po.document_url ? (
@@ -143,6 +374,23 @@ export default function PPMPoDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Modals */}
+      <ProductItemModal
+        open={itemModalOpen}
+        onClose={() => setItemModalOpen(false)}
+        meetingPoId={poId}
+        profile={profile}
+        item={editingItem}
+        onSaved={handleItemSaved}
+      />
+      <ComponentManagerModal
+        open={!!componentModalItem}
+        onClose={() => setComponentModalItem(null)}
+        item={componentModalItem}
+        profile={profile}
+        onSaved={handleItemSaved}
+      />
     </div>
   );
 }
