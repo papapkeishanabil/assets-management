@@ -51,6 +51,38 @@ export const ASSET_CONDITIONS = {
   RUSAK_BERAT: 'Rusak Berat'
 };
 
+// Inspection lifecycle (pemeriksaan surveyor -> penilaian HRD/Teknisi)
+export const INSPECTION_STATUS = {
+  DRAFT: 'draft',
+  MENUNGGU_PENILAIAN: 'menunggu_penilaian',
+  SELESAI: 'selesai'
+};
+
+export const INSPECTION_STATUS_LABELS = {
+  [INSPECTION_STATUS.DRAFT]: 'Draft',
+  [INSPECTION_STATUS.MENUNGGU_PENILAIAN]: 'Menunggu Penilaian',
+  [INSPECTION_STATUS.SELESAI]: 'Selesai Dinilai'
+};
+
+export const INSPECTION_STATUS_COLORS = {
+  [INSPECTION_STATUS.DRAFT]: 'gray',
+  [INSPECTION_STATUS.MENUNGGU_PENILAIAN]: 'yellow',
+  [INSPECTION_STATUS.SELESAI]: 'green'
+};
+
+// Hasil penilaian kondisi oleh HRD/Teknisi (nilai simpan di DB)
+export const INSPECTION_REVIEW_RESULTS = {
+  LANJUTKAN: 'lanjut_pakai',
+  PERLU_PERHATIAN: 'perlu_perhatian',
+  PERLU_PERBAIKAN: 'perlu_perbaikan'
+};
+
+export const INSPECTION_REVIEW_RESULT_LABELS = {
+  [INSPECTION_REVIEW_RESULTS.LANJUTKAN]: 'Baik, lanjut dipakai',
+  [INSPECTION_REVIEW_RESULTS.PERLU_PERHATIAN]: 'Perlu perhatian',
+  [INSPECTION_REVIEW_RESULTS.PERLU_PERBAIKAN]: 'Perlu segera diperbaiki'
+};
+
 export const ASSET_CONDITION_COLORS = {
   [ASSET_CONDITIONS.SANGAT_BAIK]: 'green',
   [ASSET_CONDITIONS.BAIK]: 'blue',
@@ -162,6 +194,75 @@ export function formatCurrency(value) {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+        maximumFractionDigits: 0
   }).format(value);
 }
+
+// ============================================================
+// PPM (Pre-Production Meeting) Constants
+// ============================================================
+
+// Meeting statuses
+export const PPM_MEETING_STATUS = {
+  SCHEDULED: 'SCHEDULED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+};
+
+export const PPM_MEETING_STATUS_LABELS = {
+  [PPM_MEETING_STATUS.SCHEDULED]: 'Terjadwal',
+  [PPM_MEETING_STATUS.IN_PROGRESS]: 'Sedang Berlangsung',
+  [PPM_MEETING_STATUS.COMPLETED]: 'Selesai',
+  [PPM_MEETING_STATUS.CANCELLED]: 'Dibatalkan'
+};
+
+export const PPM_MEETING_STATUS_COLORS = {
+  [PPM_MEETING_STATUS.SCHEDULED]: 'blue',
+  [PPM_MEETING_STATUS.IN_PROGRESS]: 'yellow',
+  [PPM_MEETING_STATUS.COMPLETED]: 'green',
+  [PPM_MEETING_STATUS.CANCELLED]: 'gray'
+};
+
+// PO statuses
+export const PPM_PO_STATUS = {
+  NOT_STARTED: 'NOT_STARTED',
+  IN_REVIEW: 'IN_REVIEW',
+  COMPLETED: 'COMPLETED'
+};
+
+export const PPM_PO_STATUS_LABELS = {
+  [PPM_PO_STATUS.NOT_STARTED]: 'Belum Dibahas',
+  [PPM_PO_STATUS.IN_REVIEW]: 'Sedang Dibahas',
+  [PPM_PO_STATUS.COMPLETED]: 'Selesai'
+};
+
+export const PPM_PO_STATUS_COLORS = {
+  [PPM_PO_STATUS.NOT_STARTED]: 'gray',
+  [PPM_PO_STATUS.IN_REVIEW]: 'yellow',
+  [PPM_PO_STATUS.COMPLETED]: 'green'
+};
+
+// Badge color class mapping
+export const BADGE_COLOR_CLASSES = {
+  gray: 'badge-gray',
+  yellow: 'badge-yellow',
+  green: 'badge-green',
+  red: 'badge-red',
+  blue: 'badge-blue',
+  orange: 'badge-orange',
+  indigo: 'badge-indigo'
+};
+
+// Allowed document file types
+export const PPM_DOCUMENT_TYPES = {
+  IMAGE: ['image/jpeg', 'image/jpg', 'image/png'],
+  PDF: ['application/pdf']
+};
+
+export const PPM_ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'pdf'];
+export const PPM_FILE_SIZE_LIMIT = 5 * 1024 * 1024; // 5MB
+export const PPM_STORAGE_BUCKET = 'ppm-documents';
+
+// Re-export formatDateLongID from helpers for convenience
+export { formatDateLongID, isImageDocument, isPdfDocument } from './ppm-helpers';

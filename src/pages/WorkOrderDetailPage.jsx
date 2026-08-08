@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { ArrowLeft, ClipboardList, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, ClipboardList, CheckCircle, XCircle, ClipboardCheck } from 'lucide-react';
 import { formatDate, formatCurrency, formatDateTime, WO_STATUS_LABELS, PRIORITY_LABELS } from '../lib/constants';
 
 export default function WorkOrderDetailPage() {
@@ -13,6 +13,7 @@ export default function WorkOrderDetailPage() {
   const [wo, setWo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [inspectionLoading, setInspectionLoading] = useState(false);
 
   useEffect(() => { fetchWO(); }, [id]);
 
@@ -46,6 +47,40 @@ export default function WorkOrderDetailPage() {
       setActionLoading(false);
     }
   };
+
+  const openInspection = async () => {
+    if (!wo) return;
+    setInspectionLoading(true);
+    try {
+      const existing = wo.maintenance_records?.[0];
+      if (existing) {
+        navigate(`/inspections/${existing.id}`);
+        return;
+      }
+      const { data, error } = await supabase
+        .from('maintenance_records')
+        .insert([{
+          work_order_id: wo.id,
+          asset_id: wo.asset_id,
+          maintenance_date: new Date().toISOString().slice(0, 10),
+          work_description: wo.description || wo.maintenance_types?.maintenance_name || 'Pemeriksaan',
+          performed_by: wo.assigned_user_id || profile?.id,
+          inspection_status: 'draft',
+          inspection_photos: [],
+          verification_status: 'menunggu'
+        }])
+        .select('id')
+        .single();
+      if (error) throw error;
+      navigate(`/inspections/${data.id}`);
+    } catch (error) {
+      console.error('openInspection error:', error);
+      toast.error(error.message || 'Gagal membuat pemeriksaan');
+    } finally {
+      setInspectionLoading(false);
+    }
+  };
+
 
   if (loading) return (
     <div className="space-y-6 animate-fade-in">
@@ -170,6 +205,24 @@ export default function WorkOrderDetailPage() {
               )}
             </div>
           </div>
+
+          <div className="card">
+            <h3 className="section-title mb-3">Pemeriksaan Lapangan</h3>
+            <p className="text-sm text-ink-400 mb-3">
+              Surveyor mengumpulkan foto & informasi kondisi aset di lapangan (draft), lalu HRD/Teknisi menilai hasilnya.
+            </p>
+            <button
+              onClick={openInspection}
+              disabled={inspectionLoading}
+              className="btn-primary w-full"
+            >
+              <ClipboardCheck size={16} />
+              {inspectionLoading
+                ? 'Memproses...'
+                : (wo.maintenance_records?.length > 0 ? 'Buka Pemeriksaan' : 'Mulai Pemeriksaan')}
+            </button>
+          </div>
+
 
           <div className="card">
             <h3 className="section-title mb-4">Informasi</h3>

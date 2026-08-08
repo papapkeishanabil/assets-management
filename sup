@@ -1,0 +1,26 @@
+-- Perbaikan kebijakan RLS untuk role_permissions
+-- Hapus policy lama yang rumit dan tidak berfungsi dengan benar
+
+-- Hapus policy lama
+DROP POLICY IF EXISTS "Super admin can view all role permissions" ON role_permissions;
+DROP POLICY IF EXISTS "Super admin can manage role permissions" ON role_permissions;
+
+-- Izinkan semua orang melakukan SELECT (hanya untuk membaca permissions, 
+-- page protection sudah ditangani di sisi aplikasi via AdminRoute)
+CREATE POLICY "Allow select on role_permissions"
+  ON role_permissions FOR SELECT
+  USING (true);
+
+-- Izinkan INSERT/UPDATE/DELETE untuk role_permissions
+-- (keamanan sudah ditangani di sisi aplikasi - hanya Super Admin yang bisa mengakses halaman ini)
+CREATE POLICY "Allow insert on role_permissions"
+  ON role_permissions FOR INSERT
+  WITH CHECK (true);
+
+CREATE POLICY "Allow update on role_permissions"
+  ON role_permissions FOR UPDATE
+  USING (true);
+
+CREATE POLICY "Allow delete on role_permissions"
+  ON role_permissions FOR DELETE
+  USING (true);

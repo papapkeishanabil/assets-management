@@ -3,10 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
+<<<<<<< HEAD
 import { ArrowLeft, Edit, Upload, FileText, Trash2, Wrench, X, Save, Package, ChevronLeft, ChevronRight, ZoomIn, CheckCircle2, History } from 'lucide-react';
 import { formatCurrency, ROLES } from '../lib/constants';
 import { permanentDeleteAsset } from '../lib/asset-helpers';
 import { formatDateID } from '../lib/maintenance-helpers';
+=======
+import { ArrowLeft, Edit, Upload, FileText, Trash2, Wrench, X, Save, Package, ChevronLeft, ChevronRight, ZoomIn, History } from 'lucide-react';
+import { formatDate } from '../lib/constants';
+>>>>>>> modul-PPM
 
 export default function AssetDetailPage() {
   const { id } = useParams();
@@ -17,7 +22,11 @@ export default function AssetDetailPage() {
   const [photos, setPhotos] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [logs, setLogs] = useState([]);
+<<<<<<< HEAD
   const [maintenanceExecutions, setMaintenanceExecutions] = useState([]);
+=======
+  const [maintenance, setMaintenance] = useState([]);
+>>>>>>> modul-PPM
   const [vendors, setVendors] = useState([]);
   const [responsibleAssignments, setResponsibleAssignments] = useState([]);
   const [activeTab, setActiveTab] = useState('info');
@@ -44,7 +53,11 @@ export default function AssetDetailPage() {
     fetchPhotos();
     fetchDocuments();
     fetchLogs();
+<<<<<<< HEAD
     fetchMaintenanceExecutions();
+=======
+    fetchMaintenance();
+>>>>>>> modul-PPM
     fetchVendors();
     fetchResponsibleAssignments();
   }, [id]);
@@ -126,6 +139,7 @@ export default function AssetDetailPage() {
     setLogs(data || []);
   };
 
+<<<<<<< HEAD
   const fetchMaintenanceExecutions = async () => {
     const { data } = await supabase
       .from('maintenance_executions')
@@ -145,6 +159,22 @@ export default function AssetDetailPage() {
     execution.schedule?.maintenance_type?.maintenance_code === 'VISIT';
   const isKerjaBaktiExecution = (execution) =>
     execution.schedule?.maintenance_type?.maintenance_code === 'KERJA-BAKTI';
+=======
+  const fetchMaintenance = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('maintenance_records')
+        .select('*, performed_user:performed_by (full_name), work_orders:work_order_id (work_order_number)')
+        .eq('asset_id', id)
+        .order('maintenance_date', { ascending: false });
+      if (error) throw error;
+      setMaintenance(data || []);
+    } catch (error) {
+      console.error('Error fetching maintenance history:', error);
+    }
+  };
+
+>>>>>>> modul-PPM
 
   const fetchVendors = async () => {
     const { data } = await supabase
@@ -281,8 +311,13 @@ export default function AssetDetailPage() {
     { id: 'technical', label: 'Data Teknis' },
     { id: 'purchase', label: 'Pembelian & Garansi' },
     { id: 'photos', label: `Foto (${photos.length})` },
+<<<<<<< HEAD
     { id: 'documents', label: `Dokumen (${documents.length})` },
     { id: 'maintenance', label: `Pemeliharaan (${maintenanceExecutions.length})` },
+=======
+        { id: 'documents', label: `Dokumen (${documents.length})` },
+    { id: 'maintenance', label: `Pemeliharaan (${maintenance.filter(r => r.inspection_status == null || r.inspection_status === 'selesai').length})` },
+>>>>>>> modul-PPM
     { id: 'activity', label: `Riwayat (${logs.length})` }
   ];
 
@@ -571,6 +606,7 @@ export default function AssetDetailPage() {
           </div>
         )}
 
+<<<<<<< HEAD
         {activeTab === 'maintenance' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -707,6 +743,55 @@ export default function AssetDetailPage() {
         )}
 
         {activeTab === 'activity' && (
+=======
+      {/* Tab: Pemeliharaan (maintenance history) — excludes pending inspections */}
+      {activeTab === 'maintenance' && (() => {
+        const history = maintenance.filter(r => r.inspection_status == null || r.inspection_status === 'selesai');
+        return (
+          <div className="space-y-3">
+            <h3 className="section-title">
+              <Wrench size={16} className="text-primary-400" />
+              <span className="ml-2">Riwayat Pemeliharaan</span>
+            </h3>
+            {history.length === 0 ? (
+              <div className="empty-state py-8">
+                <div className="empty-state-icon"><History size={36} className="text-ink-400" /></div>
+                <p className="empty-state-text">Belum ada riwayat pemeliharaan aset ini</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {history.map(r => (
+                  <div key={r.id} className="p-3 bg-white/[0.03] rounded-lg border border-white/5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Wrench size={14} className="text-primary-400" />
+                        <span className="text-sm font-medium text-white">{formatDate(r.maintenance_date)}</span>
+                        {r.work_orders?.work_order_number && (
+                          <span className="text-xs text-ink-400 font-mono">{r.work_orders.work_order_number}</span>
+                        )}
+                      </div>
+                      {r.inspection_status === 'selesai' && (
+                        <span className={`badge ${r.needs_repair ? 'badge-red' : 'badge-green'}`}>
+                          {r.needs_repair ? 'Perlu Perbaikan' : 'Baik'}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-ink-300 mt-1">{r.work_description || '-'}</p>
+                    <div className="flex gap-4 mt-2 text-xs text-ink-400 flex-wrap">
+                      <span>Pelaksana: {r.performed_user?.full_name || '-'}</span>
+                      {r.cost && <span>Biaya: Rp {Number(r.cost).toLocaleString('id-ID')}</span>}
+                      {r.needs_repair && <span className="text-danger-300 font-medium">Perlu perbaikan</span>}
+                      {r.review_notes && <span>Review: {r.review_notes}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+              {activeTab === 'activity' && (
+>>>>>>> modul-PPM
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="section-title">

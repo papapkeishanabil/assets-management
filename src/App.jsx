@@ -25,8 +25,15 @@ import AssetsPage from './pages/AssetsPage';
 import AssetDetailPage from './pages/AssetDetailPage';
 import AssetFormPage from './pages/AssetFormPage';
 import NotificationsPage from './pages/NotificationsPage';
+import InspectionsPage from './pages/InspectionsPage';
+import InspectionDetailPage from './pages/InspectionDetailPage';
+import ScheduleExecutionsPage from './pages/ScheduleExecutionsPage';
 import SettingsPage from './pages/SettingsPage';
 import SystemNotificationTestPage from './pages/SystemNotificationTestPage';
+import PPMMeetingsPage from './pages/PPMMeetingsPage';
+import PPMCreateMeetingPage from './pages/PPMCreateMeetingPage';
+import PPMMeetingRoomPage from './pages/PPMMeetingRoomPage';
+import PPMPoDetailPage from './pages/PPMPoDetailPage';
 import LoadingScreen from './components/LoadingScreen';
 import { ROLES } from './lib/constants';
 import ContractsPage from './pages/contracts/ContractsPage';
@@ -145,6 +152,9 @@ export default function App() {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="inspections" element={<InspectionsPage />} />
+        <Route path="inspections/:id" element={<InspectionDetailPage />} />
+        <Route path="schedule-executions" element={<ScheduleExecutionsPage />} />
         <Route path="users" element={
           <AdminRoute>
             <UsersPage />
@@ -244,6 +254,10 @@ export default function App() {
             <SystemNotificationTestPage />
           </AdminRoute>
         } />
+        <Route path="ppm" element={<PPMMeetingsPage />} />
+        <Route path="ppm/create" element={<PPMCreateMeetingPage />} />
+        <Route path="ppm/:meetingId" element={<PPMMeetingRoomPage />} />
+        <Route path="ppm/:meetingId/po/:poId" element={<PPMPoDetailPage />} />
       </Route>
 
       {/* Fallback */}

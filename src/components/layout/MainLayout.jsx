@@ -2,7 +2,11 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
+<<<<<<< HEAD
 import { useRolePermissions } from '../../hooks/useRolePermissions';
+=======
+import { supabase } from '../../lib/supabase';
+>>>>>>> modul-PPM
 import { ROLE_LABELS, ROLES } from '../../lib/constants';
 import ThemeToggle from '../ThemeToggle';
 import BrandLogo from '../BrandLogo';
@@ -11,9 +15,14 @@ import {
   Users, User, LogOut, Menu, X,
   ChevronDown, FolderTree, MapPin, Building2,
   Truck, Package, Home, Bell, Search, Settings,
+<<<<<<< HEAD
   Wrench, Shield, Calendar, AlertCircle, AlertTriangle,
   HelpCircle, Smartphone, Download, BellRing, UserCheck,
   FileText, History, Lock
+=======
+  Wrench, Shield, Calendar, CalendarDays, AlertCircle, AlertTriangle,
+  HelpCircle, Smartphone, Download, BellRing, UserCheck, ClipboardCheck, MessageSquare
+>>>>>>> modul-PPM
 } from 'lucide-react';
 
 export default function MainLayout() {
@@ -25,6 +34,28 @@ export default function MainLayout() {
   const [maintenanceOpen, setMaintenanceOpen] = useState(true);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+
+  const [inspectionPending, setInspectionPending] = useState(0);
+
+  const isInspectionReviewer = role && ['super_admin', 'hrd', 'direksi'].includes(role.role_name);
+
+  useEffect(() => {
+    if (!isInspectionReviewer || !profile?.id) return;
+    let mounted = true;
+    const load = async () => {
+      try {
+        const { count } = await supabase
+          .from('maintenance_records')
+          .select('*', { count: 'exact', head: true })
+          .eq('inspection_status', 'menunggu_penilaian');
+        if (mounted) setInspectionPending(count || 0);
+      } catch (e) {
+        console.error('Error loading inspection queue:', e);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [isInspectionReviewer, profile?.id]);
 
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
@@ -77,8 +108,12 @@ export default function MainLayout() {
 
   const maintenanceItems = [
     { to: '/maintenance/schedules', icon: Calendar, label: 'Jadwal Pemeliharaan' },
+<<<<<<< HEAD
     { to: '/maintenance/executions', icon: History, label: 'Pelaksanaan Pemeliharaan' },
     { to: '/maintenance/drafts', icon: FileText, label: 'Draft Pemeliharaan', roles: ['super_admin', 'hrd'] },
+=======
+    { to: '/schedule-executions', icon: CalendarDays, label: 'Pelaksanaan Jadwal' },
+>>>>>>> modul-PPM
     { to: '/maintenance/types', icon: FolderTree, label: 'Jenis Pemeliharaan', roles: ['super_admin', 'hrd'] },
   ];
 
@@ -247,6 +282,29 @@ export default function MainLayout() {
               })}
             </>
           )}
+          <SectionLabel>PPM / Produksi</SectionLabel>
+          <NavLink
+            to="/ppm"
+            onClick={() => setSidebarOpen(false)}
+            className={navLinkClass}
+          >
+            <MessageSquare size={16} className="flex-shrink-0" />
+            <span className="flex-1">Meeting PPM</span>
+          </NavLink>
+          <SectionLabel>Pemeriksaan</SectionLabel>
+          <NavLink
+            to="/inspections"
+            onClick={() => setSidebarOpen(false)}
+            className={navLinkClass}
+          >
+            <ClipboardCheck size={16} className="flex-shrink-0" />
+            <span className="flex-1">Hasil Pemeriksaan</span>
+            {isInspectionReviewer && inspectionPending > 0 && (
+              <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-ink-950 bg-warning-400">
+                {inspectionPending > 99 ? '99+' : inspectionPending}
+              </span>
+            )}
+          </NavLink>
                   {role?.role_name === ROLES.SUPER_ADMIN && (
             <>
               <SectionLabel>Pengaturan</SectionLabel>
