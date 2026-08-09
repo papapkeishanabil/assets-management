@@ -3,10 +3,17 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "scripts": {
+    "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:ppm:m1": "node scripts/test-ppm-m1.js",
+    "test:ppm:m1.1": "node scripts/test-ppm-m1.1.js",
+    "test:ppm:m2": "node scripts/test-ppm-m2.js",
+    "test:ppm": "node scripts/test-ppm-m1.js && node scripts/test-ppm-m1.1.js && node scripts/test-ppm-m2.js"
+  },
+  "engines": {
+    "node": ">=22.15.0"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -17,8 +24,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",
-    "react-router-dom": "^6.20.0",
-    "vite-plugin-pwa": "^0.17.4"
+    "react-router-dom": "^6.20.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
@@ -26,6 +32,7 @@
     "postcss": "^8.4.32",
     "sharp": "^0.35.3",
     "tailwindcss": "^3.4.0",
-    "vite": "^5.0.8"
+    "vite": "^5.0.8",
+    "vite-plugin-pwa": "^0.17.5"
   }
 }

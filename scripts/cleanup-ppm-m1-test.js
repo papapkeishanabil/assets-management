@@ -1,8 +1,10 @@
+import { SUPABASE_URL as url, SUPABASE_SERVICE_KEY as key , assertServiceKey} from './_ppm-env.js';
+assertServiceKey();
 // Cleanup orphaned PPM M1 test data
 // SAFE: only deletes items with the __TEST_M1__ prefix marker,
 // so real user data is NEVER affected.
-const url = 'https://uwlxkwyauxwewoexfgwi.supabase.co';
-const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3bHhrd3lhdXh3ZXdvZXhmZ3dpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NDYwODk4MiwiZXhwIjoyMTAwMTg0OTgyfQ.1Axuw7mObIbzeFiG7ZeKQCmzm-AVtyxaPbbAxfbeo3k';
+
+
 const h = { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' };
 
 async function run() {

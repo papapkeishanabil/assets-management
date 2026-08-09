@@ -26,6 +26,7 @@ import {
   previewDefaultComponents,
   applyDefaultComponents
 } from '../../lib/ppm-m1-helpers';
+import { ensureStandardSpecsForComponents } from '../../lib/ppm-m2-helpers';
 
 // ============================================================
 // Sortable Component Item
@@ -256,6 +257,11 @@ export default function ComponentManagerModal({ open, onClose, item, profile, on
           is_custom: false,
           notes: form.notes || null,
           created_by: profile?.id || null
+        }).then(async (created) => {
+          // M2: clone standard specification definitions utk component baru
+          if (created && created.id) {
+            await ensureStandardSpecsForComponents([created], profile?.id || null);
+          }
         });
         toast.success('Komponen ditambahkan');
       }
@@ -311,6 +317,14 @@ export default function ComponentManagerModal({ open, onClose, item, profile, on
       // correct even if components changed between preview and confirm.
       const result = await applyDefaultComponents(item.id, item.product_type_id, profile?.id || null);
       toast.success(`${result.addedCount} komponen dasar ditambahkan`);
+      // M2: clone standard specification definitions utk component baru hasil apply
+      if (result.added && result.added.length) {
+        try {
+          await ensureStandardSpecsForComponents(result.added, profile?.id || null);
+        } catch (specErr) {
+          console.error('Error auto-applying standard specs:', specErr);
+        }
+      }
       setApplyPreview(null);
       await loadComponents();
       onSaved();

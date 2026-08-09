@@ -3,15 +3,29 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Settings2, Pencil, Trash2, Plus, Layers, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Settings2, Pencil, Trash2, Plus, Layers, ChevronUp, ChevronDown, ShieldCheck, ClipboardList } from 'lucide-react';
 import { formatDateLongID, PPM_PO_STATUS_LABELS, PPM_PO_STATUS_COLORS, BADGE_COLOR_CLASSES, isImageDocument } from '../lib/constants';
 import ProductItemModal from '../components/ppm/ProductItemModal';
 import ComponentManagerModal from '../components/ppm/ComponentManagerModal';
+import SpecificationManagerModal from '../components/ppm/SpecificationManagerModal';
+import TechnicalReviewModal from '../components/ppm/TechnicalReviewModal';
 import {
   fetchPOItems,
   deletePOItem,
   swapPOItemSort
 } from '../lib/ppm-m1-helpers';
+import {
+  fetchSpecsForComponents,
+  computeReviewProgress,
+  formatSpecValue,
+  REVIEW_STATUS_LABELS,
+  REVIEW_STATUS_COLORS,
+    SOURCE_TYPE_LABELS,
+  getSpecDisplayLabel,
+  hasSpecValue,
+    isSpecificationReviewable,
+  getSpecHelperText,
+} from '../lib/ppm-m2-helpers';
 
 export default function PPMPoDetailPage() {
   const { meetingId, poId } = useParams();
@@ -26,11 +40,41 @@ export default function PPMPoDetailPage() {
   const [deletingId, setDeletingId] = useState(null);
   const [expandedItemId, setExpandedItemId] = useState(null);
 
+  // M2: specification state
+  const [specManagerComponent, setSpecManagerComponent] = useState(null);
+  const [techReviewItem, setTechReviewItem] = useState(null);
+  const [expandedCompId, setExpandedCompId] = useState(null);
+
   // Permission check: meeting creator or super_admin can manage items
   const canManage = role && (
     role.role_name === 'super_admin' ||
     (meeting && profile && meeting.created_by === profile.id)
   );
+
+  // M2: attach specifications + review progress to loaded items/components
+  const enrichItemsWithSpecs = useCallback(async (poItems) => {
+    if (!poItems || poItems.length === 0) return poItems;
+    const compIds = [];
+    poItems.forEach((it) => (it.components || []).forEach((c) => compIds.push(c.id)));
+    const specsMap = compIds.length ? await fetchSpecsForComponents(compIds) : {};
+
+    return poItems.map((it) => {
+          let total = 0, done = 0, discussion = 0, pending = 0, reviewableTotal = 0, reviewableSelesai = 0;
+      const components = (it.components || []).map((c) => {
+        const specs = specsMap[c.id] || [];
+        c.specs = specs;
+        c.specSummary = buildSpecSummary(specs);
+        c.specDoneCount = specs.filter((s) => ['CONFIRMED', 'RESOLVED'].includes(s.review_status)).length;
+        const p = computeReviewProgress(specs);
+                total += p.total; done += p.selesai; discussion += p.discussion; pending += p.pending;
+        reviewableTotal += p.reviewableTotal; reviewableSelesai += p.reviewableSelesai;
+        return c;
+      });
+      it.components = components;
+      it.reviewProgress = { total, selesai: done, reviewableTotal, reviewableSelesai, discussion, pending };
+      return it;
+    });
+  }, []);
 
   const fetchPO = useCallback(async () => {
     setLoading(true);
@@ -52,13 +96,14 @@ export default function PPMPoDetailPage() {
       setMeeting(meetingData);
 
       const poItems = await fetchPOItems(poId, true);
-      setItems(poItems);
+      const enriched = await enrichItemsWithSpecs(poItems);
+      setItems(enriched);
     } catch (error) {
       console.error('Error fetching PO:', error);
     } finally {
       setLoading(false);
     }
-  }, [meetingId, poId]);
+  }, [meetingId, poId, enrichItemsWithSpecs]);
 
   useEffect(() => { fetchPO(); }, [fetchPO]);
 
@@ -68,11 +113,12 @@ export default function PPMPoDetailPage() {
   const refreshItems = useCallback(async () => {
     try {
       const poItems = await fetchPOItems(poId, true);
-      setItems(poItems);
+      const enriched = await enrichItemsWithSpecs(poItems);
+      setItems(enriched);
     } catch (error) {
       console.error('Error refreshing items:', error);
     }
-  }, [poId]);
+  }, [poId, enrichItemsWithSpecs]);
 
   const handleItemSaved = () => {
     refreshItems();
@@ -139,6 +185,19 @@ export default function PPMPoDetailPage() {
   const statusBadgeClass = BADGE_COLOR_CLASSES[statusColorKey] || 'badge-gray';
   const statusLabel = PPM_PO_STATUS_LABELS[po.status] || po.status;
 
+  // M2: PO-level Technical Review summary aggregate
+  const poReview = items.reduce((acc, it) => {
+    const p = it.reviewProgress || { total: 0, selesai: 0, discussion: 0, pending: 0 };
+      acc.total += p.total; acc.selesai += p.selesai; acc.discussion += p.discussion; acc.pending += p.pending; acc.reviewableTotal += p.reviewableTotal; acc.reviewableSelesai += p.reviewableSelesai;
+    return acc;
+  }, { total: 0, selesai: 0, reviewableTotal: 0, reviewableSelesai: 0, discussion: 0, pending: 0 });
+
+  // Handler to open Specification Manager for a specific component
+  const openSpecManager = (component) => {
+    setExpandedCompId(component.id);
+    setSpecManagerComponent(component);
+  };
+
   return (
     <div className="page-container">
       <div className="mb-6">
@@ -188,6 +247,42 @@ export default function PPMPoDetailPage() {
             </div>
           )}
         </div>
+      </div>
+
+
+      {/* ============ TECHNICAL REVIEW SUMMARY ============ */}
+      <div className="card mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={18} className="text-primary-400" />
+            <h2 className="card-title">Technical Review</h2>
+          </div>
+          {items.length > 0 && (
+            <span className={'badge ' + BADGE_COLOR_CLASSES[(poReview.reviewableTotal && poReview.reviewableSelesai === poReview.reviewableTotal) ? 'green' : 'yellow']}>
+              TOTAL {poReview.reviewableSelesai} / {poReview.reviewableTotal} selesai
+            </span>
+          )}
+        </div>
+        {items.length === 0 ? (
+          <p className="text-sm text-ink-400">Belum ada item untuk technical review.</p>
+        ) : (
+          <div className="space-y-2">
+            {items.map((it) => {
+              const p = it.reviewProgress || { total: 0, selesai: 0, discussion: 0, pending: 0 };
+              return (
+                <div key={it.id} className="flex flex-wrap items-center justify-between gap-2 border border-white/10 rounded-lg px-3 py-2">
+                  <span className="text-sm text-white truncate">{it.item_name}</span>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-ink-300 font-mono">{p.selesai} / {p.total}</span>
+                    {p.discussion > 0 && <span className="badge badge-orange">{p.discussion} perlu dibahas</span>}
+                    {p.pending > 0 && <span className="badge badge-yellow">{p.pending} pending</span>}
+                    {p.total === 0 && <span className="badge badge-gray">belum ada spesifikasi</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* ============ PRODUCT ITEM SECTION ============ */}
@@ -248,6 +343,11 @@ export default function PPMPoDetailPage() {
                           </div>
                           <div className="mt-1.5 flex items-center gap-2">
                             <span className="text-xs text-ink-400">{item.component_count} komponen</span>
+                            {item.reviewProgress && (
+                              <span className="text-xs text-ink-300">
+                                • Technical Review: <span className="text-primary-400 font-medium">{item.reviewProgress.reviewableSelesai || 0}/{item.reviewProgress.reviewableTotal || item.reviewProgress.total}</span> selesai
+                              </span>
+                            )}
                           </div>
                           {item.notes && (
                             <p className="text-xs text-ink-500 mt-1">{item.notes}</p>
@@ -270,6 +370,14 @@ export default function PPMPoDetailPage() {
                     >
                       <Settings2 size={14} />
                       Kelola Komponen
+                    </button>
+                    <button
+                      onClick={() => setTechReviewItem(item)}
+                      className="btn-secondary btn-sm"
+                      title="Mulai / lanjutkan Technical Review item ini"
+                    >
+                      <ClipboardList size={14} />
+                      Mulai Technical Review
                     </button>
                     {canManage && (
                       <>
@@ -317,19 +425,69 @@ export default function PPMPoDetailPage() {
                         <span className="text-xs text-ink-400">{item.component_count} komponen</span>
                       </div>
                       {item.components && item.components.length > 0 ? (
-                        <div className="space-y-1.5">
-                          {item.components.map((comp, ci) => (
-                            <div key={comp.id} className="flex items-center gap-2 text-sm">
-                              <span className="text-ink-500 font-mono text-xs w-5 flex-shrink-0">{String(ci + 1).padStart(2, '0')}</span>
-                              <span className="text-white truncate">{comp.component_name_snapshot}</span>
-                              {comp.is_custom && (
-                                <span className="badge badge-yellow text-[10px] px-1.5 py-0.5 flex-shrink-0">Custom</span>
-                              )}
-                              {comp.location_label && (
-                                <span className="text-ink-400 text-xs truncate">- {comp.location_label}</span>
-                              )}
-                            </div>
-                          ))}
+                        <div className="space-y-2">
+                          {item.components.map((comp, ci) => {
+                            const compExpanded = expandedCompId === comp.id;
+                            const compLabel = comp.location_label
+                              ? comp.component_name_snapshot + ' - ' + comp.location_label
+                              : comp.component_name_snapshot;
+                                                        const totalSpecs = comp.specs ? comp.specs.filter((s) => isSpecificationReviewable(s)).length : 0;
+                            return (
+                              <div key={comp.id} className="border border-white/10 rounded-lg overflow-hidden">
+                                <button
+                                  onClick={() => { setExpandedItemId(item.id); setExpandedCompId(prev => prev === comp.id ? null : comp.id); }}
+                                  className="w-full text-left px-3 py-2 hover:bg-white/[0.02] flex items-center justify-between gap-2"
+                                >
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <span className="text-ink-500 font-mono text-xs w-5 flex-shrink-0">{String(ci + 1).padStart(2, '0')}</span>
+                                    <span className="text-sm text-white truncate">{compLabel}</span>
+                                    {comp.is_custom && (
+                                      <span className="badge badge-yellow text-[10px] px-1.5 py-0.5 flex-shrink-0">Custom</span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2 text-xs flex-shrink-0">
+                                    {comp.specSummary && comp.specSummary.length > 0 && (
+                                      <span className="text-ink-400 hidden sm:inline truncate max-w-[260px]">{comp.specSummary.join(' • ')}</span>
+                                    )}
+                                    <span className={'badge ' + BADGE_COLOR_CLASSES[(totalSpecs && comp.specDoneCount === totalSpecs) ? 'green' : 'gray']}>
+                                      {comp.specDoneCount}/{totalSpecs}
+                                    </span>
+                                    {compExpanded ? <ChevronUp size={14} className="text-ink-400" /> : <ChevronDown size={14} className="text-ink-400" />}
+                                  </div>
+                                </button>
+
+                                {compExpanded && (
+                                  <div className="border-t border-white/10 px-3 py-3 space-y-2 bg-black/20">
+                                    {comp.specs && comp.specs.length > 0 ? (
+                                      comp.specs.map((spec) => (
+                                        <div key={spec.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                                          <div className="min-w-0">
+                                                                                        <p className="text-white font-medium">{getSpecDisplayLabel(spec)}</p>
+                                            {getSpecHelperText(spec) && <p className="text-xs text-ink-400">{getSpecHelperText(spec)}</p>}
+                                            <p className="text-xs text-ink-400">
+                                              {formatSpecValue(spec)}
+                                              <span className="mx-1">•</span>
+                                              Sumber: {SOURCE_TYPE_LABELS[spec.source_type] || spec.source_type}
+                                            </p>
+                                          </div>
+                                          <span className={'badge ' + (BADGE_COLOR_CLASSES[REVIEW_STATUS_COLORS[spec.review_status]] || 'badge-gray')}>
+                                            {REVIEW_STATUS_LABELS[spec.review_status]}
+                                          </span>
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <p className="text-xs text-ink-400">Belum ada spesifikasi. Gunakan "Kelola Spesifikasi".</p>
+                                    )}
+                                    <div className="pt-1">
+                                      <button onClick={() => openSpecManager(comp)} className="btn-secondary btn-sm">
+                                        <Settings2 size={14} /> Kelola Spesifikasi
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       ) : (
                         <p className="text-sm text-ink-400">Belum ada komponen. Klik "Kelola Komponen" untuk menambahkan.</p>
@@ -391,6 +549,30 @@ export default function PPMPoDetailPage() {
         profile={profile}
         onSaved={handleItemSaved}
       />
+      <SpecificationManagerModal
+        open={!!specManagerComponent}
+        onClose={() => setSpecManagerComponent(null)}
+        component={specManagerComponent}
+        profile={profile}
+        onSaved={handleItemSaved}
+      />
+      <TechnicalReviewModal
+        open={!!techReviewItem}
+        onClose={() => setTechReviewItem(null)}
+        item={techReviewItem}
+        profile={profile}
+        onSaved={handleItemSaved}
+      />
     </div>
   );
+}
+
+// ============================================================
+// M2 helper: ringkasan singkat spesifikasi sebuah komponen
+// Contoh: "Regular • Tinggi 5 cm" / "Gamblok • 12 x 15 cm"
+// ============================================================
+function buildSpecSummary(specs) {
+  // M2.1: summary hanya spesifikasi yang mempunyai nilai (jangan memenuhi UI dengan field kosong).
+  const filled = (specs || []).filter((s) => hasSpecValue(s)).slice(0, 3);
+  return filled.map((s) => getSpecDisplayLabel(s) + String.fromCharCode(8212) + formatSpecValue(s));
 }

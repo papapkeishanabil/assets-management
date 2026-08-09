@@ -1,6 +1,8 @@
+import { SUPABASE_URL as url, SUPABASE_SERVICE_KEY as key , assertServiceKey} from './_ppm-env.js';
+assertServiceKey();
 import { createClient } from '@supabase/supabase-js';
-const url = 'https://uwlxkwyauxwewoexfgwi.supabase.co';
-const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3bHhrd3lhdXh3ZXdvZXhmZ3dpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NDYwODk4MiwiZXhwIjoyMTAwMTg0OTgyfQ.1Axuw7mObIbzeFiG7ZeKQCmzm-AVtyxaPbbAxfbeo3k';
+
+
 const supabase = createClient(url, key);
 const { data, error } = await supabase.from('product_type_default_components').select('product_type_id,product_types(code)');
 const map = {};

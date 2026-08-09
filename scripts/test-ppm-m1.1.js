@@ -1,3 +1,5 @@
+import { SUPABASE_URL as url, SUPABASE_SERVICE_KEY as SERVICE_KEY, SUPABASE_ANON_KEY as ANON_KEY , assertServiceKey} from './_ppm-env.js';
+assertServiceKey();
 // ============================================================
 // PPM M1.1 Integration Test — Default Component Set
 // Verifies: Product Type -> Default Component Set -> clone into Product Item
@@ -15,10 +17,9 @@
 // Credentials are loaded from the environment (NOT hardcoded in source) to avoid
 // persisting the service_role secret in the repo. Pass at runtime, e.g.:
 //   SUPABASE_SERVICE_KEY=... node scripts/test-ppm-m1.1.js
-const url = process.env.SUPABASE_URL || 'https://uwlxkwyauxwewoexfgwi.supabase.co';
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_F3toHzWwtKCEcCnz8rl6_w_-Jd8NlbQ'; // publishable (public) key
-if (!SERVICE_KEY) { console.error('Missing SUPABASE_SERVICE_KEY env var. Aborting.'); process.exit(1); }
+
+
+
 const svcH = { apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' };
 
 // Unique marker for this run. Cleanup matches item_name LIKE %<RUN_ID>%.

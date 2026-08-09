@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { X, CheckSquare, Square, Layers } from 'lucide-react';
-import { fetchProductTypes, createPOItemWithDefaults, updatePOItem, getMaxPOItemSortOrder, fetchDefaultComponents } from '../../lib/ppm-m1-helpers';
+import { fetchProductTypes, createPOItemWithDefaults, updatePOItem, getMaxPOItemSortOrder, fetchDefaultComponents, fetchItemComponents } from '../../lib/ppm-m1-helpers';
+import { ensureStandardSpecsForComponents } from '../../lib/ppm-m2-helpers';
 
 const GENDER_OPTIONS = [
   { value: '', label: 'Tidak Ditentukan' },
@@ -168,7 +169,7 @@ export default function ProductItemModal({ open, onClose, meetingPoId, profile, 
             }));
         }
 
-        await createPOItemWithDefaults({
+        const created = await createPOItemWithDefaults({
           meeting_po_id: meetingPoId,
           product_type_id: form.product_type_id || null,
           item_name: form.item_name.trim(),
@@ -179,6 +180,15 @@ export default function ProductItemModal({ open, onClose, meetingPoId, profile, 
           sort_order: sortOrder + 1,
           selectedDefaults
         });
+        // M2: auto-apply standard specifications utk component baru via wizard
+        if (created && created.id && selectedDefaults.length) {
+          try {
+            const comps = await fetchItemComponents(created.id);
+            await ensureStandardSpecsForComponents(comps, profile?.id || null);
+          } catch (specErr) {
+            console.error('Error auto-applying standard specs:', specErr);
+          }
+        }
         toast.success(
           selectedDefaults.length > 0
             ? `Item produk dibuat dengan ${selectedDefaults.length} komponen dasar`
