@@ -2,16 +2,24 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useMeetingFocus } from '../contexts/MeetingFocusContext';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Calendar, Clock, Users, Copy, MessageCircle, Eye } from 'lucide-react';
-import { formatDateLongID, PPM_MEETING_STATUS_LABELS, PPM_MEETING_STATUS_COLORS, PPM_PO_STATUS_LABELS, PPM_PO_STATUS_COLORS, BADGE_COLOR_CLASSES } from '../lib/constants';
+import { ArrowLeft, Calendar, Clock, Users, Copy, MessageCircle, Eye, Play, CheckCircle2, RotateCcw } from 'lucide-react';
+import { formatDateLongID, PPM_MEETING_STATUS, PPM_MEETING_STATUS_LABELS, PPM_MEETING_STATUS_COLORS, PPM_PO_STATUS_LABELS, PPM_PO_STATUS_COLORS, BADGE_COLOR_CLASSES } from '../lib/constants';
 
 export default function PPMMeetingRoomPage() {
   const { meetingId } = useParams();
-  const { profile } = useAuth();
+  const { profile, role } = useAuth();
+  const { setMeetingFocus } = useMeetingFocus();
   const [meeting, setMeeting] = useState(null);
   const [poList, setPOList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [updatingMeeting, setUpdatingMeeting] = useState(false);
+
+  const canManage = role && (
+    role.role_name === 'super_admin' ||
+    (meeting && profile && meeting.created_by === profile.id)
+  );
 
   const statusBadge = (status, type) => {
     const labels = type === 'meeting' ? PPM_MEETING_STATUS_LABELS : PPM_PO_STATUS_LABELS;
@@ -49,6 +57,12 @@ export default function PPMMeetingRoomPage() {
 
   useEffect(() => { fetchMeeting(); }, [meetingId]);
 
+  // Meeting Focus Mode: sidebar otomatis hidden saat status IN_PROGRESS,
+  // kembali normal saat status berubah (COMPLETED / SCHEDULED / CANCELLED).
+  useEffect(() => {
+    if (meeting) setMeetingFocus(meeting.id, meeting.status);
+  }, [meeting && meeting.id, meeting && meeting.status, setMeetingFocus]);
+
   const copyLink = () => {
     const url = window.location.origin + '/ppm/' + meetingId;
     navigator.clipboard.writeText(url);
@@ -61,6 +75,37 @@ export default function PPMMeetingRoomPage() {
     const poCount = poList.length;
     const message = 'PPM - Meeting Production Order\n' + dateStr + '\n' + poCount + ' Production Order\n\nBuka Meeting:\n' + url;
     window.open('https://wa.me/?text=' + encodeURIComponent(message), '_blank', 'noopener,noreferrer');
+  };
+
+  // Mulai / Selesaikan / Buka Kembali meeting (RLS di backend memvalidasi
+  // bahwa user adalah creator atau super_admin). Focus Mode otomatis
+  // mengikuti perubahan status via setMeetingFocus.
+  const updateMeetingStatus = async (status) => {
+    if (!meeting) return;
+    setUpdatingMeeting(true);
+    try {
+      const { error } = await supabase
+        .from('ppm_meetings')
+        .update({ status })
+        .eq('id', meeting.id);
+      if (error) throw error;
+      toast.success(
+        status === PPM_MEETING_STATUS.IN_PROGRESS
+          ? 'Meeting dimulai — Focus Mode aktif'
+          : 'Meeting selesai'
+      );
+      await fetchMeeting();
+    } catch (error) {
+      console.error('Error updating meeting status:', error);
+      toast.error('Gagal mengubah status meeting');
+    } finally {
+      setUpdatingMeeting(false);
+    }
+  };
+
+  const handleFinishMeeting = async () => {
+    if (!window.confirm('Selesaikan meeting ini? Status meeting akan menjadi Selesai.')) return;
+    await updateMeetingStatus(PPM_MEETING_STATUS.COMPLETED);
   };
 
   if (loading) {
@@ -104,7 +149,40 @@ export default function PPMMeetingRoomPage() {
             {statusBadge(meeting.status, 'meeting')}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {canManage && meeting.status === PPM_MEETING_STATUS.SCHEDULED && (
+            <button
+              onClick={() => updateMeetingStatus(PPM_MEETING_STATUS.IN_PROGRESS)}
+              disabled={updatingMeeting}
+              className="btn-success"
+              title="Mulai meeting — sidebar otomatis disembunyikan (Focus Mode)"
+            >
+              <Play size={16} />
+              Mulai Meeting
+            </button>
+          )}
+          {canManage && meeting.status === PPM_MEETING_STATUS.IN_PROGRESS && (
+            <button
+              onClick={handleFinishMeeting}
+              disabled={updatingMeeting}
+              className="btn-primary"
+              title="Akhiri meeting — sidebar kembali normal"
+            >
+              <CheckCircle2 size={16} />
+              Selesaikan Meeting
+            </button>
+          )}
+          {canManage && meeting.status === PPM_MEETING_STATUS.COMPLETED && (
+            <button
+              onClick={() => updateMeetingStatus(PPM_MEETING_STATUS.IN_PROGRESS)}
+              disabled={updatingMeeting}
+              className="btn-secondary"
+              title="Buka kembali meeting yang sudah selesai"
+            >
+              <RotateCcw size={16} />
+              Buka Kembali
+            </button>
+          )}
           <button onClick={copyLink} className="btn-secondary"><Copy size={16} />Salin Link Meeting</button>
           <button onClick={shareWhatsApp} className="btn-success"><MessageCircle size={16} />Bagikan WhatsApp</button>
         </div>

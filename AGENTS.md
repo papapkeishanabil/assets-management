@@ -47,8 +47,12 @@ konveksi / garment. Satu modul aktif saat ini adalah **PPM (Pra-Produksi)**.
 - `M2`      — LOCKED — Technical Specification Foundation
 - `M2.1`    — LOCKED — Operational Labels & Review Eligibility
 - `M2.2`    — LOCKED — Technical Review UX Simplification & Empty Spec Fix
-- `DEV-STD-01` — **AKTIF** — Developer + AI Context Standardization
-- `M3`      — PLANNED — Annotation & Component Discussion (**BELUM DIMULAI**)
+- `DEV-STD-01` — LOCKED — Developer + AI Context Standardization
+- `M3`      — LOCKED — Annotation & Component Discussion (user-accepted 2026-08-10)
+- `M3.1`    — LOCKED — Annotation UX Extension (register, focus pin, connector,
+  mobile bottom sheet, Meeting Focus Mode) — bagian dari M3
+- `M3.2`    — LOCKED — Hardening + visual polish + Meeting Product Discussion
+  Flow (component rail, tab Diskusi, Order Context) — bagian dari M3
 
 **Locked = jangan refactor tanpa bug report / requirement eksplisit dari user.**
 
@@ -68,17 +72,29 @@ konveksi / garment. Satu modul aktif saat ini adalah **PPM (Pra-Produksi)**.
 
 ## Current Task
 
-**`DEV-STD-01`** — Documentation + Developer tooling standardization.
-Ini adalah task aktif. **Jangan otomatis lanjut ke M3** setelah ini selesai.
+**M3 family (M3 / M3.1 / M3.2) — LOCKED** (user-accepted 2026-08-10; regression
+284 PASS / 0 FAIL + build PASS). Viewer baseline dikunci: Fit-to-PO, zoom/pan,
+fullscreen state preservation, MiniMap, floating dark card, connector, multi-pin,
+smart component focus, Product Discussion Flow, Component Discussion, Meeting
+Focus Mode. **Jangan refactor tanpa bug report / requirement user eksplisit /
+integration requirement milestone baru.** Milestone berikutnya belum ditentukan
+— tunggu instruksi user.
 
 ## Standard Test Commands
 
 ```bash
-npm run test:ppm        # M1 -> M1.1 -> M2 (aggregate regression)
+npm run test:ppm        # M1 -> M1.1 -> M2 -> M3 -> M3.1 -> render-smoke (aggregate regression)
 npm run test:ppm:m1
 npm run test:ppm:m1.1   # butuh SUPABASE_SERVICE_KEY di .env.local
 npm run test:ppm:m2     # butuh SUPABASE_SERVICE_KEY di .env.local
+npm run test:ppm:m3     # butuh SUPABASE_SERVICE_KEY di .env.local
+npm run test:ppm:m3.1   # butuh SUPABASE_SERVICE_KEY di .env.local
+npm run test:ppm:m3.1:render  # SSR smoke render (tanpa DB key)
+npm run test:ppm:m3.1:fit     # pure fit/fullscreen geometry (tanpa DB key)
 ```
+
+Browser verification (optional, tanpa auth) — lihat `docs/ppm/milestones/M3_REPORT.md`:
+harness `dev-viewer-test.html` di dev server + `scripts/test-m31-browser.py` (Playwright).
 
 Set `SUPABASE_SERVICE_KEY` (service_role) di `.env.local` terlebih dahulu.
 Tanpa key, script akan abort dengan pesan jelas dan **tidak crash ambigu**.

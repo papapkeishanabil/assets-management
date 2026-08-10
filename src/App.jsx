@@ -35,6 +35,7 @@ import PPMCreateMeetingPage from './pages/PPMCreateMeetingPage';
 import PPMMeetingRoomPage from './pages/PPMMeetingRoomPage';
 import PPMPoDetailPage from './pages/PPMPoDetailPage';
 import LoadingScreen from './components/LoadingScreen';
+import { MeetingFocusProvider } from './contexts/MeetingFocusContext';
 import { ROLES } from './lib/constants';
 import ContractsPage from './pages/contracts/ContractsPage';
 import ContractFormPage from './pages/contracts/ContractFormPage';
@@ -145,7 +146,9 @@ export default function App() {
       {/* Protected Routes */}
       <Route path="/" element={
         <ProtectedRoute>
-          <MainLayout />
+          <MeetingFocusProvider>
+            <MainLayout />
+          </MeetingFocusProvider>
         </ProtectedRoute>
       }>
         <Route index element={<Navigate to="/dashboard" replace />} />

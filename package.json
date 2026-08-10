@@ -10,7 +10,11 @@
     "test:ppm:m1": "node scripts/test-ppm-m1.js",
     "test:ppm:m1.1": "node scripts/test-ppm-m1.1.js",
     "test:ppm:m2": "node scripts/test-ppm-m2.js",
-    "test:ppm": "node scripts/test-ppm-m1.js && node scripts/test-ppm-m1.1.js && node scripts/test-ppm-m2.js"
+    "test:ppm:m3": "node scripts/test-ppm-m3.js",
+    "test:ppm:m3.1": "node scripts/test-ppm-m31.js",
+    "test:ppm:m3.1:render": "node scripts/test-ppm-m31-render.js",
+    "test:ppm:m3.1:fit": "node scripts/test-ppm-m31-fit.js",
+    "test:ppm": "node scripts/test-ppm-m1.js && node scripts/test-ppm-m1.1.js && node scripts/test-ppm-m2.js && node scripts/test-ppm-m3.js && node scripts/test-ppm-m31.js && node scripts/test-ppm-m31-render.js"
   },
   "engines": {
     "node": ">=22.15.0"

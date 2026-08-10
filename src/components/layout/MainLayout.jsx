@@ -3,7 +3,9 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
 import { useRolePermissions } from '../../hooks/useRolePermissions';
-import { ROLE_LABELS, ROLES } from '../../lib/constants';
+import { useMeetingFocus } from '../../contexts/MeetingFocusContext';
+import { ROLE_LABELS, ROLES, PPM_MEETING_STATUS } from '../../lib/constants';
+import { supabase } from '../../lib/supabase';
 import ThemeToggle from '../ThemeToggle';
 import BrandLogo from '../BrandLogo';
 import HelpModal from '../HelpModal';
@@ -25,6 +27,14 @@ export default function MainLayout() {
   const [maintenanceOpen, setMaintenanceOpen] = useState(true);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+
+  // Meeting Focus Mode (presentation-only).
+  const { focus, endMeetingFocus } = useMeetingFocus();
+  const focusActive = !!focus;
+  // focusTick dibump saat tab kembali visible/focus -> memicu re-validasi
+  // status meeting di effect di bawah (tanpa Realtime/polling). Menutup celah
+  // desync: status meeting berubah di tab lain saat tab ini IN_PROGRESS.
+  const [focusTick, setFocusTick] = useState(0);
 
   const [inspectionPending, setInspectionPending] = useState(0);
 
@@ -63,8 +73,53 @@ export default function MainLayout() {
     return () => window.removeEventListener('keydown', handleEsc);
   }, []);
 
+  // Saat focus meeting aktif, sidebar default collapsed (hidden).
+  useEffect(() => {
+    if (focusActive) setSidebarOpen(false);
+  }, [focusActive]);
+
+  // Saat tab kembali terlihat/terfokus, bump focusTick agar effect validasi
+  // status meeting (di bawah) re-run. Hanya relevan saat focus aktif.
+  useEffect(() => {
+    if (!focusActive) return undefined;
+    const bump = () => setFocusTick((t) => t + 1);
+    const onVisibility = () => { if (document.visibilityState === 'visible') bump(); };
+    window.addEventListener('focus', bump);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('focus', bump);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [focusActive]);
+
+  // Focus Mode berdasarkan meeting state (DB = source of truth), bukan
+  // sekadar local UI toggle. Jika status berubah bukan IN_PROGRESS,
+  // focus diakhiri otomatis (sidebar kembali normal tanpa refresh).
+  // focusTick re-trigger validasi saat tab kembali visible/focus (M3.2).
+  useEffect(() => {
+    if (!focus || focus.status !== PPM_MEETING_STATUS.IN_PROGRESS) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('ppm_meetings')
+          .select('status')
+          .eq('id', focus.meetingId)
+          .maybeSingle();
+        if (cancelled) return;
+        if (!data || data.status !== PPM_MEETING_STATUS.IN_PROGRESS) {
+          endMeetingFocus();
+        }
+      } catch (error) {
+        console.error('Error validating meeting focus:', error);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [focus && focus.meetingId, focus && focus.status, endMeetingFocus, focusTick]);
+
   const handleLogout = async () => {
     try {
+      endMeetingFocus();
       await logout();
       navigate('/login');
     } catch (error) {
@@ -130,25 +185,25 @@ export default function MainLayout() {
     }`;
 
   return (
-    <div className="min-h-screen bg-ink-950 relative">
+    <div className={'min-h-screen bg-ink-950 relative' + (focusActive ? ' focus-meeting-active' : '')}>
       {/* Ambient orbs */}
       <div className="orb w-[500px] h-[500px] bg-primary-600/15 top-[-200px] left-[-150px] animate-orbit pointer-events-none fixed"></div>
       <div className="orb w-[400px] h-[400px] bg-indigo-600/10 bottom-[-100px] right-[10%] animate-orbit pointer-events-none fixed" style={{ animationDelay: '-10s' }}></div>
 
-      {/* Mobile Overlay */}
+      {/* Mobile Overlay / overlay drawer saat focus meeting */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
+          className={'fixed inset-0 bg-black/70 backdrop-blur-sm z-40 animate-fade-in ' + (focusActive ? '' : 'lg:hidden')}
           onClick={() => setSidebarOpen(false)}
           aria-hidden="true"
         />
       )}
 
       {/* Sidebar */}
-      <aside className={`
+      <aside id="main-sidebar" className={`
         fixed top-0 left-0 z-50 h-full w-64 bg-ink-990/85 backdrop-blur-xl border-r border-white/5
         transform transition-transform duration-300 ease-in-out
-        lg:translate-x-0 lg:fixed lg:z-40
+        ${focusActive ? '' : 'lg:translate-x-0 lg:fixed lg:z-40'}
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="absolute inset-0 dot-grid-bg opacity-30 pointer-events-none"></div>
@@ -158,7 +213,7 @@ export default function MainLayout() {
           <BrandLogo compact className="w-[185px] h-[58px]" />
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-ink-400 hover:text-white hover:bg-white/5 p-1.5 rounded-md transition-all"
+            className={'text-ink-400 hover:text-white hover:bg-white/5 p-1.5 rounded-md transition-all ' + (focusActive ? '' : 'lg:hidden')}
             aria-label="Tutup menu"
           >
             <X size={18} />
@@ -334,18 +389,28 @@ export default function MainLayout() {
       </aside>
 
       {/* Main Content */}
-      <div className="lg:pl-64 relative">
+      <div className={(focusActive ? '' : 'lg:pl-64 ') + 'relative'}>
         {/* Top Bar */}
         <header className="h-16 bg-ink-950/70 backdrop-blur-xl border-b border-white/5 sticky top-0 z-30 flex items-center px-4 lg:px-8 gap-4">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 text-ink-300 hover:bg-white/5 hover:text-white rounded-md transition-all"
+            className={'p-2 text-ink-300 hover:bg-white/5 hover:text-white rounded-md transition-all ' + (focusActive ? '' : 'lg:hidden')}
             aria-label="Buka menu"
             aria-expanded={sidebarOpen}
             aria-controls="main-sidebar"
           >
             <Menu size={18} />
           </button>
+
+          {focusActive && (
+            <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium text-primary-300 bg-primary-500/10 border border-primary-500/20 flex-shrink-0">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-60"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary-400"></span>
+              </span>
+              Meeting Aktif · Focus Mode
+            </span>
+          )}
 
           <div className="hidden lg:flex items-center gap-2 text-sm">
             <span className="text-ink-400 font-mono">Harmas</span>

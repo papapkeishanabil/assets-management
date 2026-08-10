@@ -221,6 +221,75 @@
   .badge-orange { @apply badge bg-orange-500/10 text-orange-300 border-orange-500/20; }
   .badge-indigo { @apply badge bg-indigo-500/10 text-indigo-300 border-indigo-500/20; }
 
+  /* Light Theme: palet success/warning/danger/primary/orange/indigo adalah
+     hex HARDCODE (tailwind.config.js) -> TIDAK ikut invert seperti token ink.
+     Di permukaan app yang terang, teks *-300 (pucat) jadi sulit dibaca.
+     Fix: golongkan teks badge ke *-700 + perkuat bg/border di Light Theme.
+     Pengecualian .annotation-card (overlay selalu gelap) ada di bawah. */
+  [data-theme="light"] .badge-green  { @apply text-success-700 bg-success-500/15 border-success-500/30; }
+  [data-theme="light"] .badge-yellow { @apply text-warning-700 bg-warning-500/15 border-warning-500/30; }
+  [data-theme="light"] .badge-red    { @apply text-danger-700 bg-danger-500/15 border-danger-500/30; }
+  [data-theme="light"] .badge-blue   { @apply text-primary-700 bg-primary-500/15 border-primary-500/30; }
+  [data-theme="light"] .badge-orange { @apply text-orange-700 bg-orange-500/15 border-orange-500/30; }
+  [data-theme="light"] .badge-indigo { @apply text-indigo-700 bg-indigo-500/15 border-indigo-500/30; }
+
+  /* ===== ANNOTATION OVERLAY CARD (M3.1 VISUAL FIX) =====
+     Floating annotation callout SELALU dark di kedua theme (light & dark).
+     Ini OVERLAY/callout di atas dokumen PO, BUKAN aplikasi card biasa.
+     Palette terisolasi (dedicated semantic classes) — TIDAK memakai
+     .card / .glass / bg-card / text-foreground / token ink yang berubah
+     menjadi terang pada Light Theme. */
+  .annotation-card {
+    background: linear-gradient(
+      165deg,
+      rgb(17 24 39 / 0.95) 0%,
+      rgb(15 23 42 / 0.93) 40%,
+      rgb(20 25 34 / 0.95) 100%
+    );
+    border: 1px solid rgb(148 163 184 / 0.35);
+    box-shadow:
+      0 20px 48px -12px rgb(0 0 0 / 0.68),
+      0 6px 18px -6px rgb(0 0 0 / 0.5),
+      inset 0 1px 0 rgb(255 255 255 / 0.12),
+      inset 0 0 0 1px rgb(96 165 250 / 0.12);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+  }
+  .annotation-card-title { color: rgb(248 250 252); }
+  .annotation-card-sub { color: rgb(203 213 225); }
+  .annotation-card-sub-hover:hover { color: rgb(255 255 255); }
+  .annotation-card-faint { color: rgb(148 163 184); }
+  .annotation-card-body { color: rgb(241 245 249); }
+  .annotation-card-link { color: rgb(147 197 253); }
+  .annotation-card-link:hover { color: rgb(191 219 254); }
+  .annotation-card-divider { border-color: rgb(148 163 184 / 0.35); }
+  .annotation-card-inset {
+    background: rgb(10 14 24 / 0.5);
+    border: 1px solid rgb(148 163 184 / 0.25);
+  }
+  .annotation-card-close { color: rgb(203 213 225); }
+  .annotation-card-close:hover {
+    color: rgb(255 255 255);
+    background: rgb(148 163 184 / 0.2);
+  }
+  /* Chip status tetap punya warna aksen sendiri; pastikan chip abu-abu
+     (INFO) terbaca di atas card gelap pada kedua theme. */
+  .annotation-card .badge-gray {
+    background: rgb(148 163 184 / 0.16);
+    color: rgb(226 232 240);
+    border-color: rgb(148 163 184 / 0.4);
+  }
+  /* .annotation-card = overlay SELALU gelap di kedua theme. Badge semantik di
+     dalamnya HARUS tetap memakai teks terang (*-300) agar override Light Theme
+     di atas tidak meredupkannya. Nilai = SAMA PERSIS dengan base .badge-*
+     -> nol perubahan visual di Dark Theme; hanya melindungi overlay di Light. */
+  .annotation-card .badge-green  { @apply text-success-300 bg-success-500/10 border-success-500/20; }
+  .annotation-card .badge-yellow { @apply text-warning-300 bg-warning-500/10 border-warning-500/20; }
+  .annotation-card .badge-red    { @apply text-danger-300 bg-danger-500/10 border-danger-500/20; }
+  .annotation-card .badge-blue   { @apply text-primary-300 bg-primary-500/10 border-primary-500/20; }
+  .annotation-card .badge-orange { @apply text-orange-300 bg-orange-500/10 border-orange-500/20; }
+  .annotation-card .badge-indigo { @apply text-indigo-300 bg-indigo-500/10 border-indigo-500/20; }
+
   /* ===== TABLES ===== */
   .table-container {
     @apply overflow-x-auto rounded-xl glass;
@@ -252,6 +321,140 @@
 
   /* ===== PAGE LAYOUT ===== */
   .page-container { @apply p-4 md:p-6 lg:p-8 max-w-7xl mx-auto; }
+  /* Meeting Focus Mode: saat meeting berlangsung, halaman memakai lebar
+     penuh yang dilepas sidebar (Annotation Viewer / Technical Review
+     mendapat area maksimum). Padding lebih ketat agar workspace tampak
+     menonjol tanpa scroll jauh (dedicated meeting workspace, bukan admin PO). */
+  /* Meeting Focus Mode: section REORDER via flex order (bukan JSX move).
+     DOM/JSX tidak berubah -> node workspace tetap mounted -> zoom/pan/focus
+     preservation TIDAK ter-reset saat toggle meeting (§15 preserve).
+     Urutan visual: header(0) -> WORKSPACE(1) -> mobile recap(2) -> Review(3)
+     -> Produk(4) -> PO detail(5). Modal null saat tutup / fixed-overlay saat
+     buka -> order tidak berdampak pada modal. Non-meeting = pass-through. */
+  .focus-meeting-active .page-container {
+    max-width: none;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+  }
+  @media (min-width: 1024px) {
+    .focus-meeting-active .page-container { padding: 1rem 1.25rem; }
+  }
+  .focus-meeting-active .m-sec-header { order: 0; }
+  .focus-meeting-active .annotation-workspace {
+    order: 1;
+    /* HERO: workspace mengisi tinggi viewport tanpa scroll (1080p). */
+    min-height: calc(100vh - 8rem);
+  }
+  .focus-meeting-active .annotation-workspace .annotation-workspace-card {
+    min-height: calc(100vh - 8rem);
+  }
+  .focus-meeting-active .m-sec-mobilerecap { order: 2; }
+  .focus-meeting-active .m-sec-review { order: 3; }
+  .focus-meeting-active .m-sec-products { order: 4; }
+  .focus-meeting-active .m-sec-podetail { order: 5; }
+  /* Saat user eksplisit klik "Lihat Detail PO" di meeting mode (kelas
+     m-podetail-open di page-container), kartu PO detail DIPROMOSIKAN ke ATAS
+     (order 1, langsung di bawah header, di atas workspace hero) -> tidak perlu
+     scroll ke bawah melewati workspace 100vh. CSS order (bukan JSX move) ->
+     node workspace tetap mounted -> zoom/pan/focus TIDAK ter-reset (§15).
+     Toggle "Sembunyikan" menghapus kelas -> workspace kembali jadi hero (order 1). */
+  .focus-meeting-active .page-container.m-podetail-open .m-sec-podetail { order: 1; }
+  .focus-meeting-active .page-container.m-podetail-open .annotation-workspace { order: 2; }
+  .focus-meeting-active .page-container.m-podetail-open .m-sec-mobilerecap { order: 3; }
+  .focus-meeting-active .page-container.m-podetail-open .m-sec-review { order: 4; }
+  .focus-meeting-active .page-container.m-podetail-open .m-sec-products { order: 5; }
+  /* Sekunder sections (Review / Produk / PO detail) direndahkan visual di
+     meeting mode: border sangat tipis, tanpa shadow — bukan kartu utama. */
+  .focus-meeting-active .m-sec-review,
+  .focus-meeting-active .m-sec-products,
+  .focus-meeting-active .m-sec-podetail {
+    border-color: rgb(255 255 255 / 0.06);
+    box-shadow: none;
+  }
+  /* Compact PO context strip (menggantikan PO summary card saat meeting). */
+  .meeting-strip {
+    @apply flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs;
+  }
+  /* Compact section toggle header saat meeting (PO summary / Review / Items). */
+  .meeting-section-toggle {
+    @apply flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2;
+  }
+
+  /* ===== M3 MEETING PRODUCT FLOW — dua sub-layout (UI nav, no DB) =====
+     Product Selection (.m-meeting-select, entry default): Order Overview +
+     kartu produk jadi prime top (order 1); workspace didemote (order 2, tinggi
+     modest 42vh) supaya konteks terlihat tanpa scroll (TEST A).
+     Product Discussion (.m-meeting-discuss): header + component rail di atas
+     (order 1), workspace HERO (order 2, ~100vh).
+     Admin blocks (m-sec-review / m-sec-products) disembunyikan di meeting mode
+     (display:none) — digantikan Product Flow + Technical Review via modal
+     (§22/§23). display:none dipilih BUKAN unmount agar struktur JSX admin tidak
+     disentuh (§0/§17 minimal diff); node workspace tetap mounted, hanya
+     order/tinggi via CSS -> ResizeObserver re-measure canvas (§15-safe). */
+  .focus-meeting-active .page-container.m-meeting-select .m-sec-meetingselect { order: 1; }
+  .focus-meeting-active .page-container.m-meeting-select .annotation-workspace {
+    order: 2;
+    min-height: 42vh;
+  }
+  .focus-meeting-active .page-container.m-meeting-select .annotation-workspace .annotation-workspace-card {
+    min-height: 42vh;
+  }
+  .focus-meeting-active .page-container.m-meeting-discuss .m-sec-discussion { order: 1; }
+  .focus-meeting-active .page-container.m-meeting-discuss .annotation-workspace {
+    order: 2;
+    min-height: calc(100vh - 8rem);
+  }
+  .focus-meeting-active .page-container.m-meeting-discuss .annotation-workspace .annotation-workspace-card {
+    min-height: calc(100vh - 8rem);
+  }
+  .focus-meeting-active .page-container .m-sec-review,
+  .focus-meeting-active .page-container .m-sec-products {
+    display: none;
+  }
+
+  /* ===== ANNOTATION WORKSPACE FULLSCREEN (M3.1 BUGFIX) =====
+     Fullscreen = WORKSPACE utuh (toolbar + viewer + right panel),
+     BUKAN hanya image canvas. Layout identik dengan mode normal,
+     hanya mengisi monitor (single source of truth viewer).
+     Browser Fullscreen API membuat :fullscreen fill viewport; kelas
+     annotation-workspace-active juga menangani fallback tanpa API. */
+  .annotation-workspace.annotation-workspace-active {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+  }
+  .annotation-workspace.annotation-workspace-active .annotation-workspace-inner {
+    flex: 1 1 auto;
+    min-height: 0;
+    align-items: stretch;
+  }
+  .annotation-workspace.annotation-workspace-active .annotation-workspace-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    margin-bottom: 0;
+  }
+  .annotation-workspace.annotation-workspace-active .annotation-workspace-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .annotation-workspace.annotation-workspace-active .viewer-root {
+    height: 100% !important;
+    min-height: 0;
+  }
+  .annotation-workspace.annotation-workspace-active .annotation-workspace-sidebar {
+    position: static !important;
+    top: auto !important;
+    max-height: none !important;
+    height: 100%;
+    min-height: 0;
+  }
   .page-title { @apply text-2xl md:text-3xl font-semibold text-white mb-1 tracking-tight; }
   .page-subtitle { @apply text-sm text-ink-400 mb-6; }
 
