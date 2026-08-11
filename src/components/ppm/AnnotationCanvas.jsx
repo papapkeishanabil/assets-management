@@ -55,6 +55,9 @@ export default function AnnotationCanvas({
   onToggleFullscreen,
   onToggleAddMode,
   onSelectAll,
+  // M4 (optional, pure pass-through -> FloatingPinCard): rekonsiliasi
+  // spec. TIDAK mengubah viewer engine / geometry / focus.
+  onProposeSpecChange,
 }) {
   const viewerRef = useRef(null);
   const worldRef = useRef(null);
@@ -700,6 +703,7 @@ export default function AnnotationCanvas({
                   onToggleExpand={handleToggleCardExpand}
                   onOpenDetail={onOpenPinDetail}
                   onClose={onClosePinCard}
+                  onProposeSpecChange={onProposeSpecChange}
                 />
               </div>
             );

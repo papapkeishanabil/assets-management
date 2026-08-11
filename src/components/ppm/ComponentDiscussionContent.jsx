@@ -1,4 +1,4 @@
-import { ClipboardList, Plus } from 'lucide-react';
+import { ClipboardList, Plus, AlertTriangle, Scale } from 'lucide-react';
 import { BADGE_COLOR_CLASSES } from '../../lib/constants';
 import {
   componentDisplayLabel,
@@ -14,6 +14,7 @@ import {
   REVIEW_STATUS_COLORS,
   hasSpecValue,
 } from '../../lib/ppm-m2-helpers';
+import { formatProposalValue } from '../../lib/ppm-m4-helpers';
 
 // ============================================================
 // ComponentDiscussionContent — isi panel "Diskusi" untuk sebuah
@@ -30,6 +31,11 @@ import {
 //   onFocusPin(pinId)         — focus viewer ke pin
 //   onQuickAddPin(component)  — mulai quick-add pin untuk komponen
 //   onTechnicalReview(item)   — buka TechnicalReviewModal (item-scoped)
+//   onSelaraskan(spec, component) — (M4, optional) buka rekonsiliasi untuk
+//        spec yang punya proposal unreconciled. Bila proposal belum ada
+//        tapi komponen punya pin DECISION, page dapat membuka mode create.
+//   proposalsBySpec — (M4, optional) map specId -> proposal unreconciled
+//        ({PROPOSED,DEFERRED}) untuk menampilkan sub-row per spec.
 //
 // Pure presentational. Tidak ada state / viewer / DB.
 // ============================================================
@@ -42,6 +48,9 @@ export default function ComponentDiscussionContent({
   onFocusPin,
   onQuickAddPin,
   onTechnicalReview,
+  // M4 (optional)
+  onSelaraskan,
+  proposalsBySpec = {},
 }) {
   if (!item) {
     return <p className="text-xs text-ink-400 text-center py-6">Pilih produk untuk dibahas.</p>;
@@ -99,20 +108,45 @@ export default function ComponentDiscussionContent({
             <div className="space-y-1.5">
               {specs.map((spec) => {
                 const hasVal = hasSpecValue(spec);
+                const proposal = proposalsBySpec[spec.id]; // unreconciled proposal (M4)
                 return (
                   <div
                     key={spec.id}
-                    className="flex items-start justify-between gap-2 rounded-md border border-white/10 bg-black/20 px-2.5 py-1.5"
+                    className="rounded-md border border-white/10 bg-black/20"
                   >
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium text-white truncate">{getSpecDisplayLabel(spec)}</p>
-                      <p className={'text-[11px] leading-snug ' + (hasVal ? 'text-ink-300' : 'text-ink-500 italic')}>
-                        {hasVal ? formatSpecValue(spec) : 'Tidak Dicantumkan'}
-                      </p>
+                    <div className="flex items-start justify-between gap-2 px-2.5 py-1.5">
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-white truncate">{getSpecDisplayLabel(spec)}</p>
+                        <p className={'text-[11px] leading-snug ' + (hasVal ? 'text-ink-300' : 'text-ink-500 italic')}>
+                          {hasVal ? formatSpecValue(spec) : 'Tidak Dicantumkan'}
+                        </p>
+                      </div>
+                      <span className={'badge text-[10px] px-1.5 py-0.5 flex-shrink-0 ' + reviewBadge(spec.review_status)}>
+                        {REVIEW_STATUS_LABELS[spec.review_status]}
+                      </span>
                     </div>
-                    <span className={'badge text-[10px] px-1.5 py-0.5 flex-shrink-0 ' + reviewBadge(spec.review_status)}>
-                      {REVIEW_STATUS_LABELS[spec.review_status]}
-                    </span>
+                    {/* M4: per-spec sub-row "Meeting Decision" bila ada proposal
+                        unreconciled menarget spec ini. Klik [Selaraskan] -> modal. */}
+                    {proposal && (
+                      <div className="flex items-center justify-between gap-2 border-t border-amber-500/20 bg-amber-500/5 px-2.5 py-1.5">
+                        <span className="flex items-center gap-1 text-[11px] text-amber-300 min-w-0">
+                          <AlertTriangle size={11} className="flex-shrink-0" />
+                          <span className="truncate">
+                            Meeting Decision: <span className="font-semibold">{formatProposalValue(proposal)}</span>
+                          </span>
+                        </span>
+                        {onSelaraskan && (
+                          <button
+                            type="button"
+                            onClick={() => onSelaraskan(spec, component)}
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-200 hover:text-amber-100 flex-shrink-0"
+                            title="Selaraskan keputusan ke spesifikasi"
+                          >
+                            <Scale size={11} /> Selaraskan
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}

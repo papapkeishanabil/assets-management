@@ -19,7 +19,7 @@
 - Komponen
 - Technical Specification
 - Technical Review
-- Annotation *(M3 — belum tersedia)*
+- Annotation *(M3 — implemented, tunggu verifikasi)*
 - Material & Accessories *(future)*
 - Size Chart *(future)*
 - Production Planning *(future)*

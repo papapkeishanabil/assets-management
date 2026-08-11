@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { X, CheckCircle2, ChevronUp, ArrowRight } from 'lucide-react';
+import { X, CheckCircle2, ChevronUp, ArrowRight, AlertTriangle, Scale } from 'lucide-react';
 import { BADGE_COLOR_CLASSES } from '../../lib/constants';
 import {
   decisionFirstNotes,
@@ -27,7 +27,19 @@ import {
 // Kartu di-posisikan oleh parent (AnnotationCanvas).
 // ============================================================
 const FloatingPinCard = forwardRef(function FloatingPinCard(
-  { annotation, onOpenDetail, onClose, expanded = false, onToggleExpand },
+  {
+    annotation,
+    onOpenDetail,
+    onClose,
+    expanded = false,
+    onToggleExpand,
+    // M4 (optional): reconciliation entry. Jika annotation membawa
+    // _unreconciledProposal (enrichment upstream), tampilkan badge
+    // "Belum Diselaraskan" yang membuka modal REVIEW. Tanpa proposal
+    // tapi ada DECISION note + onProposeSpecChange -> link "Usulkan ke
+    // Spec" (mode CREATE). Tidak ada form besar di kartu (§F).
+    onProposeSpecChange,
+  },
   ref
 ) {
   const ordered = decisionFirstNotes(annotation.notes || []);
@@ -107,6 +119,27 @@ const FloatingPinCard = forwardRef(function FloatingPinCard(
             </div>
           )}
 
+          {/* M4: reconciliation badge — sibling setelah blok DECISION.
+              Hanya tampil bila ada proposal {PROPOSED,DEFERRED} yang
+              evidence-nya = pin ini (enrichment upstream via
+              annotation._unreconciledProposal). Klik -> modal review. */}
+          {annotation._unreconciledProposal && onProposeSpecChange && (
+            <button
+              type="button"
+              onClick={() => onProposeSpecChange(annotation)}
+              className="mx-3 mt-2 w-[calc(100%-1.5rem)] flex items-center justify-between gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-2.5 py-1.5 hover:bg-amber-500/15 transition-colors"
+              title="Keputusan ini belum diselaraskan ke spesifikasi"
+            >
+              <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-300 min-w-0">
+                <AlertTriangle size={12} className="flex-shrink-0" />
+                <span className="truncate">Belum Diselaraskan</span>
+              </span>
+              <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-200 flex-shrink-0">
+                <Scale size={11} /> Detail
+              </span>
+            </button>
+          )}
+
           {/* Footer */}
           <div className="mt-2 flex items-center justify-between gap-2 border-t annotation-card-divider px-3 py-2">
             <span className="text-[11px] annotation-card-sub">
@@ -173,15 +206,27 @@ const FloatingPinCard = forwardRef(function FloatingPinCard(
             >
               <ChevronUp size={13} /> Tutup Detail
             </button>
-            {onOpenDetail && (
-              <button
-                onClick={() => onOpenDetail(annotation)}
-                className="inline-flex items-center gap-1 text-[12px] font-semibold annotation-card-link"
-                title="Buka panel pengelolaan lengkap"
-              >
-                Panel Lengkap <ArrowRight size={13} />
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {/* M4 create-entry: decision ada, belum ada proposal -> usulkan */}
+              {decision && !annotation._unreconciledProposal && onProposeSpecChange && (
+                <button
+                  onClick={() => onProposeSpecChange(annotation)}
+                  className="inline-flex items-center gap-1 text-[12px] font-semibold annotation-card-link"
+                  title="Usulkan perubahan spesifikasi dari keputusan ini"
+                >
+                  <Scale size={12} /> Usulkan ke Spec
+                </button>
+              )}
+              {onOpenDetail && (
+                <button
+                  onClick={() => onOpenDetail(annotation)}
+                  className="inline-flex items-center gap-1 text-[12px] font-semibold annotation-card-link"
+                  title="Buka panel pengelolaan lengkap"
+                >
+                  Panel Lengkap <ArrowRight size={13} />
+                </button>
+              )}
+            </div>
           </div>
         </>
       )}

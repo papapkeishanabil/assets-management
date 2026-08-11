@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,6 +16,7 @@ import AnnotationPinDrawer from '../components/ppm/AnnotationPinDrawer';
 import AnnotationRegisterModal from '../components/ppm/AnnotationRegisterModal';
 import MobilePinSummarySheet from '../components/ppm/MobilePinSummarySheet';
 import MeetingProductFlow from '../components/ppm/MeetingProductFlow';
+import SpecReconciliationModal from '../components/ppm/SpecReconciliationModal';
 import {
   fetchPOItems,
   deletePOItem,
@@ -42,6 +43,16 @@ import {
   NOTE_TYPE_LABELS,
 } from '../lib/ppm-m3-helpers';
 import { pinIdsForComponent } from '../lib/ppm-m31-helpers';
+import {
+  fetchProposalsForPO,
+  createProposal,
+  applyProposal,
+  rejectProposal,
+  deferProposal,
+  rebaseProposal,
+  isUnreconciled,
+  firstDecisionNote,
+} from '../lib/ppm-m4-helpers';
 
 // M3.1: media query untuk routing mobile (bottom sheet vs floating cards).
 function useIsMobile() {
@@ -96,6 +107,9 @@ export default function PPMPoDetailPage() {
 
   // M3: annotation state
   const [annotations, setAnnotations] = useState([]);
+  // M4: spec change proposals (governance: Decision -> Specification)
+  const [proposals, setProposals] = useState([]);
+  const [reconcileModal, setReconcileModal] = useState(null); // {mode, annotation, component, spec, specs, proposal}
   const [showPins, setShowPins] = useState(true);
   const [addPinMode, setAddPinMode] = useState(false);
   const [createPosition, setCreatePosition] = useState(null);
@@ -196,6 +210,9 @@ useEffect(() => {
       setItems(enriched);
       const annRows = await fetchAnnotationsForPO(poId);
       setAnnotations(annRows);
+      // M4: fetch spec change proposals for enrichment (badge / sub-row).
+      const proposalRows = await fetchProposalsForPO(poId);
+      setProposals(proposalRows);
     } catch (error) {
       console.error('Error fetching PO:', error);
     } finally {
@@ -233,6 +250,42 @@ useEffect(() => {
       console.error('Error refreshing annotations:', error);
     }
   }, [poId]);
+
+  // M4: refresh proposals (after create/apply/reject/defer/rebase).
+  const refreshProposals = useCallback(async () => {
+    try {
+      const rows = await fetchProposalsForPO(poId);
+      setProposals(rows);
+    } catch (error) {
+      console.error('Error refreshing proposals:', error);
+    }
+  }, [poId]);
+
+  // M4: maps proposal unreconciled ({PROPOSED,DEFERRED}) by spec & by evidence
+  // annotation — untuk badge FloatingPinCard + sub-row ComponentDiscussionContent.
+  // DITARUH DI SINI (sebelum early return `if (loading)`/`if (!po)`) karena keduanya
+  // hook (useMemo) — React melarang hook setelah conditional return, pelanggaran
+  // = "Rendered more hooks than during the previous render" -> halaman blank.
+  const proposalsBySpec = useMemo(() => {
+    const map = {};
+    (proposals || []).forEach((p) => {
+      if (isUnreconciled(p.status) && p.component_specification_id) {
+        // proposals di-order proposed_at desc (fetchProposalsForPO) — ambil
+        // yang terbaru (pertama ditemui) per spec.
+        if (!map[p.component_specification_id]) map[p.component_specification_id] = p;
+      }
+    });
+    return map;
+  }, [proposals]);
+  const proposalsByAnnotation = useMemo(() => {
+    const map = {};
+    (proposals || []).forEach((p) => {
+      if (isUnreconciled(p.status) && p.annotation_id) {
+        if (!map[p.annotation_id]) map[p.annotation_id] = p;
+      }
+    });
+    return map;
+  }, [proposals]);
 
   const handleAnnotationChanged = async () => {
     await refreshAnnotations();
@@ -329,9 +382,19 @@ useEffect(() => {
 
   // M3: derived annotation data
   const compPinCounts = pinCountByComponent(annotations);
-  const filteredAnnotations = pinFilterComponentId
+
+  // M4: proposalsBySpec / proposalsByAnnotation (useMemo) dideklarkan SEBELUM
+  // early return `if (loading)` di atas (aturan hook). filteredAnnotations di
+  // bawah bukan hook -> aman setelah early return.
+
+  const filteredAnnotations = (pinFilterComponentId
     ? annotations.filter((a) => a.item_component_id === pinFilterComponentId)
-    : annotations;
+    : annotations
+  ).map((a) => ({
+    ...a,
+    // M4: badge "Belum Diselaraskan" di FloatingPinCard (canvas only).
+    _unreconciledProposal: proposalsByAnnotation[a.id] || undefined,
+  }));
   const activeItem = items.find((it) => it.id === expandedItemId) || null;
   // Produk yang sedang dibahas (resolve independent dari expandedItemId).
   const discussionItem = discussionItemId
@@ -479,6 +542,122 @@ useEffect(() => {
     if (item) setTechReviewItem(item);
   };
 
+  // ============ M4: Decision ↔ Specification Reconciliation ============
+  // Resolve component + specs dari sebuah annotation (evidence pin).
+  const resolveContextForAnnotation = (annotation) => {
+    if (!annotation) return { component: null, specs: [] };
+    let component = null;
+    const ownerItem = (items || []).find((it) =>
+      (it.components || []).some((c) => c.id === annotation.item_component_id)
+    );
+    if (ownerItem) {
+      component = (ownerItem.components || []).find((c) => c.id === annotation.item_component_id) || null;
+    }
+    const specs = (component && component.specs) || [];
+    return { component, specs, ownerItem };
+  };
+  const findSpecById = (specId) => {
+    if (!specId) return null;
+    for (const it of items) {
+      for (const c of it.components || []) {
+        const s = (c.specs || []).find((x) => x.id === specId);
+        if (s) return s;
+      }
+    }
+    return null;
+  };
+
+  // Entry dari FloatingPinCard: badge (review existing) atau link "Usulkan ke
+  // Spec" (create). Mode ditentukan oleh ada/tidaknya proposal unreconciled.
+  const handleProposeSpecChange = (annotation) => {
+    const { component, specs } = resolveContextForAnnotation(annotation);
+    const existing = annotation.id ? (proposalsByAnnotation[annotation.id] || null) : null;
+    if (existing) {
+      setReconcileModal({
+        mode: 'review',
+        annotation,
+        component,
+        spec: findSpecById(existing.component_specification_id),
+        proposal: existing,
+      });
+      return;
+    }
+    // create: target default = spec yang sudah di-scope pin (jika ada).
+    const targetSpec = annotation.component_specification_id
+      ? (specs.find((s) => s.id === annotation.component_specification_id) || findSpecById(annotation.component_specification_id) || specs[0] || null)
+      : (specs[0] || null);
+    setReconcileModal({ mode: 'create', annotation, component, spec: targetSpec, specs });
+  };
+
+  // Entry dari ComponentDiscussionContent per-spec [Selaraskan].
+  const handleSelaraskan = (spec, component) => {
+    const proposal = spec ? (proposalsBySpec[spec.id] || null) : null;
+    if (proposal) {
+      // evidence annotation (opsional) untuk konteks modal.
+      const annotation = proposal.annotation_id
+        ? (annotations.find((a) => a.id === proposal.annotation_id) || null)
+        : null;
+      setReconcileModal({ mode: 'review', annotation, component, spec, proposal });
+    } else if (spec) {
+      setReconcileModal({ mode: 'create', annotation: null, component, spec, specs: (component && component.specs) || [spec] });
+    }
+  };
+
+  const handleCreateProposal = async ({ specId, valueType, value, proposedUnit, decisionNote }) => {
+    const ctx = reconcileModal || {};
+    const annotation = ctx.annotation || null;
+    const component = ctx.component || null;
+    if (!specId) throw new Error('Target spec wajib');
+    // evidence note (DECISION pertama dari pin, jika ada).
+    const decNote = annotation && annotation.notes ? firstDecisionNote(annotation.notes) : null;
+    await createProposal({
+      component_specification_id: specId,
+      item_component_id: component ? component.id : (annotation ? annotation.item_component_id : null),
+      po_item_id: component ? component.po_item_id : (annotation ? annotation.po_item_id : null),
+      meeting_po_id: poId,
+      annotation_id: annotation ? annotation.id : null,
+      annotation_note_id: decNote ? decNote.id : null,
+      value_type: valueType,
+      value,
+      proposed_unit,
+      decision_note: decisionNote,
+      proposed_by: profile && profile.id,
+      created_by: profile && profile.id,
+    });
+    toast.success('Usulan perubahan disimpan (status: Diusulkan)');
+    await refreshProposals();
+  };
+
+  const handleApplyProposal = async (proposalId, { force } = {}) => {
+    const res = await applyProposal(proposalId, { force: !!force, actorId: profile && profile.id });
+    if (res && res.conflict) {
+      toast('Spec telah berubah — periksa konflik sebelum menerapkan.', { icon: '⚠️' });
+      await refreshProposals();
+      return res; // modal tetap terbuka (runAction cek res.conflict)
+    }
+    toast.success('Keputusan diterapkan ke spesifikasi (RESOLVED)');
+    await Promise.all([refreshItems(), refreshProposals()]);
+    return res;
+  };
+
+  const handleRejectProposal = async (proposalId, { reason } = {}) => {
+    await rejectProposal(proposalId, { reason, actorId: profile && profile.id });
+    toast.success('Usulan ditolak — spesifikasi lama dipertahankan');
+    await refreshProposals();
+  };
+
+  const handleDeferProposal = async (proposalId) => {
+    await deferProposal(proposalId, { actorId: profile && profile.id });
+    toast.success('Usulan ditunda');
+    await refreshProposals();
+  };
+
+  const handleRebaseProposal = async (proposalId) => {
+    await rebaseProposal(proposalId);
+    toast.success('Baseline diperbarui ke nilai saat ini');
+    await refreshProposals();
+  };
+
   // Layout class meeting (select / discuss) — non-meeting pass-through (§31).
   const meetingLayoutClass = !meetingFocusActive
     ? ''
@@ -566,6 +745,8 @@ useEffect(() => {
           onMeetingTechnicalReview={handleMeetingTechnicalReview}
           onManageItem={() => { setEditingItem(null); setItemModalOpen(true); }}
           onManageComponents={(item) => setComponentModalItem(item)}
+          onSelaraskan={canManage ? handleSelaraskan : undefined}
+          proposalsBySpec={proposalsBySpec}
         />
       )}
 
@@ -989,6 +1170,7 @@ useEffect(() => {
                 onMovePin={handleMovePin}
                 onOpenPinDetail={handleOpenPinDetail}
                 onClosePinCard={handleClosePinCard}
+                onProposeSpecChange={canManage ? handleProposeSpecChange : undefined}
                 expanded={expanded}
                 onToggleFullscreen={handleToggleFullscreen}
                 onSelectAll={handleShowAllPins}
@@ -1036,6 +1218,8 @@ useEffect(() => {
             discussionItem={discussionItem || undefined}
             discussionComponentId={discussionComponentId}
             onTechnicalReview={handleMeetingTechnicalReview}
+            onSelaraskan={canManage ? handleSelaraskan : undefined}
+            proposalsBySpec={proposalsBySpec}
           />
         )}
         </div>
@@ -1159,6 +1343,21 @@ useEffect(() => {
         onClose={() => setMobileSheetAnnotation(null)}
         onFocusPin={handleFocusPin}
         onOpenDetail={handleOpenPinDetail}
+      />
+      <SpecReconciliationModal
+        open={!!reconcileModal}
+        mode={reconcileModal ? reconcileModal.mode : 'create'}
+        spec={reconcileModal ? reconcileModal.spec : null}
+        specs={reconcileModal && reconcileModal.specs ? reconcileModal.specs : (reconcileModal ? [reconcileModal.spec].filter(Boolean) : [])}
+        component={reconcileModal ? reconcileModal.component : null}
+        annotation={reconcileModal ? reconcileModal.annotation : null}
+        proposal={reconcileModal ? reconcileModal.proposal : null}
+        onCreateProposal={handleCreateProposal}
+        onApply={handleApplyProposal}
+        onReject={handleRejectProposal}
+        onDefer={handleDeferProposal}
+        onRebase={handleRebaseProposal}
+        onClose={() => setReconcileModal(null)}
       />
     </div>
   );

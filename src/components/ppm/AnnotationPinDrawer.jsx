@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, Plus, Trash2, MapPin, Check, RotateCcw, Layers } from 'lucide-react';
+import { X, Plus, Trash2, MapPin, Check, RotateCcw, Layers, Pencil } from 'lucide-react';
 import { BADGE_COLOR_CLASSES } from '../../lib/constants';
 import ComponentPicker from './ComponentPicker';
 import {
@@ -9,6 +9,7 @@ import {
   setAnnotationStatus,
   deleteAnnotation,
   deleteNote,
+  updateNote,
   nextPinNumber,
   decisionFirstNotes,
   fetchSpecsForComponentM3,
@@ -65,6 +66,11 @@ export default function AnnotationPinDrawer({
   const [vSpecId, setVSpecId] = useState('');
   const [addNoteText, setAddNoteText] = useState('');
   const [addNoteType, setAddNoteType] = useState(NOTE_TYPE.DISCUSSION);
+  // Edit catatan individual (inline per note). editingNoteId = id note yang
+  // sedang di-edit (null = tidak ada). Membuka drawer / ganti pin -> reset.
+  const [editingNoteId, setEditingNoteId] = useState(null);
+  const [editNoteText, setEditNoteText] = useState('');
+  const [editNoteType, setEditNoteType] = useState(NOTE_TYPE.DISCUSSION);
   const [specOptions, setSpecOptions] = useState([]);
   const [vSpecOptions, setVSpecOptions] = useState([]);
   const [loadingSpecs, setLoadingSpecs] = useState(false);
@@ -78,6 +84,9 @@ export default function AnnotationPinDrawer({
       setEditingContext(false);
       setAddNoteText('');
       setAddNoteType(NOTE_TYPE.DISCUSSION);
+      setEditingNoteId(null);
+      setEditNoteText('');
+      setEditNoteType(NOTE_TYPE.DISCUSSION);
       setSpecOptions([]);
       setVSpecOptions([]);
 
@@ -261,6 +270,43 @@ export default function AnnotationPinDrawer({
     }
   };
 
+  // Mulai edit catatan individual (inline). Pre-fill text + jenis dari note.
+  // Hanya satu note yang bisa di-edit pada satu waktu (editingNoteId).
+  const handleStartEditNote = (note) => {
+    if (!canManage) return;
+    setEditingNoteId(note.id);
+    setEditNoteText(note.note_text || '');
+    setEditNoteType(note.note_type || NOTE_TYPE.DISCUSSION);
+  };
+
+  const handleCancelEditNote = () => {
+    setEditingNoteId(null);
+    setEditNoteText('');
+    setEditNoteType(NOTE_TYPE.DISCUSSION);
+  };
+
+  // Simpan perubahan catatan via updateNote (validasi sama dgn add: blank-check).
+  const handleSaveEditNote = async (note) => {
+    if (!canManage) return;
+    if (isBlankNote(editNoteText)) { alert('Catatan tidak boleh kosong.'); return; }
+    setSaving(true);
+    try {
+      await updateNote(note.id, {
+        note_text: editNoteText,
+        note_type: editNoteType,
+      });
+      setEditingNoteId(null);
+      setEditNoteText('');
+      setEditNoteType(NOTE_TYPE.DISCUSSION);
+      if (onChanged) await onChanged();
+    } catch (err) {
+      console.error(err);
+      alert('Gagal mengubah catatan.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const statusColor = BADGE_COLOR_CLASSES[ANNOTATION_STATUS_COLORS[viewAnnotation ? viewAnnotation.status : ANNOTATION_STATUS.OPEN]] || 'badge-gray';
   const noteBadge = (t) => BADGE_COLOR_CLASSES[NOTE_TYPE_COLORS[t]] || 'badge-gray';
 
@@ -441,19 +487,57 @@ export default function AnnotationPinDrawer({
                   <p className="text-sm text-ink-500">Belum ada catatan.</p>
                 ) : (
                   <div className="space-y-2">
-                    {decisionFirstNotes(viewAnnotation.notes).map((note) => (
+                    {decisionFirstNotes(viewAnnotation.notes).map((note) => {
+                      const isEditing = editingNoteId === note.id;
+                      return (
                       <div key={note.id} className={'rounded-lg border p-3 ' + (note.note_type === NOTE_TYPE.DECISION ? 'border-green-500/40 bg-green-500/5' : 'border-white/10 bg-black/20')}>
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <span className={'badge ' + noteBadge(note.note_type)}>{NOTE_TYPE_LABELS[note.note_type]}</span>
-                          {canManage && (
-                            <button onClick={() => handleDeleteNote(note)} className="p-1 text-ink-400 hover:text-red-400" title="Hapus catatan">
-                              <Trash2 size={14} />
-                            </button>
+                          {canManage && !isEditing && (
+                            <div className="flex items-center gap-1">
+                              <button onClick={() => handleStartEditNote(note)} className="p-1 text-ink-400 hover:text-primary-400" title="Edit catatan">
+                                <Pencil size={14} />
+                              </button>
+                              <button onClick={() => handleDeleteNote(note)} className="p-1 text-ink-400 hover:text-red-400" title="Hapus catatan">
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
                           )}
                         </div>
-                        <p className="text-sm text-white whitespace-pre-wrap break-words">{note.note_text}</p>
+                        {isEditing ? (
+                          <div className="space-y-2">
+                            <textarea
+                              value={editNoteText}
+                              onChange={(e) => setEditNoteText(e.target.value)}
+                              rows={2}
+                              className="input w-full"
+                              placeholder="Tulis catatan..."
+                            />
+                            <div className="flex flex-wrap gap-2">
+                              {[NOTE_TYPE.DISCUSSION, NOTE_TYPE.INFO, NOTE_TYPE.DECISION].map((t) => (
+                                <button
+                                  key={t}
+                                  type="button"
+                                  onClick={() => setEditNoteType(t)}
+                                  className={'btn btn-sm ' + (editNoteType === t ? 'btn-primary' : 'btn-secondary')}
+                                >
+                                  {NOTE_TYPE_LABELS[t]}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <button onClick={handleCancelEditNote} disabled={saving} className="btn btn-ghost btn-sm">Batal</button>
+                              <button onClick={() => handleSaveEditNote(note)} disabled={saving} className="btn-primary btn-sm">
+                                <Check size={14} /> Simpan
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-white whitespace-pre-wrap break-words">{note.note_text}</p>
+                        )}
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

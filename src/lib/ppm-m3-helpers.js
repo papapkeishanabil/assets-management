@@ -274,6 +274,30 @@ export async function deleteAnnotation(annotationId) {
   if (error) throw error;
 }
 
+// Edit note individual (note_text dan/atau note_type). Validasi sama dengan
+// addNoteToAnnotation (blank-check + normalize). note_type opsional; bila
+// tidak diberikan, jenis catatan tidak berubah. RLS update via annotation
+// (creator meeting / super_admin) — sama dengan delete.
+export async function updateNote(noteId, { note_text, note_type } = {}) {
+  if (!noteId) throw new Error('note_id wajib diisi');
+  if (note_text === undefined) {
+    throw new Error('note_text wajib diisi (gunakan deleteNote untuk menghapus)');
+  }
+  if (isBlankNote(note_text)) {
+    throw new Error('Catatan tidak boleh kosong');
+  }
+  const patch = { note_text: normalizeNoteText(note_text) };
+  if (note_type !== undefined) patch.note_type = note_type;
+  const { data, error } = await supabase
+    .from('ppm_annotation_notes')
+    .update(patch)
+    .eq('id', noteId)
+    .select('*')
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 // Hapus note individual — TIDAK otomatis menghapus pin.
 export async function deleteNote(noteId) {
   const { error } = await supabase

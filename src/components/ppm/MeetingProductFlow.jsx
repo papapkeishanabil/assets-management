@@ -46,6 +46,9 @@ export default function MeetingProductFlow({
   onMeetingTechnicalReview,
   onManageItem,
   onManageComponents,
+  // M4 (optional pass-through): rekonsiliasi spec <-> keputusan.
+  onSelaraskan,
+  proposalsBySpec,
 }) {
   // ---------- [1] PRODUCT SELECTION (entry default) ----------
   // Order Context (PO#/customer/Meeting Aktif/qty/Produk/Review/Pin + [Lihat
@@ -293,6 +296,8 @@ export default function MeetingProductFlow({
           onFocusPin={onFocusPin}
           onQuickAddPin={onQuickAddPin}
           onTechnicalReview={onMeetingTechnicalReview}
+          onSelaraskan={onSelaraskan}
+          proposalsBySpec={proposalsBySpec}
         />
       </div>
     </div>

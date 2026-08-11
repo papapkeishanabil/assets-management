@@ -42,6 +42,9 @@ export default function AnnotationSidebar({
   discussionItem,
   discussionComponentId,
   onTechnicalReview,
+  // M4 (optional pass-through): rekonsiliasi spec <-> keputusan.
+  onSelaraskan,
+  proposalsBySpec,
   className = '',
 }) {
   const [tab, setTab] = useState(initialTab);
@@ -157,6 +160,8 @@ export default function AnnotationSidebar({
               onFocusPin={onFocusPin}
               onQuickAddPin={onQuickAddPin}
               onTechnicalReview={onTechnicalReview}
+              onSelaraskan={onSelaraskan}
+              proposalsBySpec={proposalsBySpec}
             />
           </div>
         ) : tab === 'pins' ? (

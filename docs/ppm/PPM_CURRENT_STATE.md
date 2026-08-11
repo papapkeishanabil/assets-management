@@ -1,10 +1,13 @@
 # PPM — Current State (Save Game)
 
-> **Last updated:** 2026-08-10 — **M3 family (M3 / M3.1 / M3.2) LOCKED**
-> (user-accepted: *"M3 untuk sementara cukup, lanjut berikutnya."*). Regression
-> 284 PASS / 0 FAIL + build PASS. Viewer baseline dikunci. Incl. FINAL MEETING
-> UX (Product Discussion Flow + MICRO-POLISH). Physical HP + projector physical
-> test = DEFERRED (user reviewed on monitor/browser, not physical device).
+> **Last updated:** 2026-08-10 — **M3 family LOCKED** + **M4 IMPLEMENTED /
+> PENDING USER VERIFICATION** (Decision ↔ Technical Specification
+> Reconciliation; additive proposal layer; NO LOCK). Regression aggregate
+> **349 PASS / 0 FAIL** + build PASS. M3 family user-accepted 2026-08-10
+> (*"M3 untuk sementara cukup, lanjut berikutnya."*). Viewer baseline dikunci.
+> Incl. FINAL MEETING UX (Product Discussion Flow + MICRO-POLISH). Physical HP +
+> projector physical test = DEFERRED (user reviewed on monitor/browser, not
+> physical device).
 > **Source of truth:** `AGENTS.md`, migration SQL di `supabase/migrations/`,
 > test counts di bawah, dan kode aktual di `src/` (branch `modul-ppm`).
 > Jangan edit milestone LOCKED.
@@ -26,9 +29,12 @@ Meeting
         └── Product Item (ppm_po_items)
               └── Component (ppm_item_components)
                     ├── Technical Specification (ppm_component_specifications)
-                    │     └── Technical Review (review_status pada spesifikasi)
+                    │     ├── Technical Review (review_status pada spesifikasi)
+                    │     └── Spec Change Proposal (ppm_spec_change_proposals) [M4]
+                    │           (governance: Decision → Spec; APPLY reuse resolveSpecification)
                     └── Annotation (ppm_annotations)  [M3]
                           └── Note (ppm_annotation_notes)  [M3]
+                                (DECISION note = evidence link ke proposal [M4])
 ```
 
 ## Tabel penting
@@ -45,6 +51,7 @@ Meeting
 | `ppm_meeting_pos` | header PO | M1 |
 | `ppm_annotations` | pin annotation pada gambar PO (konteks item/komponen/spec) | M3 |
 | `ppm_annotation_notes` | notes flat per pin (DISCUSSION/DECISION/INFO) | M3 |
+| `ppm_spec_change_proposals` | governance: keputusan meeting → satu spec (typed proposed value + baseline snapshot + lifecycle PROPOSED/APPROVED/REJECTED/DEFERRED + stale protection + idempotency) | M4 |
 
 ## Locked Milestones
 
@@ -58,6 +65,7 @@ Meeting
 | **M3** | **LOCKED** | 46 PASS / 0 FAIL (user-accepted 2026-08-10) |
 | **M3.1** | **LOCKED** | 70 PASS / 0 FAIL (bagian dari M3) |
 | **M3.2** | **LOCKED** | hardening + visual polish + Meeting Product Discussion Flow (bagian dari M3) |
+| **M4** | **IMPLEMENTED / PENDING USER VERIFICATION** (NO LOCK) | 65 PASS / 0 FAIL (pure + DB); aggregate 349 PASS |
 
 > **M3 family LOCKED (2026-08-10)** — user verifikasi manual ACCEPTED (regression
 > 284 PASS / 0 FAIL + build PASS). Viewer baseline dikunci: Fit-to-PO, zoom/pan,
@@ -65,26 +73,28 @@ Meeting
 > smart component focus, Product Discussion Flow, Component Discussion, Meeting
 > Focus Mode. Jangan refactor tanpa bug report / requirement eksplisit.
 
-## Test & Build (hasil aktual, fresh — 2026-08-09)
+## Test & Build (hasil aktual, fresh — 2026-08-10)
 
 - `npm run test:ppm:m3` → **46 PASS / 0 FAIL**
 - `npm run test:ppm:m3.1` → **70 PASS / 0 FAIL**
 - `npm run test:ppm:m3.1:render` → **12 PASS / 0 FAIL** (SSR smoke render)
 - `npm run test:ppm:m3.1:fit` → **17 PASS / 0 FAIL** (pure fit/fullscreen + resize-preserve logical viewport; TIDAK termasuk aggregate)
-- `npm run test:ppm` (aggregate) → **284 PASS / 0 FAIL**
-  (48 + 40 + 68 + 46 + 70 + 12 = 284; `test:ppm:m3.1:fit` dijalankan terpisah)
-- `npm run build` → **PASS** (`vite build` EXIT 0, ~1491 modules, 10.5s)
+- `npm run test:ppm:m4` → **65 PASS / 0 FAIL** (pure helpers + DB contract)
+- `npm run test:ppm` (aggregate) → **349 PASS / 0 FAIL**
+  (48 + 40 + 68 + 46 + 70 + 12 + 65 = 349; `test:ppm:m3.1:fit` dijalankan terpisah)
+- `npm run build` → **PASS** (`vite build` EXIT 0, 1497 modules, 21.8s)
 - Browser harness (Playwright, Chromium, komponen asli tanpa auth): **21 PASS / 0 FAIL**
   (per M3_REPORT; hasil lama — bukan hasil baru, harness tidak dijalankan ulang saat handoff ini)
 - Manual browser halaman PO asli (auth): **NOT TESTED**
 
-## Feature Inventory & Status (M3 / M3.1 — semua belum LOCK)
+## Feature Inventory & Status (M3 / M3.1 / M4 — M4 belum LOCK)
 
 Semua item di bawah **IMPLEMENTED / PENDING USER VERIFICATION** (kode + automated test
 hijau; verifikasi manual user di browser belum selesai). Automated test PASS **tidak**
-dianggap manual UX PASS.
+dianggap manual UX PASS. M3/M3.1 telah user-accepted (LOCKED); **M4 belum LOCK**.
 
 | Fitur | Status | Catatan |
+|---|---|---|
 |---|---|---|
 | Annotation CRUD: pin + notes (DISCUSSION/DECISION/INFO), status OPEN/RESOLVED, drag pin, delete (cascade), konteks item→komponen→(optional) spec | IMPLEMENTED / PENDING USER VERIFICATION | M3; migration `202608080006_ppm_m3_annotations.sql` |
 | Rangkuman Komponen (group live item→komponen→pin→notes, decision prominent) | IMPLEMENTED / PENDING USER VERIFICATION | mobile card + right sidebar |
@@ -102,6 +112,10 @@ dianggap manual UX PASS.
 | **Meeting Product Discussion Flow** — meeting punya 2 sub-state UI (no DB): **Product Selection** (Order Overview + kartu produk + [Bahas Produk]) & **Product Discussion** (header + **component rail** `[Overview][Kerah][Saku]…` dari komponen nyata + workspace viewer [Overview=Fit-to-PO via fail-safe engine] + panel kanan **Diskusi** [specs + catatan visual komponen aktif] + nav [Sebelumnya/Berikutnya komponen] + [← Semua Produk]/[Berikutnya: …→ produk]). Admin blocks (Technical Review big block, Kelola Produk accordion) disembunyikan di meeting mode (display:none) → digantikan Product Flow + Technical Review via modal. Viewer internals TIDAK diubah (§15/§24); node workspace tetap mounted, order via CSS | IMPLEMENTED / PENDING USER FINAL VERIFICATION | `MeetingProductFlow`, `ComponentDiscussionContent`, `AnnotationSidebar` (tab Diskusi), `PPMPoDetailPage`, `index.css` — sesi ini |
 | **Floating summary card = near-opaque charcoal contextual surface** (~#111827, alpha ~0.93–0.95) di kedua theme; connector biru tegas; pin biru; mini-map/toolbar/sidebar tetap light | IMPLEMENTED / PENDING USER VERIFICATION | M3.1 visual fix + M3 polish (sebelumnya frosted alpha 0.55–0.62) — **belum diverifikasi user** |
 | **Meeting Workspace layout** — saat meeting IN_PROGRESS: section **di-reorder via flex `order`** → compact header → **ANNOTATION WORKSPACE (PRIMARY/hero, `min-height: calc(100vh-8rem)`)** → mobile recap → Technical Review → Produk → PO detail (collapsed + sekunder visual); PO summary/Review/Items collapse default (toggle expand), compact context strip, kontrol duplikat di-consolidate (toolbar viewer = primary; Tambah Pin & Tampilkan Semua `lg:hidden` di page header), card↔pin `CARD.GAP` 24→44, sidebar group bg subtle; non-meeting mode pass-through (admin layout tak berubah, urutan DOM admin dipertahankan) | IMPLEMENTED / PENDING USER FINAL VISUAL VERIFICATION | M3 polish + reorder, sesi ini — **belum diverifikasi user** |
+| **M4 Decision ↔ Spec — Spec Change Proposal** (governance layer): keputusan meeting → satu spec via record `ppm_spec_change_proposals`; typed proposed value (`value_*` per `value_type`) **DIPISAH** dari `decision_note`; baseline snapshot spec's current value; lifecycle `PROPOSED → {APPROVED\|REJECTED\|DEFERRED}`; domain proposal status terpisah dari spec `review_status` & annotation `status` | IMPLEMENTED / PENDING USER VERIFICATION (NO LOCK) | M4; migration `202608100002_ppm_m4_spec_change_proposals.sql` (additive); `ppm-m4-specs.js` + `ppm-m4-helpers.js` |
+| **M4 APPLY proposal → spec** — reuse `resolveSpecification()` (M2.2 path, NO new spec-mutation path, NO RPC): spec jadi `RESOLVED` + `source_type=MEETING`, `original_value_*` dijaga trigger M2 | IMPLEMENTED / PENDING USER VERIFICATION (NO LOCK) | M4; ADR-026 |
+| **M4 Stale protection + idempotency** — APPLY compare baseline vs current: block default (`conflict_snapshot_json`) / force override (`applied_despite_conflict`) / rebase (review ulang); re-APPLY setelah APPROVED = no-op (`WHERE status IN (PROPOSED,DEFERRED)` guard) | IMPLEMENTED / PENDING USER VERIFICATION (NO LOCK) | M4; client-orchestrated (sesuai konvensi PPM) |
+| **M4 Reconciliation UX** — `SpecReconciliationModal` (create: spec picker + SpecValueInput typed + decision_note; review: spec current + proposal + kartu konflik + 3-way actions) + badge compact "⚠ Belum Diselaraskan [Detail]" di FloatingPinCard (NO big form) + per-spec sub-row "⚠ Meeting Decision [Selaraskan]" di ComponentDiscussionContent. Viewer internals untouched (additive optional props) | IMPLEMENTED / PENDING USER VERIFICATION (NO LOCK) | M4; `SpecValueInput.jsx` (NEW pure), `SpecReconciliationModal.jsx` (NEW), patches FloatingPinCard / ComponentDiscussionContent / AnnotationSidebar / MeetingProductFlow / AnnotationCanvas (pass-through) / PPMPoDetailPage |
 | Annotation untuk dokumen **PDF** (render pin) | NOT IMPLEMENTED | hanya gambar (jpg/jpeg/png); PDF dirender iframe tanpa pin |
 | `po_document_id` / `page_number` (multi-page viewer) | NOT IMPLEMENTED | kolom ada di schema, diisi null |
 
@@ -166,8 +180,12 @@ Automated test PASS ≠ manual UX PASS. Berikut status jujur verifikasi manual u
 ## Next Planned Milestone
 
 - **M3 family (M3 / M3.1 / M3.2) — LOCKED** (user-accepted 2026-08-10; regression
-  284 PASS / 0 FAIL + build PASS). Tidak ada milestone aktif saat ini.
-- Milestone berikutnya belum ditentukan (tunggu instruksi user).
+  284 PASS / 0 FAIL + build PASS).
+- **M4 — Decision ↔ Technical Specification Reconciliation — IMPLEMENTED /
+  PENDING USER VERIFICATION** (NO LOCK). Additive proposal layer; APPLY reuse
+  `resolveSpecification()`. Regression aggregate 349 PASS / 0 FAIL + build PASS.
+  Verifikasi manual user di browser belum selesai.
+- Milestone berikutnya (M5) belum ditentukan (tunggu instruksi user).
 
 > **Aturan eksplisit:** jangan lanjut milestone berikutnya tanpa instruksi spesifik dari user.
 
@@ -178,7 +196,58 @@ HEAD terakhir = `d5bf8c7` (lock M2 + handoff standardization). Branch: `modul-pp
 
 **Tujuan perubahan saat ini:** menyelesaikan M3 (Annotation & Component Discussion) dan
 M3.1 (Annotation Viewer UX) + bugfix fullscreen viewer + visual fix floating card dark
-di Light theme. **Jangan commit / push tanpa instruksi user.**
+di Light theme; lalu **M4 (Decision ↔ Technical Specification Reconciliation)**.
+**Jangan commit / push tanpa instruksi user.**
+
+### M4 — Decision ↔ Technical Specification Reconciliation (sesi ini — PENDING USER VERIFICATION, NO LOCK)
+**Business rule user:** Technical Specification = FINAL STRUCTURED PRODUCT TRUTH;
+Annotation Decision = keputusan meeting. Keputusan yang berkaitan dgn spec & nilainya
+berbeda → **rekonsiliasi eksplisit** via proposal layer (bukan overwrite langsung).
+**Pure additive** — TIDAK rewrite M2/M3, TIDAK ubah schema spec/annotation/notes, TIDAK
+tambah enum review_status (destructive ALTER dilarang), TIDAK buat RPC. APPLY **reuse
+`resolveSpecification()`** (M2.2 path — RESOLVED + MEETING + original preserved trigger).
+Detail penuh di `docs/ppm/milestones/M4_REPORT.md` + ADR-026.
+
+- **NEW table `ppm_spec_change_proposals`** (additive): target spec + evidence (annotation
+  + note, nullable SET NULL) + typed proposed value (`value_*` per `value_type`, MIRROR
+  spec) **DIPISAH** dari `decision_note` (free text) + baseline snapshot + lifecycle
+  `PROPOSED → {APPROVED|REJECTED|DEFERRED}` + APPLY audit (`applied_despite_conflict`,
+  `conflict_snapshot_json`). 5 index + RLS (Pattern A SELECT; Pattern B WRITE via
+  `meeting_po_id`) + trigger `updated_at` reuse. Migration
+  `supabase/migrations/202608100002_ppm_m4_spec_change_proposals.sql` + runner.
+- **Helpers:** `src/lib/ppm-m4-specs.js` (pure: `PROPOSAL_STATUS`/_LABELS/_COLORS,
+  `UNRECONCILED_STATUSES`, `firstDecisionNote` centralize, `proposalValueInfo`/
+  `proposalBaselineInfo`, `formatProposalValue`, `isUnreconciled`/`canTransition`/
+  `isApplyable`, `detectConflict`, `specValueChanged`/`hasSpecOriginalValue`) +
+  `src/lib/ppm-m4-helpers.js` (DB: `fetchProposalsForPO`, `createProposal` baseline
+  snapshot, `applyProposal` idempotency+conflict+force+reuse `resolveSpecification`,
+  `rejectProposal`/`deferProposal`/`rebaseProposal`/`fetchProposalById`). PGRST116 / 0
+  rows = idempotent.
+- **Components:** `SpecValueInput.jsx` (NEW pure typed input per value_type) +
+  `SpecReconciliationModal.jsx` (NEW: create + review modes, kartu konflik, 3-way
+  actions; tetap terbuka bila APPLY return `{conflict:true}`).
+- **PATCH (additive optional props — no behavior change when absent):**
+  `FloatingPinCard.jsx` (badge compact "⚠ Belum Diselaraskan [Detail]" sibling setelah
+  DECISION, NO big form; link "Usulkan ke Spec" di expanded footer), `ComponentDiscussionContent.jsx`
+  (per-spec sub-row "⚠ Meeting Decision [Selaraskan]"), `AnnotationSidebar.jsx` +
+  `MeetingProductFlow.jsx` (pass-through `onSelaraskan`+`proposalsBySpec`),
+  `AnnotationCanvas.jsx` (protected viewer — +optional `onProposeSpecChange` **pure
+  pass-through**, no engine/geometry/focus change).
+- **Orchestrator:** `PPMPoDetailPage.jsx` — `fetchProposalsForPO` di fetchPO; memo
+  `proposalsBySpec`+`proposalsByAnnotation`; enrichment `annotation._unreconciledProposal`
+  pada `filteredAnnotations` (derived map); 7 handler (`handleProposeSpecChange`/
+  `handleSelaraskan`/`handleCreateProposal`/`handleApplyProposal` [return res, if
+  `res.conflict`→toast+refresh+no close]/`handleRejectProposal`/`handleDeferProposal`/
+  `handleRebaseProposal`); mount `<SpecReconciliationModal>`; wire
+  `onProposeSpecChange={canManage ? handler : undefined}`.
+- **Test:** `scripts/test-ppm-m4.js` (marker `__TEST_M4__<run_id>`; 65 PASS — pure via
+  import + DB contract via REST service key; cleanup by created ID + marker sweep).
+  `package.json` → `test:ppm:m4` + extend aggregate `test:ppm`.
+- **Verification:** migration applied; `test:ppm:m4` 65 PASS / 0 FAIL; aggregate
+  `test:ppm` **349 PASS / 0 FAIL**; `build` **PASS** (1497 modules, 21.8s).
+  Manual browser (auth) — **NOT TESTED** (tunggu verifikasi user).
+- **Status: IMPLEMENTED / PENDING USER VERIFICATION. NO LOCK M4. NO commit/push.
+  NO M5.** Working tree unrelated Contract/PKWTT changes — TIDAK disentuh.
 
 ### M3 FINAL MEETING UX — Product Discussion Flow (sesi ini — PENDING USER FINAL VERIFICATION)
 Restruktur information-flow meeting agar mengikuti narasi moderator:
@@ -427,23 +496,30 @@ viewer. **(§17):** Component Explorer = presentasi ringkas data `items` yg sama
   0 FAIL** (sidebar pins/recap tab tetap PASS dgn tab baru); `build` **PASS**.
 
 **Modified (tracked):**
-- `package.json` — script test `m3`, `m3.1`, `m3.1:render`, `m3.1:fit`, aggregate `test:ppm`
+- `package.json` — script test `m3`, `m3.1`, `m3.1:render`, `m3.1:fit`, `m4`, aggregate `test:ppm`
 - `src/App.jsx` — wrap `MainLayout` dengan `MeetingFocusProvider`
 - `src/components/layout/MainLayout.jsx` — Meeting Focus Mode (sidebar hidden, badge, validasi status DB)
 - `src/pages/PPMMeetingRoomPage.jsx` — tombol Mulai/Selesaikan/Buka Kembali meeting + sinkron focus
-- `src/pages/PPMPoDetailPage.jsx` — integrasi Annotation Viewer, sidebar, drawer, register, mobile sheet, fullscreen, focus
+- `src/pages/PPMPoDetailPage.jsx` — integrasi Annotation Viewer, sidebar, drawer, register, mobile sheet, fullscreen, focus + **M4 (proposal fetch/enrich + 7 handler + mount SpecReconciliationModal)**
 - `src/index.css` — palette `annotation-card*` (dedicated dark overlay), class fullscreen workspace, `focus-meeting-active`
+- `src/components/ppm/FloatingPinCard.jsx` — **M4: +optional `onProposeSpecChange` + badge "Belum Diselaraskan"**
+- `src/components/ppm/ComponentDiscussionContent.jsx` — **M4: +optional `onSelaraskan` + per-spec sub-row**
+- `src/components/ppm/AnnotationSidebar.jsx` — **M4: pass-through `onSelaraskan`+`proposalsBySpec`**
+- `src/components/ppm/MeetingProductFlow.jsx` — **M4: pass-through ke mobile ComponentDiscussionContent**
+- `src/components/ppm/AnnotationCanvas.jsx` — **M4: +optional `onProposeSpecChange` (pure pass-through, viewer engine untouched)**
 - `docs/*` + `AGENTS.md` — handoff/status
 
 **Untracked (baru):**
 - `supabase/migrations/202608080006_ppm_m3_annotations.sql`
+- **`supabase/migrations/202608100002_ppm_m4_spec_change_proposals.sql`** (M4 additive)
 - `src/lib/ppm-m3-specs.js`, `src/lib/ppm-m3-helpers.js` (M3 pure + DB)
 - `src/lib/ppm-m31-specs.js`, `src/lib/ppm-m31-helpers.js` (M3.1 pure + DB)
-- `src/components/ppm/` — `AnnotationCanvas.jsx`, `AnnotationSidebar.jsx`, `AnnotationPinDrawer.jsx`, `AnnotationRegisterModal.jsx`, `MobilePinSummarySheet.jsx`, `ComponentPicker.jsx`, `FloatingPinCard.jsx`, `MiniMap.jsx`
+- **`src/lib/ppm-m4-specs.js`, `src/lib/ppm-m4-helpers.js`** (M4 pure + DB)
+- `src/components/ppm/` — `AnnotationCanvas.jsx`, `AnnotationSidebar.jsx`, `AnnotationPinDrawer.jsx`, `AnnotationRegisterModal.jsx`, `MobilePinSummarySheet.jsx`, `ComponentPicker.jsx`, `FloatingPinCard.jsx`, `MiniMap.jsx`, **`SpecValueInput.jsx` (M4), `SpecReconciliationModal.jsx` (M4)**
 - `src/contexts/MeetingFocusContext.jsx`
-- `scripts/` — `run-ppm-m3-migration.js`, `test-ppm-m3.js`, `test-ppm-m31.js`, `test-ppm-m31-render.js`, `test-ppm-m31-fit.js`, `test-m31-browser.py`
+- `scripts/` — `run-ppm-m3-migration.js`, `test-ppm-m3.js`, `test-ppm-m31.js`, `test-ppm-m31-render.js`, `test-ppm-m31-fit.js`, `test-m31-browser.py`, **`run-ppm-m4-migration.js`, `test-ppm-m4.js` (M4)**
 - `dev-viewer-test.html`, `dev-viewer-test.jsx` (harness browser)
-- `docs/ppm/milestones/M3_REPORT.md`, `M3_1_REPORT.md`
+- `docs/ppm/milestones/M3_REPORT.md`, `M3_1_REPORT.md`, **`M4_REPORT.md` (M4)**
 
 ## Known Limitations (project)
 
@@ -458,10 +534,11 @@ viewer. **(§17):** Component Explorer = presentasi ringkas data `items` yg sama
 
 ## Related docs
 
-- `docs/ppm/PPM_DECISIONS.md`
+- `docs/ppm/PPM_DECISIONS.md` (incl. ADR-026)
 - `docs/ppm/PPM_ROADMAP.md`
 - `docs/ppm/milestones/M3_REPORT.md`
 - `docs/ppm/milestones/M3_1_REPORT.md`
+- `docs/ppm/milestones/M4_REPORT.md`
 - `docs/development/DEV_SETUP.md`
 - `docs/development/TESTING.md`
 - `docs/development/AI_HANDOFF.md`

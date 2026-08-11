@@ -118,3 +118,33 @@ Contoh: Technical R01, Plan P01.
 ## ADR-025
 **Test data tidak boleh menghapus data production.**
 Cleanup hanya berdasarkan created ID + marker test unik.
+
+## ADR-026
+**Annotation Decision → Technical Specification via explicit proposal layer
+(governed), bukan overwrite langsung.**
+Technical Specification (`ppm_component_specifications`) = satu-satunya FINAL
+STRUCTURED PRODUCT TRUTH. Annotation = visual evidence; Annotation **Decision**
+(`note_type=DECISION`) = keputusan meeting. Sebuah keputusan yang berkaitan dgn
+spec **TIDAK menimpa** spec secara langsung — ditenun lewat layer governance baru
+`ppm_spec_change_proposals` (M4, additive):
+- **Structured proposed value (`value_*` typed per `value_type`) DIPISAH dari
+  discussion note (`decision_note` free text).** Sebuah keputusan bernilai
+  terstruktur ≠ catatan diskusi.
+- **Proposal status domain TERPISAH** dari `review_status` spec
+  (CONFIRMED/RESOLVED/dst) maupun `status` annotation (OPEN/RESOLVED). Proposal:
+  `PROPOSED → {APPROVED | REJECTED | DEFERRED}`. Tiga domain berbeda, tidak
+  saling mengganggu progress/eligibility spec (M2.2 LOCKED).
+- **APPLY proposal = SIDE EFFECT pada spec via `resolveSpecification()` (M2.2
+  path)** — TIDAK ada jalur spec-mutation baru, TIDAK ada RPC/PG function. Spec
+  jadi `RESOLVED` + `source_type=MEETING`; `original_value_*` dijaga trigger DB.
+  Proposal `APPROVED` = terminal.
+- **Stale protection**: baseline snapshot spec's current value saat propose;
+  APPLY membandingkan baseline vs current — block default bila berubah
+  (`conflict_snapshot_json`), `force=true` untuk override (mencatat
+  `applied_despite_conflict`), `rebase` untuk review ulang dari nilai terkini.
+- **Idempotency**: APPLY/REJECT/DEFER memakai `WHERE id=? AND status IN
+  (PROPOSED,DEFERRED)` — re-APPLY setelah `APPROVED` = no-op. Client-orchestrated
+  (sesuai konvensi PPM; tidak ada RPC).
+- Evidence link (`annotation_id`/`annotation_note_id` nullable SET NULL) +
+  `component_specification_id` nullable SET NULL: governance/audit trail
+  proposal + snapshot tetap utuh walau pin/note/spec dihapus.
