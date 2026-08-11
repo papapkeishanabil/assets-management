@@ -86,11 +86,11 @@ export default function DashboardPage() {
         supabase.from('maintenance_schedules')
           .select(`
             id, next_maintenance_date,
-            asset:assets!inner(id, asset_code, asset_name, is_active),
+            asset:assets(id, asset_code, asset_name, is_active),
             maintenance_type:maintenance_types!left(maintenance_name)
           `)
           .eq('is_active', true)
-          .eq('asset.is_active', true)
+          .or('asset_id.is.null,asset.is_active.eq.true')
           .gte('next_maintenance_date', today)
           .lte('next_maintenance_date', nextWeekStr)
           .order('next_maintenance_date', { ascending: true })
@@ -457,7 +457,7 @@ export default function DashboardPage() {
                             {s.maintenance_type?.maintenance_name || 'Pemeliharaan'}
                           </div>
                           <div className="text-xs text-ink-400 mt-0.5 truncate font-mono">
-                            {s.asset?.asset_code} · {s.asset?.asset_name}
+                            {s.asset ? `${s.asset.asset_code} · ${s.asset.asset_name}` : 'Umum / tanpa aset'}
                           </div>
                           <div className="text-[11px] text-ink-500 mt-0.5 font-mono">
                             {isToday ? 'Hari ini' : isOverdue ? `Terlambat ${Math.abs(diff)} hari` : `${diff} hari lagi`}

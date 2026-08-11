@@ -61,7 +61,7 @@ export default function MaintenanceSchedulesPage() {
         .from('maintenance_schedules')
         .select(`
           *,
-          asset:assets!inner(id, asset_code, asset_name, category_id, is_active, current_odometer),
+          asset:assets(id, asset_code, asset_name, category_id, is_active, current_odometer),
           maintenance_type:maintenance_types!inner(id, maintenance_code, maintenance_name)
         `)
         .order(sortField, { ascending: sortOrder === 'asc' });

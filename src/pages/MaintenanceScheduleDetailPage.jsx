@@ -47,7 +47,7 @@ export default function MaintenanceScheduleDetailPage() {
         .from('maintenance_schedules')
         .select(`
           *,
-          asset:assets!inner(id, asset_code, asset_name, category_id, is_active, current_odometer),
+          asset:assets(id, asset_code, asset_name, category_id, is_active, current_odometer),
           maintenance_type:maintenance_types!inner(id, maintenance_code, maintenance_name, description)
         `)
         .eq('id', id)
@@ -617,7 +617,7 @@ export default function MaintenanceScheduleDetailPage() {
                 <div>
                   <h3 className="text-lg font-semibold text-white">Penilaian Draft</h3>
                   <p className="text-xs text-ink-400">
-                    {schedule?.asset?.asset_name} — {schedule?.maintenance_type?.maintenance_name}
+                    {schedule?.asset?.asset_name || 'Umum / tanpa aset'} — {schedule?.maintenance_type?.maintenance_name}
                   </p>
                 </div>
               </div>

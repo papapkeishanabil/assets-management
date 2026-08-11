@@ -208,11 +208,11 @@ Deno.serve(async (req: Request) => {
         next_maintenance_date,
         is_active,
         responsible_user_id,
-        asset:assets!inner(id, asset_code, asset_name, is_active),
+        asset:assets(id, asset_code, asset_name, is_active),
         maintenance_type:maintenance_types!inner(id, maintenance_code, maintenance_name)
       `)
       .eq('is_active', true)
-      .eq('asset.is_active', true)
+      .or('asset_id.is.null,asset.is_active.eq.true')
 
     if (schedError) {
       throw new Error(`Failed to fetch maintenance schedules: ${schedError.message}`)

@@ -98,10 +98,10 @@ Deno.serve(async (req: Request) => {
     .select(
       'id, next_maintenance_date, reminder_days_before, responsible_user_id, '
       + 'maintenance_type:maintenance_types!inner(maintenance_name), '
-      + 'asset:assets!inner(asset_code, asset_name)',
+      + 'asset:assets(asset_code, asset_name)',
     )
     .eq('is_active', true)
-    .eq('asset.is_active', true)
+    .or('asset_id.is.null,asset.is_active.eq.true')
 
   if (sErr) return json({ error: 'Gagal mengambil jadwal', detail: sErr.message }, 500)
   if (!schedules || schedules.length === 0) {

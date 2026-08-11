@@ -126,11 +126,11 @@ export function useNotifications() {
           is_active,
           responsible_user_id,
           reminder_days_before,
-          asset:assets!inner(id, asset_code, asset_name, is_active),
+          asset:assets(id, asset_code, asset_name, is_active),
           maintenance_type:maintenance_types!inner(id, maintenance_code, maintenance_name)
         `)
         .eq('is_active', true)
-        .eq('asset.is_active', true);
+        .or('asset_id.is.null,asset.is_active.eq.true');
 
       if (schedError) throw schedError;
       if (!schedules || schedules.length === 0) return;
