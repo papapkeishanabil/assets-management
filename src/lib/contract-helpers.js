@@ -85,6 +85,14 @@ export const CONTRACT_CATEGORY_LABELS = {
   [CONTRACT_CATEGORIES.OTHER]: 'Lainnya'
 };
 
+export function isIndefiniteContractType(contractType) {
+  if (!contractType) return false;
+
+  const code = String(contractType.type_code || '').toUpperCase().replace(/[^A-Z]/g, '');
+  const name = String(contractType.type_name || '').toUpperCase();
+  return code.endsWith('PKWTT') || /\bPKWTT\b/.test(name);
+}
+
 /**
  * Hitung selisih hari antara dua tanggal
  */

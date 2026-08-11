@@ -10,7 +10,8 @@ import {
 import {
   CONTRACT_STATUSES,
   CONTRACT_STATUS_LABELS,
-  formatDateID
+  formatDateID,
+  isIndefiniteContractType
 } from '../../lib/contract-helpers';
 import toast from 'react-hot-toast';
 
@@ -151,7 +152,17 @@ export default function ContractFormPage() {
   };
 
   const handleChange = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm(prev => {
+      if (field === 'contract_type_id') {
+        const nextType = contractTypes.find(type => type.id === value);
+        return {
+          ...prev,
+          contract_type_id: value,
+          end_date: isIndefiniteContractType(nextType) ? '' : prev.end_date
+        };
+      }
+      return { ...prev, [field]: value };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -171,11 +182,13 @@ export default function ContractFormPage() {
       toast.error('Tanggal mulai harus diisi');
       return;
     }
-    if (!form.end_date) {
+    const selectedContractType = contractTypes.find(type => type.id === form.contract_type_id);
+    const isIndefinite = isIndefiniteContractType(selectedContractType);
+    if (!isIndefinite && !form.end_date) {
       toast.error('Tanggal berakhir harus diisi');
       return;
     }
-    if (new Date(form.end_date) < new Date(form.start_date)) {
+    if (!isIndefinite && new Date(form.end_date) < new Date(form.start_date)) {
       toast.error('Tanggal berakhir harus setelah tanggal mulai');
       return;
     }
@@ -193,7 +206,7 @@ export default function ContractFormPage() {
         vendor_id: form.vendor_id || null,
         department_id: form.department_id || null,
         start_date: form.start_date,
-        end_date: form.end_date,
+        end_date: isIndefinite ? null : form.end_date,
         signed_date: form.signed_date || null,
         renewal_date: form.renewal_date || null,
         contract_value: form.contract_value ? parseFloat(form.contract_value) : null,
@@ -252,6 +265,9 @@ export default function ContractFormPage() {
     const selected = contractTypes.find(t => t.id === form.contract_type_id);
     return selected?.category || '';
   };
+
+  const selectedContractType = contractTypes.find(type => type.id === form.contract_type_id);
+  const isIndefinite = isIndefiniteContractType(selectedContractType);
 
   if (loading) {
     return (
@@ -462,15 +478,19 @@ export default function ContractFormPage() {
 
             <div>
               <label className="block text-sm font-medium text-ink-300 mb-1.5">
-                Tanggal Berakhir <span className="text-danger-400">*</span>
+                Tanggal Berakhir {!isIndefinite && <span className="text-danger-400">*</span>}
               </label>
               <input
                 type="date"
                 value={form.end_date}
                 onChange={(e) => handleChange('end_date', e.target.value)}
                 className="w-full px-3 py-2 text-sm bg-white/5 border border-white/10 rounded-md text-white focus:outline-none focus:border-primary-500/50 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.15)] transition-all"
-                required
+                required={!isIndefinite}
+                disabled={isIndefinite}
               />
+              {isIndefinite && (
+                <p className="mt-1.5 text-xs text-ink-400">PKWTT berlaku tanpa tanggal berakhir.</p>
+              )}
             </div>
 
             <div>

@@ -13,7 +13,14 @@
  * - Push subscription dan VAPID key belum diimplementasikan pada tahap ini.
  */
 
-import { precacheAndRoute } from 'workbox-precaching';
+import { clientsClaim } from 'workbox-core';
+import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
+
+// Aktifkan versi baru segera dan ambil alih semua tab/PWA yang masih
+// dikontrol service worker lama. Ini mencegah bundle UI basi antar-device.
+self.skipWaiting();
+clientsClaim();
+cleanupOutdatedCaches();
 
 // Precache semua aset aplikasi (manifest diinject oleh vite-plugin-pwa)
 precacheAndRoute(self.__WB_MANIFEST);
@@ -82,6 +89,10 @@ self.addEventListener('notificationclose', (event) => {
  * lebih reliable di seluruh browser/OS.
  */
 self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+    return;
+  }
   if (!event.data || event.data.type !== 'SHOW_TEST_NOTIFICATION') return;
   const { payload } = event.data;
   console.log('[Harmas SW] SHOW_TEST_NOTIFICATION received:', payload.title);

@@ -39,3 +39,4 @@ supabase/.temp/
 
 # Temp files
 $null
+.env*.local

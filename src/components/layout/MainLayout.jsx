@@ -2,6 +2,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
+import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { useRolePermissions } from '../../hooks/useRolePermissions';
 import { useMeetingFocus } from '../../contexts/MeetingFocusContext';
 import { ROLE_LABELS, ROLES, PPM_MEETING_STATUS } from '../../lib/constants';
@@ -59,6 +60,33 @@ export default function MainLayout() {
   }, [isInspectionReviewer, profile?.id]);
 
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+
+  // Web Push: biar notifikasi tetap muncul walau aplikasi ditutup.
+  // - Jika izin sudah 'granted' → auto-subscribe diam-diam.
+  // - Jika izin belum diputuskan ('default') → tampilkan banner ajakan sekali saja.
+  // Membutuhkan VITE_VAPID_PUBLIC_KEY terkonfigurasi (Vercel/Supabase env).
+  const push = usePushNotifications();
+  const [showPushBanner, setShowPushBanner] = useState(false);
+
+  useEffect(() => {
+    if (!profile?.id || !push.supported) return;
+    if (push.permission === 'granted' && !push.subscribed) {
+      push.subscribe().catch(err => console.error('[notif] Auto-subscribe gagal:', err));
+    } else if (push.permission === 'default' && !push.subscribed) {
+      const dismissed = localStorage.getItem('harmas-push-banner-dismissed') === '1';
+      if (!dismissed) setShowPushBanner(true);
+    }
+  }, [profile?.id, push.supported, push.permission, push.subscribed, push.subscribe]);
+
+  const dismissPushBanner = () => {
+    localStorage.setItem('harmas-push-banner-dismissed', '1');
+    setShowPushBanner(false);
+  };
+
+  const enablePush = async () => {
+    const ok = await push.subscribe();
+    if (ok) setShowPushBanner(false);
+  };
 
   useEffect(() => {
     const handleEsc = (e) => {
@@ -629,6 +657,32 @@ export default function MainLayout() {
 
         {/* Page Content */}
         <main className="p-4 lg:p-8 max-w-[1600px] mx-auto animate-fade-in relative">
+          {showPushBanner && (
+            <div className="mb-6 flex items-center gap-3 p-4 rounded-xl bg-primary-500/10 border border-primary-500/25 animate-fade-in">
+              <BellRing size={20} className="text-primary-300 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white">Aktifkan notifikasi perangkat</p>
+                <p className="text-xs text-ink-400 mt-0.5">
+                  Agar pengingat jadwal pemeliharaan tetap muncul meskipun aplikasi tidak dibuka.
+                </p>
+              </div>
+              <button
+                onClick={enablePush}
+                disabled={push.loading}
+                className="btn-primary text-xs px-3 py-1.5 rounded-md shrink-0 disabled:opacity-50"
+              >
+                {push.loading ? 'Mengaktifkan...' : 'Aktifkan'}
+              </button>
+              <button
+                onClick={dismissPushBanner}
+                className="p-1.5 text-ink-400 hover:text-white hover:bg-white/5 rounded-md transition-all shrink-0"
+                aria-label="Tutup"
+                title="Tutup"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
           <Outlet />
         </main>
       </div>

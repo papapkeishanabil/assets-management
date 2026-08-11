@@ -118,6 +118,7 @@ export default function ContractsPage() {
   };
 
   const getExpiryBadge = (endDate) => {
+    if (!endDate) return null;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const end = new Date(endDate);
@@ -159,6 +160,7 @@ export default function ContractsPage() {
     if (c.contract_status !== 'ACTIVE') return false;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    if (!c.end_date) return false;
     const end = new Date(c.end_date);
     end.setHours(0, 0, 0, 0);
     const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
@@ -382,7 +384,7 @@ export default function ContractsPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5 text-sm text-ink-300">
                         <Calendar size={12} className="text-ink-500" />
-                        <span>{formatDateID(contract.start_date)} - {formatDateID(contract.end_date)}</span>
+                        <span>{formatDateID(contract.start_date)} - {contract.end_date ? formatDateID(contract.end_date) : 'Tidak terbatas'}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">

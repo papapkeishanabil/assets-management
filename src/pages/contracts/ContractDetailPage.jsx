@@ -128,6 +128,7 @@ export default function ContractDetailPage() {
   };
 
   const getExpiryInfo = (endDate) => {
+    if (!endDate) return null;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const end = new Date(endDate);
@@ -157,7 +158,7 @@ export default function ContractDetailPage() {
   if (!contract) return null;
 
   const expiryInfo = getExpiryInfo(contract.end_date);
-  const ExpiryIcon = expiryInfo.icon;
+  const ExpiryIcon = expiryInfo?.icon;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -237,7 +238,7 @@ export default function ContractDetailPage() {
       </div>
 
       {/* Expiry Alert */}
-      {contract.contract_status === 'ACTIVE' && (
+      {contract.contract_status === 'ACTIVE' && expiryInfo && (
         <div className={`card p-4 border-l-4 ${
           expiryInfo.label.includes('hari yang lalu') ? 'border-danger-500 bg-danger-500/5' :
           expiryInfo.label.includes('hari ini') ? 'border-warning-500 bg-warning-500/5' :
@@ -405,7 +406,7 @@ export default function ContractDetailPage() {
               </div>
               <div>
                 <p className="text-xs text-ink-500 font-medium uppercase tracking-wider">Tanggal Berakhir</p>
-                <p className="text-sm text-white mt-1">{formatDateLongID(contract.end_date)}</p>
+                <p className="text-sm text-white mt-1">{contract.end_date ? formatDateLongID(contract.end_date) : 'Tidak terbatas'}</p>
               </div>
               {contract.signed_date && (
                 <div>

@@ -71,6 +71,7 @@ export function useContractReminders() {
       const notificationsToCreate = [];
 
       for (const contract of contracts) {
+        if (!contract.end_date) continue;
         const daysDiff = getDayDiff(contract.end_date, today);
         const reminderDays = Number(contract.reminder_days_before) || 7;
         let notificationType = null;
