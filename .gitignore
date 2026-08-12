@@ -40,3 +40,7 @@ supabase/.temp/
 # Temp files
 $null
 .env*.local
+
+# Deploy retry clones (full repo checkout untuk retry deploy — transient,
+# berisi node_modules + .git sendiri + .env production, JANGAN di-commit)
+.deploy-pkwtt-retry/
