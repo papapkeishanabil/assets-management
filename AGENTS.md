@@ -53,6 +53,10 @@ konveksi / garment. Satu modul aktif saat ini adalah **PPM (Pra-Produksi)**.
   mobile bottom sheet, Meeting Focus Mode) — bagian dari M3
 - `M3.2`    — LOCKED — Hardening + visual polish + Meeting Product Discussion
   Flow (component rail, tab Diskusi, Order Context) — bagian dari M3
+- `M4.5A`   — LOCKED — Specification Template + Simple Technical Standards
+  (user-accepted 2026-08-13; regression aggregate 571 PASS / 0 FAIL)
+- `M4.5A.1` — LOCKED — Simple Conditional Technical Standards V1 (JIKA = MAKA,
+  EQUALS only; user-accepted 2026-08-13)
 
 **Locked = jangan refactor tanpa bug report / requirement eksplisit dari user.**
 
@@ -77,13 +81,55 @@ konveksi / garment. Satu modul aktif saat ini adalah **PPM (Pra-Produksi)**.
 fullscreen state preservation, MiniMap, floating dark card, connector, multi-pin,
 smart component focus, Product Discussion Flow, Component Discussion, Meeting
 Focus Mode. **Jangan refactor tanpa bug report / requirement user eksplisit /
-integration requirement milestone baru.** Milestone berikutnya belum ditentukan
-— tunggu instruksi user.
+integration requirement milestone baru.**
+
+**M4 — IMPLEMENTED / PENDING USER VERIFICATION (NO LOCK)** — Decision ↔
+Technical Specification Reconciliation (proposal layer `ppm_spec_change_proposals`
++ evidence immutability DB trigger). Regression 97 PASS / 0 FAIL.
+
+**M4.5A — LOCKED (user-accepted 2026-08-13)** — Specification
+Template (DEFAULT/REQUIRED/urutan per Product Type) + Company
+Technical Standard (nilai STANDARD typed, simple scoped value — BUKAN rule
+engine). Migration `202608120002` + seed `202608120003` (SCOTCHLIGHT ×4 +
+LEBAR_MANSET, user-APPROVED) + **WIKA master patch `202608130001`** (5
+komponen + 18 spec defs, TANPA nilai WIKA) applied; `test:ppm:m4.5a` 88→**123
+PASS / 0 FAIL** (termasuk bugfix manual verification: dropdown spec CONTEXTUAL
+ke component aktif + clear incompatible spec saat ganti component + WIKA
+patch); aggregate **571 PASS / 0 FAIL** + build PASS. UI:
+`/ppm/spec-templates` + `/ppm/technical-standards` (nav "Konfigurasi PPM").
+Detail: `docs/ppm/milestones/M4_5A_REPORT.md`.
+**Master Data Gap:** SAKU_LENGAN/SAMPING/BELAKANG (dan komponen lain) belum
+punya spec definitions — seed tambahan menunggu approval user.
+
+**M4.5A.1 — LOCKED (user-accepted 2026-08-13)** —
+Simple Conditional Technical Standards V1 (JIKA = MAKA, EQUALS only; BUKAN
+rule engine). Migration `202608130002` applied + verify PASS; `test:ppm:m4.5a.1`
+54→**67 PASS / 0 FAIL** (**unit suffix bugfix**: suffix unit dirender dari
+snapshot `default_unit` via `ruleUnitLabel`, TANPA hardcode — inch/cm/
+tanpa-unit otomatis; save/refresh unit context terjaga; evaluator semantics
+unchanged); Simple Standard (FIXED) tetap didukung.
+Detail: `docs/ppm/milestones/M4_5A_1_REPORT.md`.
+**Manual verification (user, 2026-08-13) ACCEPTED:** contextual picker PASS;
+unit rendering inch/cm PASS; template persistence Edit→Save→Refresh PASS;
+duplicate rule protection PASS; contradictory rule protection PASS; conditional
+standard 1 inch→Single Stitch / 2 inch→Double Stitch PASS.
+
+**Known deferred (M4.5A family close-out, 2026-08-13):**
+- Customer Model Reference = **M4.5B**
+- explicit APPLICABLE / NOT_APPLICABLE = **M4.5B**
+- Build From Reference / fork = **M4.5B**
+- colorway / body color structure = **M4.5B**
+- Artwork Library = **future**
+- Customer Model → PO clone = **M4.5C**
+- Historical import = **M4.5D**
+
+**M4.5B (Customer Model Reference) belum dikerjakan.** Milestone berikutnya
+belum ditentukan — tunggu instruksi user.
 
 ## Standard Test Commands
 
 ```bash
-npm run test:ppm        # M1 -> M1.1 -> M2 -> M3 -> M3.1 -> render-smoke (aggregate regression)
+npm run test:ppm        # M1 -> M1.1 -> M2 -> M3 -> M3.1 -> render-smoke -> M4 -> M4.5A -> M4.5A.1 (aggregate regression)
 npm run test:ppm:m1
 npm run test:ppm:m1.1   # butuh SUPABASE_SERVICE_KEY di .env.local
 npm run test:ppm:m2     # butuh SUPABASE_SERVICE_KEY di .env.local
@@ -91,6 +137,9 @@ npm run test:ppm:m3     # butuh SUPABASE_SERVICE_KEY di .env.local
 npm run test:ppm:m3.1   # butuh SUPABASE_SERVICE_KEY di .env.local
 npm run test:ppm:m3.1:render  # SSR smoke render (tanpa DB key)
 npm run test:ppm:m3.1:fit     # pure fit/fullscreen geometry (tanpa DB key)
+npm run test:ppm:m4     # butuh SUPABASE_SERVICE_KEY di .env.local
+npm run test:ppm:m4.5a  # butuh SUPABASE_SERVICE_KEY di .env.local
+npm run test:ppm:m4.5a.1  # butuh SUPABASE_SERVICE_KEY di .env.local
 ```
 
 Browser verification (optional, tanpa auth) — lihat `docs/ppm/milestones/M3_REPORT.md`:

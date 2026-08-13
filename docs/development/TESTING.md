@@ -13,8 +13,10 @@ Semua test PPM adalah skrip Node (ESM) di `scripts/`. Mereka memakai
 | `npm run test:ppm:m3.1`  | M3.1 UX: register, focus, connector, mobile (70) | ya |
 | `npm run test:ppm:m3.1:render` | SSR smoke render tiap komponen M3.1 (12) — tangkap ReferenceError yang lolos build | tidak |
 | `npm run test:ppm:m3.1:fit` | pure fit/fullscreen + resize-preserve logical viewport (17) | tidak |
-| `npm run test:ppm:m4`    | M4 Decision ↔ Spec (pure helpers + DB contract: create/apply APPROVED/idempotency/stale conflict/force/reject/defer/rebase/RLS) (65) | ya |
-| `npm run test:ppm`       | aggregate: M1 → M1.1 → M2 → M3 → M3.1 → render-smoke → M4 (349) | ya |
+| `npm run test:ppm:m4`    | M4 Decision ↔ Spec (pure helpers + DB contract: create/apply APPROVED/idempotency/stale conflict/force/reject/defer/rebase/RLS + **evidence immutability DB trigger** A–I via REST langsung) | ya |
+| `npm run test:ppm:m4.5a` | M4.5A Spec Template + Technical Standard (DB contract: 5 tabel additive, seed product types, template/standard CRUD, NULL-safe uniqueness std+custom, DEFAULT vs STANDARD, RLS anon, standard_id link, pure helpers P1–P12 incl. **contextual spec picker** + clear-on-component-change + seed Scotchlight/Manset + **WIKA master patch 5 komponen/18 defs**) | ya |
+| `npm run test:ppm:m4.5a.1` | M4.5A.1 Conditional Standard V1 (rules DB: create/typed/EQUALS eval 1→Single, 2→Double, unknown→none, component consistency trigger, cross-component rejected, duplicate/contradiction blocked, inactive ignored, simple tetap, contextual tetap, no-mutation, **unit suffix inch/cm/tanpa-unit + save/refresh unit context + evaluator semantics unchanged**, RLS, cleanup) | ya |
+| `npm run test:ppm`       | aggregate: M1 → M1.1 → M2 → M3 → M3.1 → render-smoke → M4 → M4.5A → M4.5A.1 (571) | ya |
 
 ## Requirement environment
 1. Salin `.env.example` → `.env.local`.
@@ -48,8 +50,83 @@ key yang di-hardcode.
 - M3.1 fit/fullscreen + resize-preserve (pure geometry): 17 PASS / 0 FAIL (dijalankan terpisah)
 - Browser harness (Playwright, Chromium): 21 PASS / 0 FAIL
 - M4: 65 PASS / 0 FAIL (pure helpers via import + DB contract via REST service key)
-- Aggregate `npm run test:ppm`: 349 PASS / 0 FAIL (48+40+68+46+70+12+65)
+- Aggregate `npm run test:ppm`: 571 PASS / 0 FAIL (48+40+68+46+70+12+97+123+67)
 - Build: PASS
+- **M4 corrective patch (2026-08-12): M4 97 PASS / 0 FAIL; aggregate 381 PASS / 0
+  FAIL (48+40+68+46+70+12+97); build PASS** — lihat M4_REPORT.md Verification.
+- **M4 CORRECTIVE PATCH (2026-08-12):**
+  - **False-pass dikoreksi** — test evidence lama memakai kolom salah
+    (`position_x/position_y`) → menguji `id=eq.undefined` → PASS palsu. Kini
+    memakai schema aktual (`x_percent/y_percent`) + setup invariant `mustCreate()`
+    (insert WAJIB berhasil; gagal → SEGERA FAIL + abort). Tidak ada query
+    `id=eq.undefined`.
+  - **Evidence immutability DB-level** — migration additive
+    `202608120001_ppm_m4_evidence_immutability.sql` + runner
+    `scripts/run-ppm-m4-evidence-migration.js`. Trigger blok UPDATE/DELETE note
+    yang direferensikan `ppm_spec_change_proposals.annotation_note_id` (semua
+    status proposal), error token `PPM_NOTE_REFERENCED_AS_SPEC_EVIDENCE`.
+    Diuji via REST langsung (A: PROPOSED UPDATE, B: DEFERRED UPDATE,
+    C: APPROVED UPDATE, D: REJECTED UPDATE, E: DELETE, F: unrelated UPDATE,
+    G: unrelated DELETE, H: note asli tidak berubah, I: proposal utuh).
+  - **Bulk guard DEFERRED** — `hasUnreconciledProposalsForComponent` dihapus
+    (tidak ada call-site / bulk action aktif di UI).
+  - **Rerun DB regression (2026-08-12) — SELESAI & HIJAU:**
+    migration `202608120001` applied (`run-ppm-m4-evidence-migration.js` →
+    204; rilis pertama 400 "cannot use subquery in trigger WHEN condition" →
+    migration dikoreksi: cek dipindah ke body fungsi, WHEN dihapus) → structural
+    verify PASS (`verify-ppm-m4-evidence-migration.js`: function +
+    trigger update + trigger delete + index idx_pmscp_note terbukti di DB) →
+    `npm run test:ppm:m4` **97 PASS / 0 FAIL** → aggregate `npm run test:ppm`
+    **381 PASS / 0 FAIL** (48+40+68+46+70+12+97) → `npm run build` **PASS**.
+- **M4.5A (2026-08-12):**
+  - Migration `202608120002_ppm_m45a_spec_templates.sql` applied
+    (`run-ppm-m45a-migration.js` → 204) + structural verify PASS
+    (`verify-ppm-m45a-migration.js`: 5 tabel + 5 unique index + RLS + 10 policies
+    + seed KEMEJA_LAPANGAN/KEMEJA_KANTOR + legacy KEMEJA tetap).
+  - **Bug NULL-trap ditemukan saat test & diperbaiki:** draft index memakai pola
+    M1.1 `(location_label IS NULL), location_label` — PostgreSQL menganggap NULL
+    berbeda sehingga duplicate komponen lokasi NULL lolos (test 7a FAIL).
+    Diganti `COALESCE(location_label,'')` di 2 index komponen; diterapkan ulang
+    ke DB (tabel baru, kosong); test 7a hijau.
+  - `npm run test:ppm:m4.5a` **62 PASS / 0 FAIL** (DB contract via REST service
+    key: template/standard CRUD, NULL-safe uniqueness std+custom (NULL location
+    & NULL def), DEFAULT vs STANDARD terpisah, standard_id link, RLS anon
+    write/read, pure helpers P1–P6 via import langsung).
+  - Aggregate `npm run test:ppm` **443 PASS / 0 FAIL** (48+40+68+46+70+12+97+62)
+    → `npm run build` **PASS**.
+  - **M4.5A manual-verification bugfix (2026-08-12):** dropdown spec kini
+    contextual ke component aktif. Root cause: fallback `(defOptions.length ?
+    defOptions : specDefs)` di PPMSpecTemplatesPage — SCOTCHLIGHT (0 def di
+    master) menampilkan spec semua komponen. Fallback dihapus; pure helper
+    `defsForComponent` + `specsAfterComponentChange` (clear incompatible spec
+    saat ganti component). `test:ppm:m4.5a` **79 PASS / 0 FAIL**; aggregate
+    **460 PASS / 0 FAIL** (48+40+68+46+70+12+97+79) → build PASS.
+  - **M4.5A seed master APPROVED user (2026-08-12):** `202608120003` applied —
+    SCOTCHLIGHT ×4 (JENIS/LEBAR/POSISI/STITCH_SCOTCHLIGHT) + LEBAR_MANSET,
+    idempotent `ON CONFLICT DO NOTHING`, pola M2. `test:ppm:m4.5a` **88 PASS /
+    0 FAIL**; aggregate **469 PASS / 0 FAIL** (48+40+68+46+70+12+97+88) →
+    build PASS.
+- **M4.5A WIKA master patch (2026-08-13):**
+  - Migration `202608130001_ppm_wika_master_patch.sql` applied — **5 komponen**
+    (Badan Depan, Lengan, Kerah, Manset, Cuff) + **18 spec definitions**,
+    idempotent `ON CONFLICT DO NOTHING`, TANPA nilai WIKA (isi manual via
+    context-aware picker). `test:ppm:m4.5a` **123 PASS / 0 FAIL**; aggregate
+    **536 PASS / 0 FAIL** (48+40+68+46+70+12+97+123) → build PASS.
+- **M4.5A.1 (2026-08-13):**
+  - Migration `202608130002_ppm_m45a1_conditional_standards.sql` applied
+    (`run-ppm-m4.5a.1-migration.js` → 204) + structural verify PASS
+    (`verify-ppm-m4.5a.1-migration.js`: tabel rules + unique index kondisi +
+    trigger konsistensi + RLS policies).
+  - `npm run test:ppm:m4.5a.1` **67 PASS / 0 FAIL** (DB contract via REST
+    service key + evaluator murni via import; **unit suffix bugfix**: suffix
+    unit dari snapshot `default_unit` via `ruleUnitLabel`, TANPA hardcode).
+    Aggregate `npm run test:ppm`
+    **571 PASS / 0 FAIL** (48+40+68+46+70+12+97+123+67) → `npm run build`
+    **PASS**. Simple Standard (FIXED) tetap didukung — BUKAN rule engine.
+  - **LOCKED (user-accepted 2026-08-13):** manual verification user PASS —
+    contextual picker; unit inch/cm; template persistence Edit→Save→Refresh;
+    duplicate + contradictory rule protection; conditional standard
+    1 inch→Single Stitch / 2 inch→Double Stitch.
 - **Re-verified 2026-08-10** setelah patch M3 sesi ini (connector halo + pin
   contrast border putih solid di `AnnotationCanvas.jsx`; meeting-mode "Lihat Detail
   PO" section-order CSS di `PPMPoDetailPage.jsx` + `index.css`; meeting side-by-side

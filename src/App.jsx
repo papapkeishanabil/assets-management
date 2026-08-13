@@ -34,6 +34,8 @@ import PPMMeetingsPage from './pages/PPMMeetingsPage';
 import PPMCreateMeetingPage from './pages/PPMCreateMeetingPage';
 import PPMMeetingRoomPage from './pages/PPMMeetingRoomPage';
 import PPMPoDetailPage from './pages/PPMPoDetailPage';
+import PPMSpecTemplatesPage from './pages/PPMSpecTemplatesPage';
+import PPMTechnicalStandardsPage from './pages/PPMTechnicalStandardsPage';
 import LoadingScreen from './components/LoadingScreen';
 import { MeetingFocusProvider } from './contexts/MeetingFocusContext';
 import { ROLES } from './lib/constants';
@@ -261,6 +263,8 @@ export default function App() {
         <Route path="ppm/create" element={<PPMCreateMeetingPage />} />
         <Route path="ppm/:meetingId" element={<PPMMeetingRoomPage />} />
         <Route path="ppm/:meetingId/po/:poId" element={<PPMPoDetailPage />} />
+        <Route path="ppm/templates" element={<PPMSpecTemplatesPage />} />
+        <Route path="ppm/standards" element={<PPMTechnicalStandardsPage />} />
       </Route>
 
       {/* Fallback */}

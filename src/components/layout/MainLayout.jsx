@@ -16,7 +16,7 @@ import {
   Truck, Package, Home, Bell, Search, Settings,
   Wrench, Shield, Calendar, AlertCircle, AlertTriangle,
   HelpCircle, Smartphone, Download, BellRing, UserCheck, FileText,
-  MessageSquare, ClipboardCheck, Lock
+  MessageSquare, ClipboardCheck, Lock, Layers, ShieldCheck
 } from 'lucide-react';
 
 export default function MainLayout() {
@@ -351,6 +351,22 @@ export default function MainLayout() {
               >
                 <MessageSquare size={16} className="flex-shrink-0" />
                 <span className="flex-1">Meeting PPM</span>
+              </NavLink>
+              <NavLink
+                to="/ppm/templates"
+                onClick={() => setSidebarOpen(false)}
+                className={subNavLinkClass}
+              >
+                <Layers size={14} className="flex-shrink-0" />
+                <span className="flex-1">Template Spesifikasi</span>
+              </NavLink>
+              <NavLink
+                to="/ppm/standards"
+                onClick={() => setSidebarOpen(false)}
+                className={subNavLinkClass}
+              >
+                <ShieldCheck size={14} className="flex-shrink-0" />
+                <span className="flex-1">Standar Teknis</span>
               </NavLink>
             </>
           )}

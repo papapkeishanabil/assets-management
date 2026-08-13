@@ -256,10 +256,10 @@ async function run() {
   check('6. Kerah snapshot label tersimpan', kerahSpecs.some((s) => s.spec_label_snapshot === 'Model Kerah') && kerahSpecs.some((s) => s.spec_label_snapshot === 'Tinggi Kerah'), JSON.stringify(kerahSpecs.map((s) => s.spec_label_snapshot)));
   check('6. Kerah Tinggi unit cm dari default', kerahSpecs.some((s) => s.spec_key_snapshot === 'TINGGI_KERAH' && s.unit === 'cm'), '');
 
-  // 7. Saku punya Model + Lebar + Tinggi
+  // 7. Saku punya Model + Lebar + Tinggi (+ KONSTRUKSI_SAKU dari master patch WIKA 2026-08-13)
   await addStandardSpecsFor(compSaku);
   const sakuKeys = (await readSpecs(compSaku.id)).map((s) => s.spec_key_snapshot).sort();
-  check('7. Saku dapat Model + Lebar + Tinggi', sakuKeys.join(',') === 'LEBAR_SAKU,MODEL_SAKU,TINGGI_SAKU' || sakuKeys.join(',') === 'MODEL_SAKU,LEBAR_SAKU,TINGGI_SAKU', JSON.stringify(sakuKeys));
+  check('7. Saku dapat Model + Lebar + Tinggi + Konstruksi', sakuKeys.join(',') === 'KONSTRUKSI_SAKU,LEBAR_SAKU,MODEL_SAKU,TINGGI_SAKU', JSON.stringify(sakuKeys));
 
   // 8. Bah punya Stitch
   await addStandardSpecsFor(compBah);
@@ -271,10 +271,10 @@ async function run() {
   const armKeys = (await readSpecs(compArmhole.id)).map((s) => s.spec_key_snapshot);
   check('9. Armhole dapat Stitch', armKeys.join(',') === 'STITCH_ARMHOLE', JSON.stringify(armKeys));
 
-  // 10. Bordir punya specs
+  // 10. Bordir punya specs (3 existing + 4 master patch WIKA 2026-08-13 = 7)
   await addStandardSpecsFor(compBordir);
   const bordirKeys = (await readSpecs(compBordir.id)).map((s) => s.spec_key_snapshot).sort();
-  check('10. Bordir dapat specs (3)', bordirKeys.join(',') === 'ARTWORK_BORDIR,POSISI_BORDIR,UKURAN_BORDIR', JSON.stringify(bordirKeys));
+  check('10. Bordir dapat specs (7: ARTWORK/POSISI/UKURAN + JENIS/REFERENSI/JARAK/ARAH)', bordirKeys.join(',') === 'ARAH_POSISI_BORDIR,ARTWORK_BORDIR,JARAK_BORDIR_DARI_REFERENSI,JENIS_BORDIR,POSISI_BORDIR,REFERENSI_POSISI_BORDIR,UKURAN_BORDIR', JSON.stringify(bordirKeys));
 
   // 11. Velcro punya specs
   await addStandardSpecsFor(compVelcro);
@@ -366,7 +366,7 @@ async function run() {
     await patch(`/rest/v1/ppm_component_specifications?id=eq.${newOrder[i]}`, { sort_order: i + 1 });
   }
   const afterDrag = await readSpecs(compSaku.id);
-  check('20. drag spec persist (sort_order 1..3)', afterDrag.map((s) => s.id).join(',') === newOrder.join(',') && afterDrag.map((s) => s.sort_order).join(',') === '1,2,3', JSON.stringify(afterDrag.map((s) => s.sort_order)));
+  check('20. drag spec persist (sort_order 1..3, urutan baru dipertahankan)', afterDrag.map((s) => s.id).slice(0, 3).join(',') === newOrder.join(',') && afterDrag.map((s) => s.sort_order).join(',') === '1,2,3,4', JSON.stringify(afterDrag.map((s) => s.sort_order)));
   console.log('');
 
   // ========== REVIEW ==========

@@ -1,9 +1,17 @@
 # PPM — Current State (Save Game)
 
-> **Last updated:** 2026-08-10 — **M3 family LOCKED** + **M4 IMPLEMENTED /
+> **Last updated:** 2026-08-13 — **M3 family LOCKED** + **M4 IMPLEMENTED /
 > PENDING USER VERIFICATION** (Decision ↔ Technical Specification
-> Reconciliation; additive proposal layer; NO LOCK). Regression aggregate
-> **349 PASS / 0 FAIL** + build PASS. M3 family user-accepted 2026-08-10
+> Reconciliation; additive proposal layer; NO LOCK) + **M4.5A LOCKED**
+> (Specification Template + Simple Technical Standards; user-accepted
+> 2026-08-13) + **WIKA Master Patch applied**
+> (5 komponen + 18 spec defs; NO WIKA values) + **M4.5A.1 LOCKED**
+> (Simple Conditional Technical Standards V1:
+> JIKA = MAKA, EQUALS only; user-accepted 2026-08-13) + **M4.5A.1 manual verification bugfix
+> (unit suffix di rule editor — render-only; TANPA migration)**. M4 corrective patch:
+> false-pass evidence tests diperbaiki + **evidence immutability pindah ke DB
+> trigger** (`202608120001`) + bulk guard DEFERRED (tidak ada bulk action aktif).
+> Regression aggregate **571 PASS / 0 FAIL** (M1→M4.5A.1) + build PASS. M3 family user-accepted 2026-08-10
 > (*"M3 untuk sementara cukup, lanjut berikutnya."*). Viewer baseline dikunci.
 > Incl. FINAL MEETING UX (Product Discussion Flow + MICRO-POLISH). Physical HP +
 > projector physical test = DEFERRED (user reviewed on monitor/browser, not
@@ -52,6 +60,12 @@ Meeting
 | `ppm_annotations` | pin annotation pada gambar PO (konteks item/komponen/spec) | M3 |
 | `ppm_annotation_notes` | notes flat per pin (DISCUSSION/DECISION/INFO) | M3 |
 | `ppm_spec_change_proposals` | governance: keputusan meeting → satu spec (typed proposed value + baseline snapshot + lifecycle PROPOSED/APPROVED/REJECTED/DEFERRED + stale protection + idempotency) | M4 |
+| `ppm_spec_templates` | master template: komposisi komponen+spec per Product Type (code UNIQUE, scope product type) | M4.5A |
+| `ppm_spec_template_components` | komponen template + lokasi + urutan + required (snapshot nama; standard & custom) | M4.5A |
+| `ppm_spec_template_specs` | field spec template + DEFAULT typed + REQUIRED + `standard_id` link | M4.5A |
+| `ppm_company_technical_standards` | master standar teknis Harmas/Ofissio (code UNIQUE, scope product type, `standard_type` FIXED/CONDITIONAL) | M4.5A + M4.5A.1 |
+| `ppm_company_technical_standard_specs` | nilai standar per field (typed value_text/number/boolean/json) — Simple Standard | M4.5A |
+| `ppm_company_technical_standard_rules` | Conditional Standard V1: JIKA (condition spec + operator EQUALS + typed value) → MAKA (result spec + typed value); snapshot key/label/type/unit; unique kondisi per standard; trigger konsistensi komponen | M4.5A.1 |
 
 ## Locked Milestones
 
@@ -65,7 +79,9 @@ Meeting
 | **M3** | **LOCKED** | 46 PASS / 0 FAIL (user-accepted 2026-08-10) |
 | **M3.1** | **LOCKED** | 70 PASS / 0 FAIL (bagian dari M3) |
 | **M3.2** | **LOCKED** | hardening + visual polish + Meeting Product Discussion Flow (bagian dari M3) |
-| **M4** | **IMPLEMENTED / PENDING USER VERIFICATION** (NO LOCK) | 65 PASS / 0 FAIL (pure + DB); aggregate 349 PASS |
+| **M4** | **IMPLEMENTED / PENDING USER VERIFICATION** (NO LOCK) | 97 PASS / 0 FAIL (pure + DB); aggregate 571 PASS |
+| **M4.5A** | **LOCKED** (user-accepted 2026-08-13) | 123 PASS / 0 FAIL (DB + pure helpers + contextual picker bugfix + seed approved + **WIKA master patch 5 komponen/18 defs**); migrations `202608120002`+`202608120003`+`202608130001` applied + structural verify PASS |
+| **M4.5A.1** | **LOCKED** (user-accepted 2026-08-13) | **67 PASS / 0 FAIL** (conditional rules DB + trigger + evaluator + validation + RLS + **unit suffix bugfix**); migration `202608130002` applied + verify PASS; Simple Standard (FIXED) tetap didukung |
 
 > **M3 family LOCKED (2026-08-10)** — user verifikasi manual ACCEPTED (regression
 > 284 PASS / 0 FAIL + build PASS). Viewer baseline dikunci: Fit-to-PO, zoom/pan,
@@ -73,16 +89,18 @@ Meeting
 > smart component focus, Product Discussion Flow, Component Discussion, Meeting
 > Focus Mode. Jangan refactor tanpa bug report / requirement eksplisit.
 
-## Test & Build (hasil aktual, fresh — 2026-08-10)
+## Test & Build (hasil aktual, fresh — 2026-08-13)
 
 - `npm run test:ppm:m3` → **46 PASS / 0 FAIL**
 - `npm run test:ppm:m3.1` → **70 PASS / 0 FAIL**
 - `npm run test:ppm:m3.1:render` → **12 PASS / 0 FAIL** (SSR smoke render)
 - `npm run test:ppm:m3.1:fit` → **17 PASS / 0 FAIL** (pure fit/fullscreen + resize-preserve logical viewport; TIDAK termasuk aggregate)
-- `npm run test:ppm:m4` → **65 PASS / 0 FAIL** (pure helpers + DB contract)
-- `npm run test:ppm` (aggregate) → **349 PASS / 0 FAIL**
-  (48 + 40 + 68 + 46 + 70 + 12 + 65 = 349; `test:ppm:m3.1:fit` dijalankan terpisah)
-- `npm run build` → **PASS** (`vite build` EXIT 0, 1497 modules, 21.8s)
+- `npm run test:ppm:m4` → **97 PASS / 0 FAIL** (pure helpers + DB contract + evidence immutability)
+- `npm run test:ppm:m4.5a` → **123 PASS / 0 FAIL** (DB contract: template/standard CRUD + NULL-safe uniqueness + RLS + pure helpers + **contextual spec picker bugfix + seed master approved + WIKA master patch 5 komponen/18 defs**)
+- `npm run test:ppm:m4.5a.1` → **67 PASS / 0 FAIL** (conditional rules: create/typed/EQUALS eval 1→Single, 2→Double/unknown→none/component consistency/cross-component rejected/duplicate+contradiction blocked/inactive ignored/simple tetap/contextual tetap/no-mutation/RLS/**unit suffix inch-cm-tanpa-unit + save/refresh unit context + evaluator semantics unchanged**/cleanup)
+- `npm run test:ppm` (aggregate) → **571 PASS / 0 FAIL**
+  (48 + 40 + 68 + 46 + 70 + 12 + 97 + 123 + 67 = 571; `test:ppm:m3.1:fit` dijalankan terpisah)
+- `npm run build` → **PASS** (`vite build` EXIT 0, 65 modules transformed)
 - Browser harness (Playwright, Chromium, komponen asli tanpa auth): **21 PASS / 0 FAIL**
   (per M3_REPORT; hasil lama — bukan hasil baru, harness tidak dijalankan ulang saat handoff ini)
 - Manual browser halaman PO asli (auth): **NOT TESTED**
@@ -183,9 +201,32 @@ Automated test PASS ≠ manual UX PASS. Berikut status jujur verifikasi manual u
   284 PASS / 0 FAIL + build PASS).
 - **M4 — Decision ↔ Technical Specification Reconciliation — IMPLEMENTED /
   PENDING USER VERIFICATION** (NO LOCK). Additive proposal layer; APPLY reuse
-  `resolveSpecification()`. Regression aggregate 349 PASS / 0 FAIL + build PASS.
-  Verifikasi manual user di browser belum selesai.
-- Milestone berikutnya (M5) belum ditentukan (tunggu instruksi user).
+  `resolveSpecification()`. Regression aggregate **381 PASS / 0 FAIL** + build PASS.
+  **M4 corrective patch (2026-08-12):** false-pass evidence tests diperbaiki
+  (setup invariant + kolom schema aktual `x_percent/y_percent`); **evidence
+  immutability kini DB-level** (migration `202608120001_ppm_m4_evidence_immutability.sql`
+  — trigger blok UPDATE/DELETE note yang direferensikan
+  `ppm_spec_change_proposals.annotation_note_id` untuk semua status proposal;
+  applied + structural verify PASS); helper `isNoteReferencedAsEvidence` + UI
+  guard dipertahankan sebagai good-UX layer; bulk guard
+  `hasUnreconciledProposalsForComponent` **DEFERRED/dihapus** (tidak ada bulk
+  action aktif di UI saat ini). `test:ppm:m4` **97 PASS / 0 FAIL**; aggregate
+  `test:ppm` **381 PASS / 0 FAIL**; `build` PASS. Verifikasi manual user di
+  browser belum selesai.
+- **M4.5A — Specification Template + Simple Technical Standards — LOCKED**
+  (user-accepted 2026-08-13). `test:ppm:m4.5a` 88→**123 PASS**
+  (WIKA master patch 2026-08-13). Lihat `docs/ppm/milestones/M4_5A_REPORT.md`.
+- **M4.5A.1 — Simple Conditional Technical Standards V1 — LOCKED**
+  (user-accepted 2026-08-13; manual verification 6 item PASS). Lihat
+  `docs/ppm/milestones/M4_5A_1_REPORT.md`.
+- **Known deferred (M4.5A family close-out, 2026-08-13):** Customer Model
+  Reference = **M4.5B**; explicit APPLICABLE / NOT_APPLICABLE = **M4.5B**;
+  Build From Reference / fork = **M4.5B**; colorway / body color structure =
+  **M4.5B**; Artwork Library = **future**; Customer Model → PO clone =
+  **M4.5C**; Historical import = **M4.5D**.
+- Milestone berikutnya (M5) belum ditentukan — tunggu instruksi user. **M4.5B
+  (Customer Model Reference) belum dikerjakan.** **M4.5B
+  (Customer Model Reference) belum dikerjakan.**
 
 > **Aturan eksplisit:** jangan lanjut milestone berikutnya tanpa instruksi spesifik dari user.
 
@@ -240,11 +281,34 @@ Detail penuh di `docs/ppm/milestones/M4_REPORT.md` + ADR-026.
   `res.conflict`→toast+refresh+no close]/`handleRejectProposal`/`handleDeferProposal`/
   `handleRebaseProposal`); mount `<SpecReconciliationModal>`; wire
   `onProposeSpecChange={canManage ? handler : undefined}`.
-- **Test:** `scripts/test-ppm-m4.js` (marker `__TEST_M4__<run_id>`; 65 PASS — pure via
+- **Test:** `scripts/test-ppm-m4.js` (marker `__TEST_M4__<run_id>`; pure via
   import + DB contract via REST service key; cleanup by created ID + marker sweep).
+  **M4 corrective patch:** setup invariant `mustCreate()` (insert WAJIB berhasil,
+  jika gagal SEGERA FAIL + abort — tidak ada query `id=eq.undefined`);
+  annotation memakai kolom schema M3 aktual (`x_percent/y_percent`);
+  evidence immutability diuji via jalur REST langsung (A-I) dan mengecek token
+  `PPM_NOTE_REFERENCED_AS_SPEC_EVIDENCE` dari DB trigger.
   `package.json` → `test:ppm:m4` + extend aggregate `test:ppm`.
-- **Verification:** migration applied; `test:ppm:m4` 65 PASS / 0 FAIL; aggregate
-  `test:ppm` **349 PASS / 0 FAIL**; `build` **PASS** (1497 modules, 21.8s).
+- **Evidence immutability (DB-level):** migration
+  `supabase/migrations/202608120001_ppm_m4_evidence_immutability.sql` (additive) +
+  runner `scripts/run-ppm-m4-evidence-migration.js`. Trigger
+  `ppm_protect_spec_evidence_note()` blok UPDATE/DELETE pada
+  `ppm_annotation_notes` yang direferensikan `ppm_spec_change_proposals.annotation_note_id`
+  (semua status: PROPOSED/DEFERRED/APPROVED/REJECTED), error token
+  `PPM_NOTE_REFERENCED_AS_SPEC_EVIDENCE`. Final integrity layer — helper/UI tetap
+  dipertahankan (good UX). Konsekuensi: annotation yang memuat note evidence
+  tidak bisa dihapus selama proposal masih mereferensikannya.
+- **Bulk "Semua Sesuai" guard — DEFERRED:** `hasUnreconciledProposalsForComponent`
+  dihapus dari `src/lib/ppm-m4-helpers.js` karena TIDAK ada call-site — tidak ada
+  bulk action aktif di UI saat ini. Guard ini **tidak diklaim implemented**;
+  akan diimplement ulang bila bulk review action dibuat.
+- **Verification:** migration M4 (202608100002) applied; `test:ppm:m4` 65 PASS /
+  0 FAIL (pre-corrective patch); aggregate `test:ppm` **349 PASS / 0 FAIL**;
+  `build` **PASS** (1497 modules, 21.8s). **Setelah corrective patch (2026-08-12):**
+  migration `202608120001` applied + structural verify PASS + `test:ppm:m4`
+  **97 PASS / 0 FAIL** (evidence immutability A–I via REST, setup invariant all
+  PASS, no `id=eq.undefined`) + aggregate `test:ppm` **381 PASS / 0 FAIL**
+  (48+40+68+46+70+12+97) + `build` **PASS** (65 modules).
   Manual browser (auth) — **NOT TESTED** (tunggu verifikasi user).
 - **Status: IMPLEMENTED / PENDING USER VERIFICATION. NO LOCK M4. NO commit/push.
   NO M5.** Working tree unrelated Contract/PKWTT changes — TIDAK disentuh.
@@ -496,9 +560,9 @@ viewer. **(§17):** Component Explorer = presentasi ringkas data `items` yg sama
   0 FAIL** (sidebar pins/recap tab tetap PASS dgn tab baru); `build` **PASS**.
 
 **Modified (tracked):**
-- `package.json` — script test `m3`, `m3.1`, `m3.1:render`, `m3.1:fit`, `m4`, aggregate `test:ppm`
-- `src/App.jsx` — wrap `MainLayout` dengan `MeetingFocusProvider`
-- `src/components/layout/MainLayout.jsx` — Meeting Focus Mode (sidebar hidden, badge, validasi status DB)
+- `package.json` — script test `m3`, `m3.1`, `m3.1:render`, `m3.1:fit`, `m4`, `m4.5a`, `m4.5a.1`, aggregate `test:ppm`
+- `src/App.jsx` — wrap `MainLayout` dengan `MeetingFocusProvider`; **M4.5A: route `/ppm/spec-templates` + `/ppm/technical-standards`**
+- `src/components/layout/MainLayout.jsx` — Meeting Focus Mode (sidebar hidden, badge, validasi status DB); **M4.5A: nav group "Konfigurasi PPM"**
 - `src/pages/PPMMeetingRoomPage.jsx` — tombol Mulai/Selesaikan/Buka Kembali meeting + sinkron focus
 - `src/pages/PPMPoDetailPage.jsx` — integrasi Annotation Viewer, sidebar, drawer, register, mobile sheet, fullscreen, focus + **M4 (proposal fetch/enrich + 7 handler + mount SpecReconciliationModal)**
 - `src/index.css` — palette `annotation-card*` (dedicated dark overlay), class fullscreen workspace, `focus-meeting-active`
@@ -512,19 +576,27 @@ viewer. **(§17):** Component Explorer = presentasi ringkas data `items` yg sama
 **Untracked (baru):**
 - `supabase/migrations/202608080006_ppm_m3_annotations.sql`
 - **`supabase/migrations/202608100002_ppm_m4_spec_change_proposals.sql`** (M4 additive)
+- **`supabase/migrations/202608120001_ppm_m4_evidence_immutability.sql`** (M4 corrective — DB trigger)
+- **`supabase/migrations/202608120002_ppm_m45a_spec_templates.sql` + `202608120003_ppm_m45a_specdef_seed.sql` + `202608130001_ppm_m45a_wika_master_patch.sql`** (M4.5A additive + master patch)
+- **`supabase/migrations/202608130002_ppm_m45a1_conditional_rules.sql`** (M4.5A.1 additive)
 - `src/lib/ppm-m3-specs.js`, `src/lib/ppm-m3-helpers.js` (M3 pure + DB)
 - `src/lib/ppm-m31-specs.js`, `src/lib/ppm-m31-helpers.js` (M3.1 pure + DB)
 - **`src/lib/ppm-m4-specs.js`, `src/lib/ppm-m4-helpers.js`** (M4 pure + DB)
+- **`src/lib/ppm-m45a-specs.js`, `src/lib/ppm-m45a-helpers.js`** (M4.5A pure + DB)
+- **`src/lib/ppm-m45a1-rules.js`** (M4.5A.1 pure evaluator — zero import)
 - `src/components/ppm/` — `AnnotationCanvas.jsx`, `AnnotationSidebar.jsx`, `AnnotationPinDrawer.jsx`, `AnnotationRegisterModal.jsx`, `MobilePinSummarySheet.jsx`, `ComponentPicker.jsx`, `FloatingPinCard.jsx`, `MiniMap.jsx`, **`SpecValueInput.jsx` (M4), `SpecReconciliationModal.jsx` (M4)**
+- **`src/pages/PPMSpecTemplatesPage.jsx`, `src/pages/PPMTechnicalStandardsPage.jsx`** (M4.5A UI: `/ppm/spec-templates` + `/ppm/technical-standards`)
 - `src/contexts/MeetingFocusContext.jsx`
-- `scripts/` — `run-ppm-m3-migration.js`, `test-ppm-m3.js`, `test-ppm-m31.js`, `test-ppm-m31-render.js`, `test-ppm-m31-fit.js`, `test-m31-browser.py`, **`run-ppm-m4-migration.js`, `test-ppm-m4.js` (M4)**
+- `scripts/` — `run-ppm-m3-migration.js`, `test-ppm-m3.js`, `test-ppm-m31.js`, `test-ppm-m31-render.js`, `test-ppm-m31-fit.js`, `test-m31-browser.py`, **`run-ppm-m4-migration.js`, `test-ppm-m4.js` (M4)**; **`run-ppm-m4-evidence-migration.js`, `verify-ppm-m4-evidence-migration.js` (M4 corrective)**; **`run-ppm-m45a-migration.js`, `run-ppm-m45a-specdef-seed.js`, `run-ppm-m45a-wika-master.js`, `verify-ppm-m45a-migration.js`, `verify-ppm-wika-master.js`, `test-ppm-m45a.js` (M4.5A)**; **`run-ppm-m45a1-migration.js`, `verify-ppm-m45a1-migration.js`, `test-ppm-m45a1.js` (M4.5A.1)**
 - `dev-viewer-test.html`, `dev-viewer-test.jsx` (harness browser)
-- `docs/ppm/milestones/M3_REPORT.md`, `M3_1_REPORT.md`, **`M4_REPORT.md` (M4)**
+- `docs/ppm/milestones/M3_REPORT.md`, `M3_1_REPORT.md`, **`M4_REPORT.md` (M4)**, **`M4_5A_REPORT.md` (M4.5A)**, **`M4_5A_1_REPORT.md` (M4.5A.1)**
 
 ## Known Limitations (project)
 
 - Tidak ada realtime (WebSocket) — perubahan perlu refresh.
-- Bulk "Semua Sesuai" di level PO belum ada (hanya level Component).
+- Bulk "Semua Sesuai" di level PO belum ada (hanya level Component). **M4 bulk
+  reconciliation guard DEFERRED** — tidak ada bulk action aktif di UI; helper
+  `hasUnreconciledProposalsForComponent` dihapus (tidak diklaim implemented).
 - Assignment workflow "Menunggu konfirmasi dari: \<nama\>" belum terhubung ke sistem user.
 - Browser/mobile fisik belum diverifikasi (Chrome emulation saja).
 - Annotation hanya untuk dokumen gambar; PDF dirender tanpa pin.
