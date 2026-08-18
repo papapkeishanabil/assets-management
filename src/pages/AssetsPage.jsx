@@ -225,7 +225,6 @@ export default function AssetsPage() {
     setSearch('');
   };
 
-  const getCategoryName = (id) => categories.find(c => c.id === id)?.category_name || '-';
   const getLocationName = (id) => locations.find(l => l.id === id)?.location_name || '-';
   const getConditionName = (id) => conditions.find(c => c.id === id)?.condition_name || '-';
   const getVendorName = (id) => vendors.find(v => v.id === id)?.vendor_name || '-';
@@ -368,7 +367,7 @@ export default function AssetsPage() {
                   <th>Foto</th>
                   <th>Kode</th>
                   <th>Nama</th>
-                  <th>Kategori</th>
+                  <th>Merek</th>
                   <th>Lokasi</th>
                   <th>Penanggung Jawab</th>
                   <th>Kondisi</th>
@@ -404,7 +403,7 @@ export default function AssetsPage() {
                           <span className="font-medium text-white">{asset.asset_name}</span>
                         </div>
                       </td>
-                      <td className="text-ink-300">{getCategoryName(asset.category_id)}</td>
+                      <td className="text-ink-300">{asset.brand || '-'}</td>
                       <td className="text-ink-300">{getLocationName(asset.location_id)}</td>
                       <td className="text-ink-300">
                         {responsiblesMap[asset.id]?.length ? (
