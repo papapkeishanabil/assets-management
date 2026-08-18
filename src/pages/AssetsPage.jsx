@@ -228,6 +228,7 @@ export default function AssetsPage() {
   const getCategoryName = (id) => categories.find(c => c.id === id)?.category_name || '-';
   const getLocationName = (id) => locations.find(l => l.id === id)?.location_name || '-';
   const getConditionName = (id) => conditions.find(c => c.id === id)?.condition_name || '-';
+  const getVendorName = (id) => vendors.find(v => v.id === id)?.vendor_name || '-';
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -406,7 +407,18 @@ export default function AssetsPage() {
                       <td className="text-ink-300">{getCategoryName(asset.category_id)}</td>
                       <td className="text-ink-300">{getLocationName(asset.location_id)}</td>
                       <td className="text-ink-300">
-                        {responsiblesMap[asset.id]?.join(', ') || usersMap[asset.responsible_user_id] || '-'}
+                        {responsiblesMap[asset.id]?.length ? (
+                          responsiblesMap[asset.id].join(', ')
+                        ) : asset.vendor_id ? (
+                          <span title={'Vendor sebagai penanggung jawab' + (asset.vendor_contact_name ? ` — kontak: ${asset.vendor_contact_name}` : '')}>
+                            <span className="text-white">{getVendorName(asset.vendor_id)}</span>
+                            {asset.vendor_contact_name && (
+                              <span className="block text-[11px] text-ink-400">Kontak: {asset.vendor_contact_name}</span>
+                            )}
+                          </span>
+                        ) : (
+                          usersMap[asset.responsible_user_id] || '-'
+                        )}
                       </td>
                       <td>
                         <span className={condBadge}>{getConditionName(asset.condition_id)}</span>
