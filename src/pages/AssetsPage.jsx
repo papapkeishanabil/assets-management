@@ -368,6 +368,7 @@ export default function AssetsPage() {
                   <th>Kode</th>
                   <th>Nama</th>
                   <th>Merek</th>
+                  <th>Model</th>
                   <th>Lokasi</th>
                   <th>Penanggung Jawab</th>
                   <th>Kondisi</th>
@@ -404,6 +405,7 @@ export default function AssetsPage() {
                         </div>
                       </td>
                       <td className="text-ink-300">{asset.brand || '-'}</td>
+                      <td className="text-ink-300">{asset.model || '-'}</td>
                       <td className="text-ink-300">{getLocationName(asset.location_id)}</td>
                       <td className="text-ink-300">
                         {responsiblesMap[asset.id]?.length ? (
