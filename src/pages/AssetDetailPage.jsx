@@ -471,6 +471,7 @@ export default function AssetDetailPage() {
     if (value === null || value === undefined || value === '') return '-';
     if (key === 'cost') return `Rp ${Number(value).toLocaleString('id-ID')}`;
     if (key === 'work_category') return WORK_CATEGORY_LABELS[value] || String(value);
+    if (key === 'service_date') return formatDateID(value);
     if (typeof value === 'boolean') return value ? 'Ya' : 'Tidak';
     return String(value);
   };
@@ -1433,7 +1434,7 @@ export default function AssetDetailPage() {
                 <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
                   <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-2">Detail Perubahan</p>
                   <div className="space-y-1.5">
-                    {Object.entries(selectedLog.new_data).filter(([k]) => k !== 'photos' && k !== 'description').map(([k, v]) => (
+                    {Object.entries(selectedLog.new_data).filter(([k]) => k !== 'photos' && k !== 'description' && k !== 'vendor_id').map(([k, v]) => (
                       <div key={k} className="flex justify-between gap-3 text-sm">
                         <span className="text-ink-400 capitalize">{k.replace(/_/g, ' ')}</span>
                         <span className="text-white text-right">{formatLogValue(k, v)}</span>
@@ -1452,22 +1453,24 @@ export default function AssetDetailPage() {
                         {(labelKey || Object.keys(grouped).length > 1) && (
                           <p className="text-xs text-ink-400 mb-1.5">{servicePhotoGroupTitle(labelKey)} ({items.length})</p>
                         )}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="space-y-2">
                           {items.map((item, idx) => (
                             <a
                               key={idx}
                               href={item.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="relative block w-full h-32 rounded-lg overflow-hidden border border-white/10 hover:border-primary-500/40 transition-all"
-                              title={item.caption || servicePhotoGroupTitle(labelKey)}
+                              className="flex items-center gap-3 p-2 rounded-lg border border-white/10 hover:border-primary-500/40 transition-all"
+                              title={item.caption || 'Buka foto di tab baru'}
                             >
-                              <img src={item.url} alt={item.caption || `Foto ${idx + 1}`} className="w-full h-full object-cover" />
-                              {item.caption && (
-                                <span className="absolute inset-x-0 bottom-0 px-2 py-1.5 text-[11px] leading-snug text-white bg-gradient-to-t from-black/80 to-transparent line-clamp-2">
-                                  {item.caption}
-                                </span>
-                              )}
+                              <img
+                                src={item.url}
+                                alt={item.caption || `Foto ${idx + 1}`}
+                                className="w-20 h-20 object-cover rounded-md shrink-0"
+                              />
+                              <span className="flex-1 min-w-0 text-sm text-ink-200 break-words">
+                                {item.caption || <span className="italic text-ink-500">Tanpa keterangan</span>}
+                              </span>
                             </a>
                           ))}
                         </div>
@@ -1476,12 +1479,25 @@ export default function AssetDetailPage() {
                   </div>
                 );
               })()}
-              {selectedLog.old_data && Object.keys(selectedLog.old_data).length > 0 && (
-                <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
-                  <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Data Sebelum</p>
-                  <pre className="text-xs text-ink-300 whitespace-pre-wrap font-mono">{JSON.stringify(selectedLog.old_data, null, 2)}</pre>
-                </div>
-              )}
+              {selectedLog.old_data && selectedLog.new_data && (() => {
+                const changed = Object.entries(selectedLog.old_data)
+                  .filter(([k, v]) => k !== 'photos' && k !== 'description' && k !== 'vendor_id')
+                  .filter(([k, v]) => JSON.stringify(v) !== JSON.stringify(selectedLog.new_data?.[k]));
+                if (changed.length === 0) return null;
+                return (
+                  <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                    <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-2">Data Sebelum</p>
+                    <div className="space-y-1.5">
+                      {changed.map(([k, v]) => (
+                        <div key={k} className="flex justify-between gap-3 text-sm">
+                          <span className="text-ink-400 capitalize">{k.replace(/_/g, ' ')}</span>
+                          <span className="text-ink-300 text-right">{formatLogValue(k, v)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
               {canEdit && selectedLog.action_type === 'SERVICE' && (
                 <div className="flex gap-3 justify-end pt-2">
                   <button
