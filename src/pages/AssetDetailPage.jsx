@@ -467,6 +467,15 @@ export default function AssetDetailPage() {
     .filter(Boolean)
     .join(', ');
 
+  // Label Indonesia untuk key new_data/old_data agar tidak tampil "vendor name" mentah.
+  const LOG_FIELD_LABELS = {
+    cost: 'Biaya',
+    service_date: 'Tanggal Service',
+    work_category: 'Kategori Pekerjaan',
+    vendor_name: 'Nama Vendor'
+  };
+  const formatLogLabel = (key) => LOG_FIELD_LABELS[key] || key.replace(/_/g, ' ');
+
   const formatLogValue = (key, value) => {
     if (value === null || value === undefined || value === '') return '-';
     if (key === 'cost') return `Rp ${Number(value).toLocaleString('id-ID')}`;
@@ -1436,7 +1445,7 @@ export default function AssetDetailPage() {
                   <div className="space-y-1.5">
                     {Object.entries(selectedLog.new_data).filter(([k]) => k !== 'photos' && k !== 'description' && k !== 'vendor_id').map(([k, v]) => (
                       <div key={k} className="flex justify-between gap-3 text-sm">
-                        <span className="text-ink-400 capitalize">{k.replace(/_/g, ' ')}</span>
+                        <span className="text-ink-400 capitalize">{formatLogLabel(k)}</span>
                         <span className="text-white text-right">{formatLogValue(k, v)}</span>
                       </div>
                     ))}
@@ -1486,11 +1495,12 @@ export default function AssetDetailPage() {
                 if (changed.length === 0) return null;
                 return (
                   <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
-                    <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-2">Data Sebelum</p>
+                    <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500">Data Sebelum</p>
+                    <p className="text-xs text-ink-500 mb-2">Nilai sebelum edit terakhir — hanya field yang berubah</p>
                     <div className="space-y-1.5">
                       {changed.map(([k, v]) => (
                         <div key={k} className="flex justify-between gap-3 text-sm">
-                          <span className="text-ink-400 capitalize">{k.replace(/_/g, ' ')}</span>
+                          <span className="text-ink-400 capitalize">{formatLogLabel(k)}</span>
                           <span className="text-ink-300 text-right">{formatLogValue(k, v)}</span>
                         </div>
                       ))}
