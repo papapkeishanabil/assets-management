@@ -128,7 +128,7 @@ export default function AssetsPage() {
         // + jumlah kategori perbaikan (log SERVICE lama tanpa work_category = perbaikan).
         const { data: serviceLogs } = await supabase
           .from('asset_activity_logs')
-          .select('asset_id, created_at, new_data')
+          .select('asset_id, action_type, created_at, new_data')
           .eq('action_type', 'SERVICE')
           .in('asset_id', assetIds);
 
