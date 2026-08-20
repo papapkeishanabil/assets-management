@@ -3,10 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Edit, Upload, FileText, Trash2, Wrench, X, Save, Package, ChevronLeft, ChevronRight, ZoomIn, CheckCircle2, History } from 'lucide-react';
+import { ArrowLeft, Edit, Upload, FileText, Trash2, Wrench, X, Save, Package, ChevronLeft, ChevronRight, ZoomIn, CheckCircle2, History, Camera } from 'lucide-react';
 import { formatCurrency, ROLES, formatDate } from '../lib/constants';
 import { permanentDeleteAsset } from '../lib/asset-helpers';
-import { formatDateID } from '../lib/maintenance-helpers';
+import { formatDateID, WORK_CATEGORY, WORK_CATEGORY_LABELS, WORK_CATEGORY_BADGES, getWorkCategoryFromLog, SERVICE_PHOTO_LABELS, groupServicePhotos, normalizeServicePhotos, servicePhotoGroupTitle, parseServiceDescription } from '../lib/maintenance-helpers';
 
 export default function AssetDetailPage() {
   const { id } = useParams();
@@ -23,19 +23,24 @@ export default function AssetDetailPage() {
   const [responsibleAssignments, setResponsibleAssignments] = useState([]);
   const [activeTab, setActiveTab] = useState('info');
   const [showServiceModal, setShowServiceModal] = useState(false);
+  const [historyFilter, setHistoryFilter] = useState('all');
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [selectedLog, setSelectedLog] = useState(null);
   const [selectedExecution, setSelectedExecution] = useState(null);
   const [serviceForm, setServiceForm] = useState({
+    work_category: WORK_CATEGORY.REPAIR,
     description: '',
     service_date: new Date().toISOString().split('T')[0],
     cost: '',
     vendor_id: '',
     vendor_name: '',
     vendor_mode: 'master',
-    notes: ''
+    notes: '',
+    photos: []
   });
   const [savingService, setSavingService] = useState(false);
+  const [editingLogId, setEditingLogId] = useState(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const canEdit = role && ['super_admin', 'hrd'].includes(role.role_name);
   const canDelete = role?.role_name === ROLES.SUPER_ADMIN;
@@ -138,6 +143,7 @@ export default function AssetDetailPage() {
         assessor:assessed_by (id, full_name)
       `)
       .eq('schedule.asset_id', id)
+      .eq('is_draft', false)
       .order('execution_date', { ascending: false })
       .limit(50);
     setMaintenanceExecutions(data || []);
@@ -180,6 +186,87 @@ export default function AssetDetailPage() {
     setResponsibleAssignments(data || []);
   };
 
+  const resetServiceForm = () => {
+    setServiceForm({
+      work_category: WORK_CATEGORY.REPAIR,
+      description: '',
+      service_date: new Date().toISOString().split('T')[0],
+      cost: '',
+      vendor_id: '',
+      vendor_name: '',
+      vendor_mode: 'master',
+      notes: '',
+      photos: []
+    });
+  };
+
+  const openAddServiceModal = () => {
+    setEditingLogId(null);
+    resetServiceForm();
+    setShowServiceModal(true);
+  };
+
+  const openEditServiceModal = (log) => {
+    setEditingLogId(log.id);
+    const nd = log.new_data || {};
+    const isMaster = nd.vendor_id && vendors.some(v => v.id === nd.vendor_id);
+    setServiceForm({
+      work_category: getWorkCategoryFromLog(log),
+      description: parseServiceDescription(log),
+      service_date: nd.service_date || (log.created_at || '').split('T')[0] || new Date().toISOString().split('T')[0],
+      cost: nd.cost != null ? String(nd.cost) : '',
+      vendor_id: isMaster ? nd.vendor_id : '',
+      vendor_name: nd.vendor_name || '',
+      vendor_mode: isMaster ? 'master' : (nd.vendor_name ? 'manual' : 'master'),
+      notes: log.reason || '',
+      photos: normalizeServicePhotos(nd.photos)
+    });
+    setShowServiceModal(true);
+  };
+
+  const closeServiceModal = () => {
+    setShowServiceModal(false);
+    setEditingLogId(null);
+  };
+
+  const handleServicePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('File harus berupa gambar');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Ukuran foto maksimal 5MB');
+      e.target.value = '';
+      return;
+    }
+    setUploadingPhoto(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const filePath = `service-photos/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+      const { error } = await supabase.storage.from('maintenance-photos').upload(filePath, file, { cacheControl: '3600', upsert: false });
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from('maintenance-photos').getPublicUrl(filePath);
+      setServiceForm(prev => ({ ...prev, photos: [...prev.photos, { url: publicUrl, label: '', caption: '' }] }));
+      toast.success('Foto berhasil diupload');
+    } catch (error) {
+      toast.error('Gagal upload foto: ' + error.message);
+    } finally {
+      setUploadingPhoto(false);
+      e.target.value = '';
+    }
+  };
+
+  const removeServicePhoto = (idx) => {
+    setServiceForm(prev => ({ ...prev, photos: prev.photos.filter((_, i) => i !== idx) }));
+  };
+
+  const updateServicePhoto = (idx, patch) => {
+    setServiceForm(prev => ({ ...prev, photos: prev.photos.map((p, i) => i === idx ? { ...p, ...patch } : p) }));
+  };
+
   const handleServiceSubmit = async (e) => {
     e.preventDefault();
     if (!serviceForm.description) {
@@ -189,37 +276,56 @@ export default function AssetDetailPage() {
 
     setSavingService(true);
     try {
-      const logDescription = `Perbaikan/Service: ${serviceForm.description}` +
+      const categoryPrefix = serviceForm.work_category === WORK_CATEGORY.ROUTINE
+        ? 'Pemeliharaan Rutin'
+        : 'Perbaikan/Service';
+      const logDescription = `${categoryPrefix}: ${serviceForm.description}` +
         (serviceForm.vendor_name ? ` (${serviceForm.vendor_name})` : '') +
         (serviceForm.cost ? ` - Biaya: Rp ${parseInt(serviceForm.cost).toLocaleString('id-ID')}` : '');
 
-      const { error } = await supabase.from('asset_activity_logs').insert([{
-        asset_id: id,
-        user_id: profile?.id,
-        action_type: 'SERVICE',
-        description: logDescription,
-        reason: serviceForm.notes || null,
-        new_data: {
-          service_date: serviceForm.service_date,
-          cost: serviceForm.cost ? parseInt(serviceForm.cost) : null,
-          vendor_id: serviceForm.vendor_id || null,
-          vendor_name: serviceForm.vendor_name || null
-        }
-      }]);
+      const new_data = {
+        work_category: serviceForm.work_category,
+        service_date: serviceForm.service_date,
+        cost: serviceForm.cost ? parseInt(serviceForm.cost) : null,
+        vendor_id: serviceForm.vendor_id || null,
+        vendor_name: serviceForm.vendor_name || null,
+        description: serviceForm.description,
+        photos: serviceForm.photos.filter(p => p.url)
+      };
 
-      if (error) throw error;
+      if (editingLogId) {
+        const prev = logs.find(l => l.id === editingLogId);
+        const { data, error } = await supabase.from('asset_activity_logs')
+          .update({
+            description: logDescription,
+            reason: serviceForm.notes || null,
+            new_data,
+            old_data: prev?.old_data || prev?.new_data || null
+          })
+          .eq('id', editingLogId)
+          .select('id');
 
-      toast.success('Service berhasil dicatat');
-      setShowServiceModal(false);
-      setServiceForm({
-        description: '',
-        service_date: new Date().toISOString().split('T')[0],
-        cost: '',
-        vendor_id: '',
-        vendor_name: '',
-        vendor_mode: 'master',
-        notes: ''
-      });
+        if (error) throw error;
+        if (!data || data.length === 0) throw new Error('Tidak ada izin atau catatan tidak ditemukan');
+
+        toast.success('Catatan service berhasil diperbarui');
+      } else {
+        const { error } = await supabase.from('asset_activity_logs').insert([{
+          asset_id: id,
+          user_id: profile?.id,
+          action_type: 'SERVICE',
+          description: logDescription,
+          reason: serviceForm.notes || null,
+          new_data
+        }]);
+
+        if (error) throw error;
+
+        toast.success('Service berhasil dicatat');
+      }
+
+      closeServiceModal();
+      resetServiceForm();
       fetchLogs();
     } catch (error) {
       toast.error(error.message);
@@ -292,6 +398,53 @@ export default function AssetDetailPage() {
     return <div className="empty-state"><div className="empty-state-icon"><Package size={48} /></div><h3 className="empty-state-title">Aset tidak ditemukan</h3></div>;
   }
 
+  // Timeline terpadu: pelaksanaan jadwal (rutin) + log aktivitas (service/aktivitas lain)
+  const mergedTimeline = [
+    ...maintenanceExecutions.map(e => ({
+      key: `exec-${e.id}`,
+      kind: 'execution',
+      category: WORK_CATEGORY.ROUTINE,
+      sortTime: new Date(`${e.execution_date}T00:00:00`).getTime(),
+      title: e.schedule?.maintenance_type?.maintenance_name || 'Pemeliharaan Rutin',
+      cost: e.cost != null ? Number(e.cost) : null,
+      person: e.performer?.full_name || '-',
+      dateLabel: formatDateID(e.execution_date),
+      raw: e
+    })),
+    ...logs.map(l => ({
+      key: `log-${l.id}`,
+      kind: 'log',
+      category: getWorkCategoryFromLog(l),
+      sortTime: new Date(l.created_at).getTime(),
+      title: l.description,
+      cost: l.action_type === 'SERVICE' && l.new_data?.cost ? Number(l.new_data.cost) : null,
+      person: l.user?.full_name || 'System',
+      dateLabel: new Date(l.created_at).toLocaleString('id-ID'),
+      raw: l
+    }))
+  ].sort((a, b) => b.sortTime - a.sortTime);
+
+  const categoryStats = mergedTimeline.reduce((acc, item) => {
+    acc[item.category].count += 1;
+    if (item.category !== WORK_CATEGORY.OTHER && item.cost) acc[item.category].totalCost += item.cost;
+    return acc;
+  }, {
+    [WORK_CATEGORY.ROUTINE]: { count: 0, totalCost: 0 },
+    [WORK_CATEGORY.REPAIR]: { count: 0, totalCost: 0 },
+    [WORK_CATEGORY.OTHER]: { count: 0, totalCost: 0 }
+  });
+
+  const filteredTimeline = historyFilter === 'all'
+    ? mergedTimeline
+    : mergedTimeline.filter(item => item.category === historyFilter);
+
+  const HISTORY_FILTERS = [
+    { value: 'all', label: 'Semua' },
+    { value: WORK_CATEGORY.ROUTINE, label: 'Rutin' },
+    { value: WORK_CATEGORY.REPAIR, label: 'Perbaikan' },
+    { value: WORK_CATEGORY.OTHER, label: 'Lainnya' }
+  ];
+
   const tabs = [
     { id: 'info', label: 'Informasi Umum' },
     { id: 'technical', label: 'Data Teknis' },
@@ -299,7 +452,7 @@ export default function AssetDetailPage() {
     { id: 'photos', label: `Foto (${photos.length})` },
     { id: 'documents', label: `Dokumen (${documents.length})` },
     { id: 'maintenance', label: `Pemeliharaan (${maintenance.filter(r => r.inspection_status == null || r.inspection_status === 'selesai').length})` },
-    { id: 'activity', label: `Riwayat (${logs.length})` }
+    { id: 'activity', label: `Riwayat (${mergedTimeline.length})` }
   ];
 
   const Field = ({ label, value }) => (
@@ -317,6 +470,7 @@ export default function AssetDetailPage() {
   const formatLogValue = (key, value) => {
     if (value === null || value === undefined || value === '') return '-';
     if (key === 'cost') return `Rp ${Number(value).toLocaleString('id-ID')}`;
+    if (key === 'work_category') return WORK_CATEGORY_LABELS[value] || String(value);
     if (typeof value === 'boolean') return value ? 'Ya' : 'Tidak';
     return String(value);
   };
@@ -336,7 +490,7 @@ export default function AssetDetailPage() {
         <div className="flex gap-2 flex-shrink-0">
           {canEdit && (
             <>
-              <button onClick={() => setShowServiceModal(true)} className="btn-secondary text-sm">
+              <button onClick={openAddServiceModal} className="btn-secondary text-sm">
                 <Wrench size={14} />
                 Catat Service
               </button>
@@ -637,62 +791,123 @@ export default function AssetDetailPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="section-title">
-                <Wrench size={16} className="text-primary-400" />
-                Riwayat Aktivitas
+                <History size={16} className="text-primary-400" />
+                Riwayat Aktivitas & Pemeliharaan
               </h3>
               {canEdit && (
-                <button onClick={() => setShowServiceModal(true)} className="btn-secondary text-sm">
+                <button onClick={openAddServiceModal} className="btn-secondary text-sm">
                   <Wrench size={14} />
                   Catat Service
                 </button>
               )}
             </div>
-            {logs.length === 0 ? (
+
+            {/* Ringkasan per kategori */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {[WORK_CATEGORY.ROUTINE, WORK_CATEGORY.REPAIR, WORK_CATEGORY.OTHER].map(cat => (
+                <div key={cat} className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                  <span className={`badge ${WORK_CATEGORY_BADGES[cat]} text-[10px] mb-2 inline-flex`}>
+                    {WORK_CATEGORY_LABELS[cat]}
+                  </span>
+                  <p className="text-lg font-semibold text-white">
+                    {categoryStats[cat].count} <span className="text-xs font-normal text-ink-400">kali</span>
+                  </p>
+                  {cat !== WORK_CATEGORY.OTHER && (
+                    <p className="text-xs text-ink-400 mt-0.5">Total biaya: {formatCurrency(categoryStats[cat].totalCost)}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Filter kategori */}
+            <div className="tabs flex-wrap">
+              {HISTORY_FILTERS.map(f => (
+                <button
+                  key={f.value}
+                  onClick={() => setHistoryFilter(f.value)}
+                  className={`tab text-xs ${historyFilter === f.value ? 'tab-active' : ''}`}
+                >
+                  {f.label} ({f.value === 'all' ? mergedTimeline.length : categoryStats[f.value].count})
+                </button>
+              ))}
+            </div>
+
+            {filteredTimeline.length === 0 ? (
               <div className="empty-state py-8">
                 <div className="empty-state-icon"><FileText size={32} /></div>
-                <p className="empty-state-text">Belum ada aktivitas</p>
+                <p className="empty-state-text">
+                  {historyFilter !== 'all' ? 'Tidak ada riwayat yang sesuai filter' : 'Belum ada aktivitas'}
+                </p>
               </div>
             ) : (
               <div className="space-y-2">
-                {logs.map(log => (
+                {filteredTimeline.map(item => (
                   <div
-                    key={log.id}
-                    onClick={() => setSelectedLog(log)}
+                    key={item.key}
+                    onClick={() => item.kind === 'execution' ? setSelectedExecution(item.raw) : setSelectedLog(item.raw)}
                     className={`flex gap-3 p-3 rounded-lg border cursor-pointer hover:bg-white/[0.06] transition-colors ${
-                      log.action_type === 'SERVICE' ? 'bg-warning-500/[0.05] border-warning-500/15' : 'bg-white/[0.03] border-white/5'
+                      item.category === WORK_CATEGORY.ROUTINE ? 'bg-success-500/[0.05] border-success-500/15'
+                      : item.category === WORK_CATEGORY.REPAIR ? 'bg-warning-500/[0.05] border-warning-500/15'
+                      : 'bg-white/[0.03] border-white/5'
                     }`}
                   >
                     <div className={`p-2 rounded-md flex-shrink-0 ${
-                      log.action_type === 'SERVICE' ? 'bg-warning-500/10 border border-warning-500/20' : 'bg-white/5 border border-white/10'
+                      item.category === WORK_CATEGORY.ROUTINE ? 'bg-success-500/10 border border-success-500/20'
+                      : item.category === WORK_CATEGORY.REPAIR ? 'bg-warning-500/10 border border-warning-500/20'
+                      : 'bg-white/5 border border-white/10'
                     }`}>
-                      {log.action_type === 'SERVICE' ? (
-                        <Wrench size={14} className="text-warning-400" />
-                      ) : (
+                      {item.kind === 'execution' ? (
+                        <CheckCircle2 size={14} className="text-success-400" />
+                      ) : item.category === WORK_CATEGORY.OTHER ? (
                         <FileText size={14} className="text-ink-400" />
+                      ) : (
+                        <Wrench size={14} className={item.category === WORK_CATEGORY.ROUTINE ? 'text-success-400' : 'text-warning-400'} />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white">{log.description}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`badge ${WORK_CATEGORY_BADGES[item.category]} text-[10px]`}>
+                          {item.kind === 'execution' ? 'Pemeliharaan Rutin (Jadwal)' : WORK_CATEGORY_LABELS[item.category]}
+                        </span>
+                        {item.kind === 'log' && item.raw.action_type === 'SERVICE' && item.raw.new_data?.service_date && (
+                          <span className="text-[10px] font-mono bg-warning-500/10 text-warning-300 px-1.5 py-0.5 rounded border border-warning-500/20">
+                            {item.raw.new_data.service_date}
+                          </span>
+                        )}
+                        {item.kind === 'log' && item.raw.action_type === 'SERVICE' && Array.isArray(item.raw.new_data?.photos) && item.raw.new_data.photos.length > 0 && (
+                          <span className="text-[10px] font-mono bg-primary-500/10 text-primary-300 px-1.5 py-0.5 rounded border border-primary-500/20 inline-flex items-center gap-1">
+                            <Camera size={10} />
+                            {item.raw.new_data.photos.length} foto
+                          </span>
+                        )}
+                        {canEdit && item.kind === 'log' && item.raw.action_type === 'SERVICE' && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); openEditServiceModal(item.raw); }}
+                            className="text-[10px] font-mono inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-white/10 text-ink-300 hover:text-white hover:border-warning-500/40 hover:bg-warning-500/10 transition-all"
+                            title="Edit catatan service"
+                          >
+                            <Edit size={10} />
+                            Edit
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-sm font-medium text-white mt-1">{item.title}</p>
                       <div className="flex items-center flex-wrap gap-2 mt-1.5">
-                        {log.action_type === 'SERVICE' && log.new_data && (
-                          <>
-                            {log.new_data.service_date && (
-                              <span className="text-[10px] font-mono bg-warning-500/10 text-warning-300 px-1.5 py-0.5 rounded border border-warning-500/20">
-                                {log.new_data.service_date}
-                              </span>
-                            )}
-                            {log.new_data.cost && (
-                              <span className="text-[10px] font-mono bg-primary-500/10 text-primary-300 px-1.5 py-0.5 rounded border border-primary-500/20">
-                                Rp {log.new_data.cost.toLocaleString('id-ID')}
-                              </span>
-                            )}
-                          </>
+                        {item.cost != null && (
+                          <span className="text-[10px] font-mono bg-primary-500/10 text-primary-300 px-1.5 py-0.5 rounded border border-primary-500/20">
+                            Rp {item.cost.toLocaleString('id-ID')}
+                          </span>
                         )}
                         <span className="text-[11px] text-ink-500 font-mono">
-                          {log.user?.full_name || 'System'} • {new Date(log.created_at).toLocaleString('id-ID')}
+                          {item.person} • {item.dateLabel}
                         </span>
                       </div>
-                      {log.reason && <p className="text-xs text-ink-400 mt-1.5">Catatan: {log.reason}</p>}
+                      {item.kind === 'log' && item.raw.reason && (
+                        <p className="text-xs text-ink-400 mt-1.5">Catatan: {item.raw.reason}</p>
+                      )}
+                      {item.kind === 'execution' && item.raw.notes && (
+                        <p className="text-xs text-ink-400 mt-1.5">Catatan: {item.raw.notes}</p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -710,13 +925,24 @@ export default function AssetDetailPage() {
                 <div className="p-2.5 rounded-xl bg-warning-500/10 border border-warning-500/20">
                   <Wrench size={18} className="text-warning-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Catat Perbaikan/Service</h3>
+                <h3 className="text-lg font-semibold text-white">{editingLogId ? 'Edit Perbaikan/Service' : 'Catat Perbaikan/Service'}</h3>
               </div>
-              <button onClick={() => setShowServiceModal(false)} className="p-1.5 text-ink-400 hover:bg-white/5 hover:text-white rounded-md transition-all">
+              <button onClick={closeServiceModal} className="p-1.5 text-ink-400 hover:bg-white/5 hover:text-white rounded-md transition-all">
                 <X size={18} />
               </button>
             </div>
             <form onSubmit={handleServiceSubmit} className="space-y-4">
+              <div>
+                <label className="label">Jenis Pekerjaan</label>
+                <select
+                  className="input"
+                  value={serviceForm.work_category}
+                  onChange={(e) => setServiceForm({...serviceForm, work_category: e.target.value})}
+                >
+                  <option value={WORK_CATEGORY.REPAIR}>Perbaikan karena Kerusakan</option>
+                  <option value={WORK_CATEGORY.ROUTINE}>Pemeliharaan Rutin</option>
+                </select>
+              </div>
               <div>
                 <label className="label">Deskripsi Service <span className="text-danger-400">*</span></label>
                 <textarea
@@ -805,9 +1031,75 @@ export default function AssetDetailPage() {
                   placeholder="Catatan tambahan..."
                 />
               </div>
+              <div className="space-y-3">
+                <label className="label">Foto Service (opsional)</label>
+                <input
+                  id="service-photo"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={uploadingPhoto}
+                  onChange={handleServicePhotoUpload}
+                />
+                <label
+                  htmlFor="service-photo"
+                  className={`cursor-pointer flex items-center justify-center gap-2 p-3 border border-dashed rounded-lg transition-all text-xs text-ink-300 ${
+                    uploadingPhoto
+                      ? 'border-primary-500/40 bg-primary-500/[0.03] opacity-70 pointer-events-none'
+                      : 'border-white/10 hover:border-primary-500/40 hover:bg-primary-500/[0.03]'
+                  }`}
+                >
+                  <Camera size={14} />
+                  {uploadingPhoto ? 'Mengupload...' : 'Tambah Foto'}
+                </label>
+                <p className="text-xs text-ink-500">
+                  Tidak harus berpasangan — bisa sekadar foto perangkat/part yang rusak. Setiap foto bisa diberi label dan keterangan.
+                </p>
+                {serviceForm.photos.length > 0 && (
+                  <div className="space-y-2">
+                    {serviceForm.photos.map((photo, idx) => (
+                      <div key={idx} className="flex items-start gap-2.5 p-2 rounded-lg border border-white/10 bg-white/[0.02]">
+                        <img
+                          src={photo.url}
+                          alt={photo.caption || `Foto ${idx + 1}`}
+                          className="w-14 h-14 object-cover rounded-lg border border-white/10 shrink-0"
+                        />
+                        <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-2 gap-2">
+                          <select
+                            className="input"
+                            value={photo.label}
+                            onChange={(e) => updateServicePhoto(idx, { label: e.target.value })}
+                            title="Label foto (opsional)"
+                          >
+                            <option value="">Tanpa Label</option>
+                            {Object.entries(SERVICE_PHOTO_LABELS).map(([labelKey, labelText]) => (
+                              <option key={labelKey} value={labelKey}>{labelText}</option>
+                            ))}
+                          </select>
+                          <input
+                            type="text"
+                            className="input"
+                            value={photo.caption}
+                            onChange={(e) => updateServicePhoto(idx, { caption: e.target.value })}
+                            placeholder="Keterangan foto (mis. motor driver rusak)"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeServicePhoto(idx)}
+                          className="p-1.5 text-ink-400 hover:text-danger-400 hover:bg-white/5 rounded-md transition-all shrink-0"
+                          title="Hapus foto"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="flex gap-3 justify-end pt-2">
-                <button type="button" onClick={() => setShowServiceModal(false)} className="btn-secondary">Batal</button>
-                <button type="submit" className="btn-primary" disabled={savingService}>
+                <button type="button" onClick={closeServiceModal} className="btn-secondary">Batal</button>
+                <button type="submit" className="btn-primary" disabled={savingService || uploadingPhoto}>
                   {savingService ? (
                     <>
                       <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -819,7 +1111,7 @@ export default function AssetDetailPage() {
                   ) : (
                     <>
                       <Save size={14} />
-                      Simpan
+                      {editingLogId ? 'Simpan Perubahan' : 'Simpan'}
                     </>
                   )}
                 </button>
@@ -1124,6 +1416,12 @@ export default function AssetDetailPage() {
                   <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Waktu</p>
                   <p className="text-sm text-white">{new Date(selectedLog.created_at).toLocaleString('id-ID')}</p>
                 </div>
+                {selectedLog.updated_at && new Date(selectedLog.updated_at) > new Date(selectedLog.created_at) && (
+                  <div className="p-3 rounded-lg bg-warning-500/[0.05] border border-warning-500/15">
+                    <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Terakhir Diubah</p>
+                    <p className="text-sm text-white">{new Date(selectedLog.updated_at).toLocaleString('id-ID')}</p>
+                  </div>
+                )}
               </div>
               {selectedLog.reason && (
                 <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
@@ -1135,7 +1433,7 @@ export default function AssetDetailPage() {
                 <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
                   <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-2">Detail Perubahan</p>
                   <div className="space-y-1.5">
-                    {Object.entries(selectedLog.new_data).map(([k, v]) => (
+                    {Object.entries(selectedLog.new_data).filter(([k]) => k !== 'photos' && k !== 'description').map(([k, v]) => (
                       <div key={k} className="flex justify-between gap-3 text-sm">
                         <span className="text-ink-400 capitalize">{k.replace(/_/g, ' ')}</span>
                         <span className="text-white text-right">{formatLogValue(k, v)}</span>
@@ -1144,10 +1442,55 @@ export default function AssetDetailPage() {
                   </div>
                 </div>
               )}
+              {Array.isArray(selectedLog.new_data?.photos) && selectedLog.new_data.photos.length > 0 && (() => {
+                const grouped = groupServicePhotos(selectedLog.new_data.photos);
+                return (
+                  <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                    <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-2">Foto Service ({selectedLog.new_data.photos.length})</p>
+                    {Object.entries(grouped).map(([labelKey, items]) => items.length > 0 && (
+                      <div key={labelKey} className="mb-3 last:mb-0">
+                        {(labelKey || Object.keys(grouped).length > 1) && (
+                          <p className="text-xs text-ink-400 mb-1.5">{servicePhotoGroupTitle(labelKey)} ({items.length})</p>
+                        )}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {items.map((item, idx) => (
+                            <a
+                              key={idx}
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="relative block w-full h-32 rounded-lg overflow-hidden border border-white/10 hover:border-primary-500/40 transition-all"
+                              title={item.caption || servicePhotoGroupTitle(labelKey)}
+                            >
+                              <img src={item.url} alt={item.caption || `Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                              {item.caption && (
+                                <span className="absolute inset-x-0 bottom-0 px-2 py-1.5 text-[11px] leading-snug text-white bg-gradient-to-t from-black/80 to-transparent line-clamp-2">
+                                  {item.caption}
+                                </span>
+                              )}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
               {selectedLog.old_data && Object.keys(selectedLog.old_data).length > 0 && (
                 <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
                   <p className="text-[11px] font-mono uppercase tracking-wider text-ink-500 mb-1">Data Sebelum</p>
                   <pre className="text-xs text-ink-300 whitespace-pre-wrap font-mono">{JSON.stringify(selectedLog.old_data, null, 2)}</pre>
+                </div>
+              )}
+              {canEdit && selectedLog.action_type === 'SERVICE' && (
+                <div className="flex gap-3 justify-end pt-2">
+                  <button
+                    onClick={() => { setSelectedLog(null); openEditServiceModal(selectedLog); }}
+                    className="btn-secondary text-sm"
+                  >
+                    <Edit size={14} />
+                    Edit Catatan
+                  </button>
                 </div>
               )}
             </div>

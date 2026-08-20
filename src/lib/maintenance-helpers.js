@@ -53,6 +53,121 @@ export const SCHEDULE_STATUS_COLORS = {
   [SCHEDULE_STATUS.INACTIVE]: 'gray'
 };
 
+// Kategori pekerjaan pada riwayat aset (service manual / pelaksanaan jadwal)
+export const WORK_CATEGORY = {
+  ROUTINE: 'rutin',
+  REPAIR: 'perbaikan',
+  OTHER: 'lainnya'
+};
+
+export const WORK_CATEGORY_LABELS = {
+  [WORK_CATEGORY.ROUTINE]: 'Pemeliharaan Rutin',
+  [WORK_CATEGORY.REPAIR]: 'Perbaikan karena Kerusakan',
+  [WORK_CATEGORY.OTHER]: 'Lainnya'
+};
+
+export const WORK_CATEGORY_BADGES = {
+  [WORK_CATEGORY.ROUTINE]: 'badge-green',
+  [WORK_CATEGORY.REPAIR]: 'badge-orange',
+  [WORK_CATEGORY.OTHER]: 'badge-gray'
+};
+
+/**
+ * Ambil kategori pekerjaan dari log aktivitas aset.
+ * Log SERVICE lama tanpa new_data.work_category dianggap 'perbaikan';
+ * log non-SERVICE selalu 'lainnya'.
+ * @param {object} log - Baris asset_activity_logs
+ * @returns {string} Nilai WORK_CATEGORY
+ */
+export function getWorkCategoryFromLog(log) {
+  if (!log || log.action_type !== 'SERVICE') return WORK_CATEGORY.OTHER;
+  const raw = log.new_data?.work_category;
+  return raw === WORK_CATEGORY.ROUTINE || raw === WORK_CATEGORY.REPAIR
+    ? raw
+    : WORK_CATEGORY.REPAIR;
+}
+
+// Label foto pada catatan service (asset_activity_logs new_data.photos).
+// Label OPSIONAL — foto boleh tanpa label (mis. sekadar foto part rusak + keterangan).
+export const SERVICE_PHOTO_LABELS = {
+  sebelum: 'Sebelum (Kondisi Awal)',
+  proses: 'Proses Pengerjaan',
+  sesudah: 'Sesudah (Hasil Akhir)'
+};
+
+export const SERVICE_PHOTO_UNLABELED = 'Tanpa Label';
+
+/**
+ * Judul grup untuk kunci label (dipakai di tampilan detail).
+ * @param {string} key - kunci label ('' = tanpa label)
+ * @returns {string}
+ */
+export function servicePhotoGroupTitle(key) {
+  if (!key) return SERVICE_PHOTO_UNLABELED;
+  return SERVICE_PHOTO_LABELS[key] || key;
+}
+
+/**
+ * Ubah foto flat [{url,label?,caption?}] menjadi grup per label.
+ * Label kosong/tidak ada masuk grup '' (Tanpa Label); label tak dikenal
+ * dipertahankan pada bucket sendiri agar data lama tidak hilang.
+ * Urutan grup: sebelum -> proses -> sesudah -> '' -> label lain.
+ * @param {Array<{url:string,label?:string,caption?:string}>} flat
+ * @returns {Record<string,Array<{url:string,caption:string}>>}
+ */
+export function groupServicePhotos(flat) {
+  const groups = {};
+  if (!Array.isArray(flat)) return groups;
+  for (const item of flat) {
+    if (!item?.url) continue;
+    const key = item.label ? String(item.label) : '';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push({ url: item.url, caption: item.caption || '' });
+  }
+  const known = Object.keys(SERVICE_PHOTO_LABELS).filter(k => groups[k]);
+  const rest = Object.keys(groups).filter(k => !SERVICE_PHOTO_LABELS[k]);
+  const ordered = {};
+  for (const k of [...known, ...rest.sort((a, b) => (a === '' ? -1 : b === '' ? 1 : 0))]) {
+    ordered[k] = groups[k];
+  }
+  return ordered;
+}
+
+/**
+ * Normalisasi foto dari new_data untuk prefill form edit:
+ * pastikan bentuk {url, label, caption} dan buang entri tanpa URL.
+ * Kompatibel dengan data lama [{url,label}] (caption kosong) maupun string URL.
+ * @param {Array} raw - new_data.photos
+ * @returns {Array<{url:string,label:string,caption:string}>}
+ */
+export function normalizeServicePhotos(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map(p => (typeof p === 'string' ? { url: p } : p))
+    .filter(p => p?.url)
+    .map(p => ({ url: p.url, label: p.label || '', caption: p.caption || '' }));
+}
+
+/**
+ * Ambil deskripsi mentah catatan service untuk prefill form edit.
+ * Baris lama (tanpa new_data.description): strip prefix kategori, suffix biaya,
+ * dan " (vendor)" hanya jika persis cocok new_data.vendor_name.
+ * @param {object} log - Baris asset_activity_logs
+ * @returns {string}
+ */
+export function parseServiceDescription(log) {
+  const raw = log?.new_data?.description;
+  if (raw) return raw;
+  let desc = log?.description || '';
+  desc = desc.replace(/^(Perbaikan\/Service|Pemeliharaan Rutin):\s*/, '');
+  desc = desc.replace(/\s*-\s*Biaya:\s*Rp\s*[\d.,]+\s*$/, '');
+  const vendor = log?.new_data?.vendor_name;
+  if (vendor && desc.endsWith(`(${vendor})`)) {
+    desc = desc.slice(0, -(vendor.length + 2)).trim();
+  }
+  return desc.trim();
+}
+
 /**
  * Hitung tanggal berikutnya berdasarkan interval
  * @param {string|Date} lastDate - Tanggal pemeliharaan terakhir
