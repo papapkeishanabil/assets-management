@@ -6,6 +6,14 @@ import { ROLES } from '../lib/constants';
 import toast from 'react-hot-toast';
 import { Plus, Search, RefreshCw, Eye, Edit, Trash2, Ban, Filter, Package, X, Truck } from 'lucide-react';
 import { permanentDeleteAsset } from '../lib/asset-helpers';
+import { formatDateID, WORK_CATEGORY, WORK_CATEGORY_BADGES, getWorkCategoryFromLog } from '../lib/maintenance-helpers';
+
+// Label singkat kategori untuk kolom tabel (label lengkap terlalu panjang untuk sel).
+const SHORT_CATEGORY_LABELS = {
+  [WORK_CATEGORY.ROUTINE]: 'Rutin',
+  [WORK_CATEGORY.REPAIR]: 'Perbaikan',
+  [WORK_CATEGORY.OTHER]: 'Lainnya'
+};
 
 export default function AssetsPage() {
   const navigate = useNavigate();
@@ -32,6 +40,8 @@ export default function AssetsPage() {
   const [photosMap, setPhotosMap] = useState({});
   const [usersMap, setUsersMap] = useState({});
   const [responsiblesMap, setResponsiblesMap] = useState({});
+  // Riwayat service per aset: { lastDate, lastCategory, repairCount } untuk kolom tabel.
+  const [serviceStats, setServiceStats] = useState({});
   const [previewPhoto, setPreviewPhoto] = useState(null);
 
   const canEdit = role && ['super_admin', 'hrd'].includes(role.role_name);
@@ -113,6 +123,31 @@ export default function AssetsPage() {
           });
         }
         setResponsiblesMap(assignmentMap);
+
+        // Agregat riwayat service: tanggal terakhir (service_date, fallback created_at)
+        // + jumlah kategori perbaikan (log SERVICE lama tanpa work_category = perbaikan).
+        const { data: serviceLogs } = await supabase
+          .from('asset_activity_logs')
+          .select('asset_id, created_at, new_data')
+          .eq('action_type', 'SERVICE')
+          .in('asset_id', assetIds);
+
+        const statsMap = {};
+        if (serviceLogs) {
+          for (const log of serviceLogs) {
+            const cat = getWorkCategoryFromLog(log);
+            const date = log.new_data?.service_date || log.created_at;
+            if (!statsMap[log.asset_id]) {
+              statsMap[log.asset_id] = { lastDate: date, lastCategory: cat, repairCount: 0 };
+            }
+            if (cat === WORK_CATEGORY.REPAIR) statsMap[log.asset_id].repairCount++;
+            if (new Date(date) > new Date(statsMap[log.asset_id].lastDate)) {
+              statsMap[log.asset_id].lastDate = date;
+              statsMap[log.asset_id].lastCategory = cat;
+            }
+          }
+        }
+        setServiceStats(statsMap);
       }
 
       const userIds = [...new Set(data?.filter(a => a.responsible_user_id).map(a => a.responsible_user_id) || [])];
@@ -371,6 +406,8 @@ export default function AssetsPage() {
                   <th>Model</th>
                   <th>Lokasi</th>
                   <th>Penanggung Jawab</th>
+                  <th>Service Terakhir</th>
+                  <th>Jumlah Perbaikan</th>
                   <th>Kondisi</th>
                   <th>Status</th>
                   <th className="text-right">Aksi</th>
@@ -380,6 +417,7 @@ export default function AssetsPage() {
                 {assets.map((asset) => {
                   const condName = getConditionName(asset.condition_id).toLowerCase();
                   const condBadge = condName.includes('baik') ? 'badge-green' : condName.includes('rusak') ? 'badge-red' : 'badge-yellow';
+                  const stats = serviceStats[asset.id];
                   return (
                     <tr key={asset.id} className="hover-card">
                       <td>
@@ -419,6 +457,27 @@ export default function AssetsPage() {
                           </span>
                         ) : (
                           usersMap[asset.responsible_user_id] || '-'
+                        )}
+                      </td>
+                      <td>
+                        {stats ? (
+                          <div className="flex flex-col items-start gap-1">
+                            <span className="font-mono text-[12px] text-ink-200">{formatDateID(stats.lastDate)}</span>
+                            <span className={WORK_CATEGORY_BADGES[stats.lastCategory]}>
+                              {SHORT_CATEGORY_LABELS[stats.lastCategory]}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-ink-500">-</span>
+                        )}
+                      </td>
+                      <td>
+                        {stats?.repairCount ? (
+                          <span className="font-mono font-medium text-white" title={`${stats.repairCount} kali perbaikan`}>
+                            {stats.repairCount}×
+                          </span>
+                        ) : (
+                          <span className="font-mono text-ink-500">0×</span>
                         )}
                       </td>
                       <td>
