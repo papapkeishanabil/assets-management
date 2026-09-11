@@ -531,7 +531,7 @@ export default function AssetsPage() {
                         )}
                       </td>
                       <td>
-                        <span className="whitespace-nowrap rounded-md border border-primary-500/25 bg-primary-500/10 px-2 py-1 font-mono text-[11px] font-semibold text-primary-300">
+                        <span className="asset-label-badge">
                           {asset.label_number ? `ASET ${String(asset.label_number).padStart(4, '0')}` : '-'}
                         </span>
                       </td>
@@ -646,7 +646,7 @@ export default function AssetsPage() {
             </div>
             <div className="text-center mt-4">
               <p className="font-semibold text-white">{qrPreview.asset.asset_name}</p>
-              <p className="text-sm font-mono text-primary-400 mt-1">ASET {String(qrPreview.asset.label_number).padStart(4, '0')}</p>
+              <p className="text-sm font-mono font-bold text-white mt-1">ASET {String(qrPreview.asset.label_number).padStart(4, '0')}</p>
               <p className="text-xs text-ink-500 mt-1 break-all">{qrPreview.scanUrl}</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-5">

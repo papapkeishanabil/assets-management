@@ -517,7 +517,7 @@ export default function AssetDetailPage() {
           <div className="min-w-0">
             <h1 className="text-2xl font-semibold text-white tracking-tight truncate">{asset.asset_name}</h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className="rounded-md border border-primary-500/25 bg-primary-500/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-primary-300">
+              <span className="asset-label-badge">
                 {asset.label_number ? `ASET ${String(asset.label_number).padStart(4, '0')}` : '-'}
               </span>
               <span className="text-sm text-ink-400 font-mono">{asset.asset_code}</span>
