@@ -4,7 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ROLES } from '../lib/constants';
 import toast from 'react-hot-toast';
-import { Plus, Search, RefreshCw, Eye, Edit, Trash2, Ban, Filter, Package, X, Truck } from 'lucide-react';
+import { Plus, Search, RefreshCw, Eye, Edit, Trash2, Ban, Filter, Package, X, Truck, QrCode, Download, Printer } from 'lucide-react';
+import QRCode from 'qrcode';
 import { permanentDeleteAsset } from '../lib/asset-helpers';
 import { formatDateID, WORK_CATEGORY, WORK_CATEGORY_BADGES, getWorkCategoryFromLog } from '../lib/maintenance-helpers';
 
@@ -14,6 +15,8 @@ const SHORT_CATEGORY_LABELS = {
   [WORK_CATEGORY.REPAIR]: 'Perbaikan',
   [WORK_CATEGORY.OTHER]: 'Lainnya'
 };
+
+const PUBLIC_APP_URL = (import.meta.env.VITE_PUBLIC_APP_URL || 'https://harmas-asset-management.vercel.app').replace(/\/$/, '');
 
 export default function AssetsPage() {
   const navigate = useNavigate();
@@ -43,6 +46,8 @@ export default function AssetsPage() {
   // Riwayat service per aset: { lastDate, lastCategory, repairCount } untuk kolom tabel.
   const [serviceStats, setServiceStats] = useState({});
   const [previewPhoto, setPreviewPhoto] = useState(null);
+  const [qrPreview, setQrPreview] = useState(null);
+  const [qrLoading, setQrLoading] = useState(false);
 
   const canEdit = role && ['super_admin', 'hrd'].includes(role.role_name);
   const canDelete = role && role.role_name === ROLES.SUPER_ADMIN;
@@ -74,7 +79,31 @@ export default function AssetsPage() {
         .order('created_at', { ascending: false });
 
       if (search) {
-        query = query.or(`asset_code.ilike.%${search}%,asset_name.ilike.%${search}%,serial_number.ilike.%${search}%`);
+        const searchTerm = search.trim().replace(/[(),]/g, ' ');
+        const { data: matchingResponsibles } = await supabase
+          .from('asset_responsibles')
+          .select('id')
+          .ilike('responsible_name', `%${searchTerm}%`);
+
+        let responsibleAssetIds = [];
+        const responsibleIds = (matchingResponsibles || []).map((item) => item.id);
+        if (responsibleIds.length > 0) {
+          const { data: matchingAssignments } = await supabase
+            .from('asset_responsible_assignments')
+            .select('asset_id')
+            .in('responsible_id', responsibleIds);
+          responsibleAssetIds = [...new Set((matchingAssignments || []).map((item) => item.asset_id))];
+        }
+
+        const searchFilters = [
+          `asset_code.ilike.%${searchTerm}%`,
+          `asset_name.ilike.%${searchTerm}%`,
+          `serial_number.ilike.%${searchTerm}%`
+        ];
+        if (responsibleAssetIds.length > 0) {
+          searchFilters.push(`id.in.(${responsibleAssetIds.join(',')})`);
+        }
+        query = query.or(searchFilters.join(','));
       }
 
       if (filters.category_id) query = query.eq('category_id', filters.category_id);
@@ -263,6 +292,65 @@ export default function AssetsPage() {
   const getLocationName = (id) => locations.find(l => l.id === id)?.location_name || '-';
   const getConditionName = (id) => conditions.find(c => c.id === id)?.condition_name || '-';
   const getVendorName = (id) => vendors.find(v => v.id === id)?.vendor_name || '-';
+  const getStatusName = (id) => statuses.find(status => status.id === id)?.status_name || '-';
+  const getStatusBadge = (statusName) => {
+    if (statusName === 'Aktif') return 'badge-green';
+    if (statusName === 'Cadangan/Backup') return 'badge-blue';
+    if (['Dalam Pemeliharaan', 'Dipinjamkan', 'Berada di Vendor'].includes(statusName)) return 'badge-yellow';
+    if (['Rusak', 'Tidak Layak Pakai', 'Hilang'].includes(statusName)) return 'badge-red';
+    return 'badge-gray';
+  };
+
+  const handleOpenQr = async (asset) => {
+    if (!asset.qr_token) {
+      toast.error('Token QR aset belum tersedia');
+      return;
+    }
+    setQrLoading(true);
+    try {
+      const scanUrl = `${PUBLIC_APP_URL}/scan/assets/${asset.qr_token}`;
+      const dataUrl = await QRCode.toDataURL(scanUrl, { errorCorrectionLevel: 'Q', margin: 4, width: 900 });
+      setQrPreview({ asset, dataUrl, scanUrl });
+    } catch (error) {
+      toast.error('Gagal membuat QR Code');
+    } finally {
+      setQrLoading(false);
+    }
+  };
+
+  const handleDownloadQr = async () => {
+    if (!qrPreview?.asset?.qr_token) return;
+    const fileName = `QR-${qrPreview.asset.asset_code}.png`;
+    const endpoint = `${PUBLIC_APP_URL}/api/qr/${encodeURIComponent(fileName)}?token=${encodeURIComponent(qrPreview.asset.qr_token)}&code=${encodeURIComponent(qrPreview.asset.asset_code)}`;
+
+    if (!window.showSaveFilePicker) {
+      const downloadWindow = window.open(endpoint, '_blank', 'noopener,noreferrer');
+      if (!downloadWindow) window.location.assign(endpoint);
+      toast.success('Download QR Code dimulai');
+      return;
+    }
+
+    try {
+      const fileHandle = await window.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [{
+          description: 'PNG Image',
+          accept: { 'image/png': ['.png'] }
+        }]
+      });
+      const response = await fetch(endpoint);
+      if (!response.ok) throw new Error('Respons download tidak valid');
+      if (!response.headers.get('content-type')?.includes('image/png')) {
+        throw new Error('Server tidak mengirim file PNG');
+      }
+      const writable = await fileHandle.createWritable();
+      await writable.write(await response.blob());
+      await writable.close();
+      toast.success('QR Code berhasil disimpan');
+    } catch (error) {
+      if (error?.name !== 'AbortError') toast.error('Gagal mengunduh QR Code');
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -271,12 +359,18 @@ export default function AssetsPage() {
           <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">Daftar Aset</h1>
           <p className="text-sm text-ink-400 mt-1">Kelola seluruh aset perusahaan</p>
         </div>
-        {canEdit && (
-          <button onClick={() => navigate('/assets/new')} className="btn-primary text-sm">
-            <Plus size={14} />
-            Tambah Aset
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate('/assets/qr-labels')} className="btn-secondary text-sm">
+            <QrCode size={14} />
+            Cetak Label QR
           </button>
-        )}
+          {canEdit && (
+            <button onClick={() => navigate('/assets/new')} className="btn-primary text-sm">
+              <Plus size={14} />
+              Tambah Aset
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="card">
@@ -399,8 +493,9 @@ export default function AssetsPage() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Foto</th>
-                  <th>Kode</th>
+                <th>Foto</th>
+                <th>No. Aset</th>
+                <th>Kode</th>
                   <th>Nama</th>
                   <th>Merek</th>
                   <th>Model</th>
@@ -427,13 +522,18 @@ export default function AssetsPage() {
                             className="cursor-zoom-in"
                             title="Klik untuk perbesar"
                           >
-                            <img src={photosMap[asset.id]} alt={asset.asset_name} className="w-10 h-10 object-cover rounded-md hover:ring-2 hover:ring-primary-500/50 transition-all" />
+                            <img src={photosMap[asset.id]} alt={asset.asset_name} className="w-28 h-20 object-contain bg-black/30 rounded-lg hover:ring-2 hover:ring-primary-500/50 transition-all" />
                           </button>
                         ) : (
-                          <div className="w-10 h-10 bg-white/5 rounded-md flex items-center justify-center">
-                            <Package size={14} className="text-ink-600" />
+                          <div className="w-28 h-20 bg-white/5 rounded-lg flex items-center justify-center">
+                            <Package size={24} className="text-ink-600" />
                           </div>
                         )}
+                      </td>
+                      <td>
+                        <span className="whitespace-nowrap rounded-md border border-primary-500/25 bg-primary-500/10 px-2 py-1 font-mono text-[11px] font-semibold text-primary-300">
+                          {asset.label_number ? `ASET ${String(asset.label_number).padStart(4, '0')}` : '-'}
+                        </span>
                       </td>
                       <td className="font-mono text-[12px] text-ink-300">{asset.asset_code}</td>
                       <td>
@@ -484,14 +584,20 @@ export default function AssetsPage() {
                         <span className={condBadge}>{getConditionName(asset.condition_id)}</span>
                       </td>
                       <td>
-                        <span className={asset.is_active ? 'badge-green' : 'badge-gray'}>
-                          {asset.is_active ? 'Aktif' : 'Nonaktif'}
-                        </span>
+                        <div className="flex flex-col items-start gap-1">
+                          <span className={getStatusBadge(getStatusName(asset.status_id))}>
+                            {getStatusName(asset.status_id)}
+                          </span>
+                          {!asset.is_active && <span className="text-[10px] text-danger-400">Nonaktif dari inventaris</span>}
+                        </div>
                       </td>
                       <td className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button onClick={() => navigate(`/assets/${asset.id}`)} className="p-1.5 text-primary-400 hover:bg-primary-500/10 rounded-md transition-all" title="Detail">
                             <Eye size={14} />
+                          </button>
+                          <button onClick={() => handleOpenQr(asset)} disabled={qrLoading} className="p-1.5 text-ink-300 hover:bg-white/5 rounded-md transition-all" title="Lihat QR Code">
+                            <QrCode size={14} />
                           </button>
                           {canEdit && (
                             <button onClick={() => navigate(`/assets/${asset.id}/edit`)} className="p-1.5 text-success-400 hover:bg-success-500/10 rounded-md transition-all" title="Edit">
@@ -524,6 +630,36 @@ export default function AssetsPage() {
           </div>
         )}
       </div>
+
+      {qrPreview && (
+        <div className="modal-overlay" onClick={() => setQrPreview(null)}>
+          <div className="modal-content max-w-md" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-start justify-between gap-4 mb-5">
+              <div>
+                <h3 className="text-lg font-semibold text-white">QR Code Aset</h3>
+                <p className="text-xs font-mono text-primary-400 mt-1">{qrPreview.asset.asset_code}</p>
+              </div>
+              <button onClick={() => setQrPreview(null)} className="p-1.5 text-ink-400 hover:text-white hover:bg-white/5 rounded-md"><X size={18} /></button>
+            </div>
+            <div className="rounded-2xl bg-white p-5 flex justify-center">
+              <img src={qrPreview.dataUrl} alt={`QR ${qrPreview.asset.asset_code}`} className="w-full max-w-[300px] aspect-square" />
+            </div>
+            <div className="text-center mt-4">
+              <p className="font-semibold text-white">{qrPreview.asset.asset_name}</p>
+              <p className="text-sm font-mono text-primary-400 mt-1">ASET {String(qrPreview.asset.label_number).padStart(4, '0')}</p>
+              <p className="text-xs text-ink-500 mt-1 break-all">{qrPreview.scanUrl}</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-5">
+              <button type="button" onClick={handleDownloadQr} className="btn-primary justify-center">
+                <Download size={15} /> Download PNG
+              </button>
+              <button onClick={() => navigate(`/assets/qr-labels?ids=${qrPreview.asset.id}`)} className="btn-secondary justify-center">
+                <Printer size={15} /> Cetak Label
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {previewPhoto && (
         <div

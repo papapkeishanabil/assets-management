@@ -37,7 +37,9 @@ export default defineConfig({
       },
       injectManifest: {
         rollupFormat: 'iife',
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}']
+        // HTML harus selalu berasal dari network agar pengguna tidak tertahan
+        // pada bundle aplikasi versi lama setelah deployment.
+        globPatterns: ['**/*.{js,css,ico,png,svg,woff2}']
       }
     })
   ],

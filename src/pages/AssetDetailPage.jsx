@@ -1,16 +1,26 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Edit, Upload, FileText, Trash2, Wrench, X, Save, Package, ChevronLeft, ChevronRight, ZoomIn, CheckCircle2, History, Camera } from 'lucide-react';
-import { formatCurrency, ROLES, formatDate } from '../lib/constants';
+import { ArrowLeft, Edit, Upload, FileText, Trash2, Wrench, X, Save, Package, ChevronLeft, ChevronRight, ZoomIn, CheckCircle2, History, Camera, QrCode } from 'lucide-react';
+import { formatCurrency, ROLES, formatDate, VENDOR_TYPES } from '../lib/constants';
 import { permanentDeleteAsset } from '../lib/asset-helpers';
 import { formatDateID, WORK_CATEGORY, WORK_CATEGORY_LABELS, WORK_CATEGORY_BADGES, getWorkCategoryFromLog, SERVICE_PHOTO_LABELS, groupServicePhotos, normalizeServicePhotos, servicePhotoGroupTitle, parseServiceDescription } from '../lib/maintenance-helpers';
+
+const SERVICE_VENDOR_TYPES = new Set([
+  VENDOR_TYPES.BENGKEL_MOBIL,
+  VENDOR_TYPES.BENGKEL_MOTOR,
+  VENDOR_TYPES.TEKNISI_MESIN,
+  VENDOR_TYPES.TEKNISI_LISTRIK,
+  VENDOR_TYPES.TEKNISI_KOMPUTER,
+  VENDOR_TYPES.VENDOR_MAINTENANCE
+]);
 
 export default function AssetDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { profile, role } = useAuth();
   const [asset, setAsset] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +66,10 @@ export default function AssetDetailPage() {
     fetchResponsibleAssignments();
   }, [id]);
 
+  useEffect(() => {
+    if (searchParams.get('service') === '1') setShowServiceModal(true);
+  }, [searchParams]);
+
   // Navigasi lightbox foto via keyboard (Esc / panah kiri-kanan)
   useEffect(() => {
     if (lightboxIndex === null) return;
@@ -80,7 +94,7 @@ export default function AssetDetailPage() {
 
       const [catRes, locRes, deptRes, condRes, statRes, vendorRes, userRes] = await Promise.all([
         data.category_id ? supabase.from('asset_categories').select('category_name').eq('id', data.category_id).single() : null,
-        data.location_id ? supabase.from('asset_locations').select('location_name').eq('id', data.location_id).single() : null,
+        data.location_id ? supabase.from('asset_locations').select('location_name, location_type').eq('id', data.location_id).single() : null,
         data.department_id ? supabase.from('departments').select('department_name').eq('id', data.department_id).single() : null,
         data.condition_id ? supabase.from('asset_conditions').select('condition_name').eq('id', data.condition_id).single() : null,
         data.status_id ? supabase.from('asset_statuses').select('status_name').eq('id', data.status_id).single() : null,
@@ -174,7 +188,11 @@ export default function AssetDetailPage() {
       .select('id, vendor_name, vendor_code, vendor_type, service_type')
       .eq('is_active', true)
       .order('vendor_name', { ascending: true });
-    setVendors(data || []);
+    const serviceVendors = (data || []).filter((vendor) =>
+      SERVICE_VENDOR_TYPES.has(vendor.vendor_type)
+      || /(service|servis|maintenance|perbaikan|teknisi|bengkel)/i.test(vendor.service_type || '')
+    );
+    setVendors(serviceVendors);
   };
 
   const fetchResponsibleAssignments = async () => {
@@ -292,6 +310,7 @@ export default function AssetDetailPage() {
         description: serviceForm.description,
         photos: serviceForm.photos.filter(p => p.url)
       };
+
 
       if (editingLogId) {
         const prev = logs.find(l => l.id === editingLogId);
@@ -466,6 +485,9 @@ export default function AssetDetailPage() {
     .map(item => item.responsible?.responsible_name)
     .filter(Boolean)
     .join(', ');
+  const displayedResponsible = asset?.location?.location_type === 'Lokasi Vendor'
+    ? asset?.vendor?.vendor_name
+    : responsibleNames || asset?.responsible?.full_name;
 
   // Label Indonesia untuk key new_data/old_data agar tidak tampil "vendor name" mentah.
   const LOG_FIELD_LABELS = {
@@ -494,10 +516,19 @@ export default function AssetDetailPage() {
           </button>
           <div className="min-w-0">
             <h1 className="text-2xl font-semibold text-white tracking-tight truncate">{asset.asset_name}</h1>
-            <p className="text-sm text-ink-400 font-mono">{asset.asset_code}</p>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="rounded-md border border-primary-500/25 bg-primary-500/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-primary-300">
+                {asset.label_number ? `ASET ${String(asset.label_number).padStart(4, '0')}` : '-'}
+              </span>
+              <span className="text-sm text-ink-400 font-mono">{asset.asset_code}</span>
+            </div>
           </div>
         </div>
         <div className="flex gap-2 flex-shrink-0">
+          <button onClick={() => navigate(`/assets/qr-labels?ids=${id}`)} className="btn-secondary text-sm">
+            <QrCode size={14} />
+            Label QR
+          </button>
           {canEdit && (
             <>
               <button onClick={openAddServiceModal} className="btn-secondary text-sm">
@@ -562,13 +593,14 @@ export default function AssetDetailPage() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Field label="Nama Aset" value={asset.asset_name} />
+              <Field label="Nomor Aset" value={asset.label_number ? `ASET ${String(asset.label_number).padStart(4, '0')}` : '-'} />
               <Field label="Kode Aset" value={asset.asset_code} />
               <Field label="Merek" value={asset.brand} />
               <Field label="Model" value={asset.model} />
               <Field label="Nomor Seri" value={asset.serial_number} />
               <Field label="Tahun Produksi" value={asset.manufacture_year} />
               <Field label="Departemen" value={asset.department?.department_name} />
-              <Field label="Penanggung Jawab" value={responsibleNames || asset.responsible?.full_name} />
+              <Field label="Penanggung Jawab" value={displayedResponsible} />
             </div>
             {responsibleAssignments.length > 0 && (
               <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">

@@ -1,5 +1,6 @@
 ﻿import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import { useLocation } from 'react-router-dom';
 import { supabase } from './lib/supabase';
 import MainLayout from './components/layout/MainLayout';
 import LoginPage from './pages/LoginPage';
@@ -24,6 +25,8 @@ import VendorsPage from './pages/VendorsPage';
 import AssetsPage from './pages/AssetsPage';
 import AssetDetailPage from './pages/AssetDetailPage';
 import AssetFormPage from './pages/AssetFormPage';
+import AssetQrPage from './pages/AssetQrPage';
+import AssetQrLabelsPage from './pages/AssetQrLabelsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import InspectionsPage from './pages/InspectionsPage';
 import InspectionDetailPage from './pages/InspectionDetailPage';
@@ -59,9 +62,13 @@ function LogoutButton() {
 
 function ProtectedRoute({ children }) {
   const { profile, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) return <LoadingScreen />;
-  if (!profile) return <Navigate to="/login" replace />;
+  if (!profile) {
+    const returnTo = `${location.pathname}${location.search}`;
+    return <Navigate to={`/login?returnTo=${encodeURIComponent(returnTo)}`} replace />;
+  }
   
   if (profile.account_status !== 'ACTIVE') {
     return (
@@ -105,6 +112,14 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+function LoginRoute() {
+  const { profile } = useAuth();
+  const location = useLocation();
+  const returnTo = new URLSearchParams(location.search).get('returnTo');
+  const safeTarget = returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : '/dashboard';
+  return profile ? <Navigate to={safeTarget} replace /> : <LoginPage />;
+}
+
 function AdminRoute({ children }) {
   const { role, profile, loading } = useAuth();
 
@@ -137,10 +152,11 @@ export default function App() {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/login" element={!profile ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
+      <Route path="/login" element={<LoginRoute />} />
       <Route path="/register" element={<Navigate to="/login" replace />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/scan/assets/:token" element={<AssetQrPage />} />
 
       {/* Protected Routes */}
       <Route path="/" element={
@@ -192,6 +208,7 @@ export default function App() {
         } />
         <Route path="assets" element={<AssetsPage />} />
         <Route path="assets/new" element={<AssetFormPage />} />
+        <Route path="assets/qr-labels" element={<AssetQrLabelsPage />} />
         <Route path="assets/:id" element={<AssetDetailPage />} />
         <Route path="assets/:id/edit" element={<AssetFormPage />} />
         <Route path="maintenance/types" element={

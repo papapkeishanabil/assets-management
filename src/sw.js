@@ -14,8 +14,15 @@
  */
 
 import { precacheAndRoute } from 'workbox-precaching';
+import { cleanupOutdatedCaches } from 'workbox-precaching';
+import { clientsClaim } from 'workbox-core';
+
+// Aktifkan versi terbaru segera setelah terpasang dan ambil alih tab yang terbuka.
+self.skipWaiting();
+clientsClaim();
 
 // Precache semua aset aplikasi (manifest diinject oleh vite-plugin-pwa)
+cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
 
 /**

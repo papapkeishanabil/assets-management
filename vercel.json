@@ -4,6 +4,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/qr/(.*)",
+      "destination": "/api/asset-qr"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }

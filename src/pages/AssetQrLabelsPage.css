@@ -1,0 +1,105 @@
+.qr-print-area { display: none; }
+
+.asset-qr-label {
+  width: 60mm;
+  height: 40mm;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 28mm 1fr;
+  align-items: center;
+  gap: 1.5mm;
+  padding: 2.3mm;
+  border: .4mm solid #182338;
+  border-radius: 2.2mm;
+  background: #fff;
+  color: #101827;
+  font-family: "Trebuchet MS", sans-serif;
+}
+
+.asset-qr-code, .asset-qr-code img { width: 27mm; height: 27mm; }
+.asset-qr-code img { display: block; }
+.asset-qr-copy { min-width: 0; }
+.asset-qr-brand { color: #b77912; font-size: 7pt; font-weight: 800; letter-spacing: .13em; }
+.asset-qr-number { margin-top: 1.5mm; font-size: 14pt; font-weight: 900; line-height: 1; white-space: nowrap; }
+.asset-qr-full-code { margin-top: 1.5mm; font-family: "Courier New", monospace; font-size: 7.5pt; font-weight: 700; }
+.asset-qr-name { margin-top: 1.6mm; font-size: 7pt; line-height: 1.15; font-weight: 700; max-height: 8mm; overflow: hidden; }
+.asset-qr-help { margin-top: 1.5mm; color: #475569; font-size: 5.3pt; font-weight: 700; letter-spacing: .04em; }
+
+.paper-preview {
+  box-sizing: border-box;
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: 0 18px 55px rgba(0,0,0,.35);
+  overflow: hidden;
+}
+
+.paper-a4 {
+  width: 210mm;
+  min-width: 210mm;
+  height: 297mm;
+  padding: 10mm;
+  display: grid;
+  grid-template-columns: repeat(3, 60mm);
+  grid-template-rows: repeat(6, 40mm);
+  gap: 5mm;
+  align-content: start;
+}
+
+.paper-roll {
+  width: 64mm;
+  min-width: 64mm;
+  min-height: 44mm;
+  height: auto;
+  padding: 2mm;
+  display: flex;
+  flex-direction: column;
+  gap: 2mm;
+  background: #f4edcf;
+}
+.paper-preview .asset-qr-label { box-shadow: none; }
+
+@media print {
+  html, body, #root {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    background: #fff !important;
+  }
+
+  .no-print { display: none !important; }
+  body * { visibility: hidden !important; }
+  .qr-print-area, .qr-print-area * { visibility: visible !important; }
+
+  .qr-print-area {
+    display: block !important;
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+
+  .print-sheet {
+    box-sizing: border-box;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .print-sheet:last-child { break-after: auto; page-break-after: auto; }
+
+  .print-a4 .print-sheet {
+    width: 210mm;
+    height: 297mm;
+    padding: 10mm;
+    display: grid;
+    grid-template-columns: repeat(3, 60mm);
+    grid-template-rows: repeat(6, 40mm);
+    gap: 5mm;
+    align-content: start;
+  }
+
+  .print-roll .print-sheet { width: 60mm; height: 40mm; padding: 0; }
+  .asset-qr-label { break-inside: avoid; page-break-inside: avoid; box-shadow: none; }
+}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff, LogIn, Shield, Building2, Activity, ArrowRight } from 'lucide-react';
@@ -8,6 +8,7 @@ import BrandLogo from '../components/BrandLogo';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +26,9 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast.success('Login berhasil');
-      navigate('/dashboard');
+      const returnTo = searchParams.get('returnTo');
+      const safeTarget = returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : '/dashboard';
+      navigate(safeTarget);
     } catch (error) {
       toast.error(error.message === 'Invalid login credentials'
         ? 'Email atau password salah'
