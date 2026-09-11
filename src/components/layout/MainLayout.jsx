@@ -105,6 +105,7 @@ export default function MainLayout() {
   const visibleMaintenanceItems = maintenanceItems.filter(item => !item.moduleKey || hasAccess(item.moduleKey));
   const showMasterDataSection = visibleMasterDataItems.length > 0;
   const showMaintenanceSection = visibleMaintenanceItems.length > 0;
+  const showHrdContractSection = ['employees', 'contracts', 'contract_types'].some(hasAccess);
 
   const initials = profile?.full_name?.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'U';
 
@@ -210,36 +211,40 @@ export default function MainLayout() {
             </NavLink>
           ))}
 
-          <SectionLabel>SDM & Kontrak</SectionLabel>
-          {hasAccess('employees') && (
-            <NavLink
-              to="/employees"
-              onClick={() => setSidebarOpen(false)}
-              className={navLinkClass}
-            >
-              <Users size={16} className="flex-shrink-0" />
-              Data Karyawan
-            </NavLink>
-          )}
-          {hasAccess('contracts') && (
-            <NavLink
-              to="/contracts"
-              onClick={() => setSidebarOpen(false)}
-              className={navLinkClass}
-            >
-              <FileText size={16} className="flex-shrink-0" />
-              Daftar Kontrak
-            </NavLink>
-          )}
-          {hasAccess('contract_types') && (
-            <NavLink
-              to="/contracts/types"
-              onClick={() => setSidebarOpen(false)}
-              className={navLinkClass}
-            >
-              <FolderTree size={16} className="flex-shrink-0" />
-              Jenis Kontrak
-            </NavLink>
+          {showHrdContractSection && (
+            <>
+              <SectionLabel>SDM & Kontrak</SectionLabel>
+              {hasAccess('employees') && (
+                <NavLink
+                  to="/employees"
+                  onClick={() => setSidebarOpen(false)}
+                  className={navLinkClass}
+                >
+                  <Users size={16} className="flex-shrink-0" />
+                  Data Karyawan
+                </NavLink>
+              )}
+              {hasAccess('contracts') && (
+                <NavLink
+                  to="/contracts"
+                  onClick={() => setSidebarOpen(false)}
+                  className={navLinkClass}
+                >
+                  <FileText size={16} className="flex-shrink-0" />
+                  Daftar Kontrak
+                </NavLink>
+              )}
+              {hasAccess('contract_types') && (
+                <NavLink
+                  to="/contracts/types"
+                  onClick={() => setSidebarOpen(false)}
+                  className={navLinkClass}
+                >
+                  <FolderTree size={16} className="flex-shrink-0" />
+                  Jenis Kontrak
+                </NavLink>
+              )}
+            </>
           )}
 
           {showMaintenanceSection && (
@@ -563,7 +568,7 @@ export default function MainLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="p-4 lg:p-8 max-w-[1600px] mx-auto animate-fade-in relative">
+        <main className="p-4 lg:p-6 animate-fade-in relative">
           <Outlet />
         </main>
       </div>
