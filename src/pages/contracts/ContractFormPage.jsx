@@ -27,6 +27,7 @@ export default function ContractFormPage() {
   const [vendors, setVendors] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [users, setUsers] = useState([]);
+  const [salaryByEmployee, setSalaryByEmployee] = useState({});
 
   const [form, setForm] = useState({
     contract_type_id: '',
@@ -47,6 +48,8 @@ export default function ContractFormPage() {
     contract_status: 'DRAFT',
     responsible_user_id: '',
     notes: ''
+    ,has_salary_adjustment: false
+    ,adjusted_salary: ''
   });
 
   const canManage = role && ['super_admin', 'hrd'].includes(role.role_name);
@@ -86,6 +89,17 @@ export default function ContractFormPage() {
         department: e.position || ''
       })));
 
+      const { data: salaryRows } = await supabase
+        .from('employee_salary_history')
+        .select('employee_id, amount, effective_date, created_at')
+        .order('effective_date', { ascending: false })
+        .order('created_at', { ascending: false });
+      const salaryMap = {};
+      (salaryRows || []).forEach((row) => {
+        if (salaryMap[row.employee_id] === undefined) salaryMap[row.employee_id] = Number(row.amount);
+      });
+      setSalaryByEmployee(salaryMap);
+
       // Load vendors
       const { data: vnd } = await supabase
         .from('vendors')
@@ -120,6 +134,11 @@ export default function ContractFormPage() {
 
         if (error) throw error;
         if (contract) {
+          const { data: compensation } = await supabase
+            .from('employee_contract_compensation')
+            .select('*')
+            .eq('contract_id', id)
+            .maybeSingle();
           setForm({
             contract_type_id: contract.contract_type_id || '',
             title: contract.title || '',
@@ -138,7 +157,9 @@ export default function ContractFormPage() {
             reminder_days_before: contract.reminder_days_before || 7,
             contract_status: contract.contract_status || 'DRAFT',
             responsible_user_id: contract.responsible_user_id || '',
-            notes: contract.notes || ''
+            notes: contract.notes || '',
+            has_salary_adjustment: compensation?.has_adjustment || false,
+            adjusted_salary: compensation?.adjusted_salary ? String(compensation.adjusted_salary) : ''
           });
         }
       }
@@ -179,6 +200,15 @@ export default function ContractFormPage() {
       toast.error('Tanggal berakhir harus setelah tanggal mulai');
       return;
     }
+    const currentSalary = salaryByEmployee[form.employee_id];
+    if (form.employee_id && currentSalary === undefined) {
+      toast.error('Nominal gaji aktif karyawan belum diisi pada Data Karyawan');
+      return;
+    }
+    if (form.employee_id && form.has_salary_adjustment && (!form.adjusted_salary || Number(form.adjusted_salary) < 0)) {
+      toast.error('Isi nominal gaji penyesuaian');
+      return;
+    }
 
     setSaving(true);
     try {
@@ -206,6 +236,7 @@ export default function ContractFormPage() {
         notes: form.notes || null
       };
 
+      let savedContractId = id;
       if (isEdit) {
         // Update existing contract
         const { error } = await supabase
@@ -214,6 +245,7 @@ export default function ContractFormPage() {
           .eq('id', id);
 
         if (error) throw error;
+        savedContractId = id;
         toast.success('Kontrak berhasil diperbarui');
         navigate(`/contracts/${id}`);
       } else {
@@ -237,9 +269,26 @@ export default function ContractFormPage() {
           .single();
 
         if (error) throw error;
+        savedContractId = newContract.id;
         toast.success('Kontrak berhasil dibuat');
-        navigate(`/contracts/${newContract.id}`);
       }
+
+      if (form.employee_id) {
+        const { error: compensationError } = await supabase
+          .from('employee_contract_compensation')
+          .upsert({
+            contract_id: savedContractId,
+            employee_id: form.employee_id,
+            current_salary: currentSalary,
+            has_adjustment: form.has_salary_adjustment,
+            adjusted_salary: form.has_salary_adjustment ? Number(form.adjusted_salary) : null,
+            effective_date: form.start_date,
+            created_by: profile.id,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'contract_id' });
+        if (compensationError) throw compensationError;
+      }
+      navigate(`/contracts/${savedContractId}`);
     } catch (error) {
       console.error('Error saving contract:', error);
       toast.error('Gagal menyimpan kontrak');
@@ -252,6 +301,10 @@ export default function ContractFormPage() {
     const selected = contractTypes.find(t => t.id === form.contract_type_id);
     return selected?.category || '';
   };
+  const selectedEmployeeSalary = salaryByEmployee[form.employee_id];
+  const formatSalary = (value) => new Intl.NumberFormat('id-ID', {
+    style: 'currency', currency: 'IDR', maximumFractionDigits: 0
+  }).format(Number(value || 0));
 
   if (loading) {
     return (
@@ -339,13 +392,14 @@ export default function ContractFormPage() {
               <label className="block text-sm font-medium text-ink-300 mb-1.5">Status Kontrak</label>
               <select
                 value={form.contract_status}
-                onChange={(e) => handleChange('contract_status', e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-white/5 border border-white/10 rounded-md text-white focus:outline-none focus:border-primary-500/50 cursor-pointer"
+                disabled
+                className="w-full px-3 py-2 text-sm bg-white/5 border border-white/10 rounded-md text-ink-400 cursor-not-allowed"
               >
                 {Object.entries(CONTRACT_STATUS_LABELS).map(([value, label]) => (
                   <option key={value} value={value} className="bg-ink-900">{label}</option>
                 ))}
               </select>
+              <p className="text-xs text-ink-500 mt-1">Perubahan status dilakukan dari halaman detail kontrak.</p>
             </div>
 
             <div className="md:col-span-2">
@@ -438,6 +492,43 @@ export default function ContractFormPage() {
             </div>
           </div>
         </div>
+
+        {/* Periode & Nilai */}
+        {getSelectedCategory() === 'EMPLOYEE' && form.employee_id && (
+          <div className="card p-6 space-y-5">
+            <h2 className="text-lg font-semibold text-white">Informasi Gaji Karyawan</h2>
+            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+              <p className="text-xs uppercase tracking-wider text-ink-500">Gaji Saat Ini</p>
+              <p className="mt-1 text-2xl font-semibold text-white">
+                {selectedEmployeeSalary === undefined ? 'Belum diisi' : formatSalary(selectedEmployeeSalary)}
+              </p>
+            </div>
+            <div>
+              <p className="mb-2 text-sm font-medium text-ink-300">Apakah ada penyesuaian gaji?</p>
+              <div className="flex gap-3">
+                {[false, true].map((value) => (
+                  <button key={String(value)} type="button"
+                    onClick={() => setForm(prev => ({ ...prev, has_salary_adjustment: value, adjusted_salary: value ? prev.adjusted_salary : '' }))}
+                    className={`rounded-md border px-4 py-2 text-sm ${form.has_salary_adjustment === value ? 'border-primary-500/50 bg-primary-500/15 text-primary-300' : 'border-white/10 text-ink-300 hover:bg-white/5'}`}>
+                    {value ? 'Ya, ada penyesuaian' : 'Tidak ada perubahan'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {form.has_salary_adjustment && (
+              <div>
+                <label className="block text-sm font-medium text-ink-300 mb-1.5">Nominal Gaji Penyesuaian</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-ink-400">Rp</span>
+                  <input type="number" min="0" step="1" value={form.adjusted_salary}
+                    onChange={(e) => handleChange('adjusted_salary', e.target.value)}
+                    className="w-full rounded-md border border-white/10 bg-white/5 py-2 pl-10 pr-3 text-sm text-white focus:border-primary-500/50 focus:outline-none" required />
+                </div>
+              </div>
+            )}
+            <p className="text-xs text-ink-500">Gaji Data Karyawan baru diperbarui saat kontrak diajukan.</p>
+          </div>
+        )}
 
         {/* Periode & Nilai */}
         <div className="card p-6 space-y-5">

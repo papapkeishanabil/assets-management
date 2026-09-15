@@ -21,6 +21,7 @@ export default function AssetFormPage() {
   const [users, setUsers] = useState([]);
   const [assetResponsibles, setAssetResponsibles] = useState([]);
   const [selectedResponsibleIds, setSelectedResponsibleIds] = useState([]);
+  const [initialResponsibleIds, setInitialResponsibleIds] = useState([]);
   const [previewCode, setPreviewCode] = useState('');
   const [generatingCode, setGeneratingCode] = useState(false);
   const [photos, setPhotos] = useState([]);
@@ -171,7 +172,9 @@ export default function AssetFormPage() {
         .select('responsible_id')
         .eq('asset_id', id);
       if (responsibleData) {
-        setSelectedResponsibleIds(responsibleData.map(item => item.responsible_id));
+        const responsibleIds = responsibleData.map(item => item.responsible_id);
+        setSelectedResponsibleIds(responsibleIds);
+        setInitialResponsibleIds(responsibleIds);
       }
     } catch (error) {
       toast.error('Gagal memuat data aset');
@@ -330,9 +333,11 @@ export default function AssetFormPage() {
       let assetId = id;
 
       if (isEdit) {
-        const { error } = await supabase.from('assets').update(dataToSubmit).eq('id', id);
+        const { asset_code, created_by, ...editableData } = dataToSubmit;
+        const { error } = await supabase.from('assets').update(editableData).eq('id', id);
         if (error) throw error;
         await saveResponsibleAssignments(assetId);
+        await logResponsibleTransfer(assetId);
         toast.success(asDraft ? 'Draft berhasil disimpan' : 'Aset berhasil diperbarui');
       } else {
         const { data, error } = await supabase.from('assets').insert([dataToSubmit]).select('id').single();
@@ -406,6 +411,29 @@ export default function AssetFormPage() {
       .from('asset_responsible_assignments')
       .insert(assignments);
     if (insertError) throw insertError;
+  };
+
+  const logResponsibleTransfer = async (assetId) => {
+    const previousIds = [...initialResponsibleIds].sort();
+    const currentIds = [...selectedResponsibleIds].sort();
+    if (JSON.stringify(previousIds) === JSON.stringify(currentIds)) return;
+
+    const getNames = (ids) => ids
+      .map((responsibleId) => assetResponsibles.find((item) => item.id === responsibleId)?.responsible_name)
+      .filter(Boolean);
+    const previousNames = getNames(previousIds);
+    const currentNames = getNames(currentIds);
+
+    const { error } = await supabase.from('asset_activity_logs').insert([{
+      asset_id: assetId,
+      user_id: profile?.id,
+      action_type: 'RESPONSIBLE_TRANSFER',
+      description: `Perpindahan penanggung jawab: ${previousNames.join(', ') || 'Belum ditentukan'} → ${currentNames.join(', ') || 'Belum ditentukan'}`,
+      old_data: { responsible_ids: previousIds, responsible_names: previousNames },
+      new_data: { responsible_ids: currentIds, responsible_names: currentNames }
+    }]);
+    if (error) throw error;
+    setInitialResponsibleIds(selectedResponsibleIds);
   };
 
   const handleNextStep = () => {

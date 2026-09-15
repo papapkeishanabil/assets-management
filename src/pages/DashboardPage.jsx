@@ -4,10 +4,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../hooks/useNotifications';
 import { useContractReminders } from '../hooks/useContractReminders';
+import { useRolePermissions } from '../hooks/useRolePermissions';
 import {
   Package, AlertTriangle, CheckCircle, Wrench, FileText,
   ArrowRight, Calendar, ExternalLink, TrendingUp, X,
-  FileSignature, Clock, AlertCircle
+  FileSignature, Clock, AlertCircle, Shield
 } from 'lucide-react';
 
 // Sapaan dinamis berdasarkan waktu lokal browser
@@ -33,20 +34,32 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const { notifications, unreadCount, runReminderCheck, markAsRead } = useNotifications();
   const { runContractReminderCheck } = useContractReminders();
+  const { hasAccess, loading: permissionsLoading } = useRolePermissions();
+  const canViewAssets = hasAccess('assets');
+  const canViewMaintenance = hasAccess('maintenance_schedules');
+  const canViewContracts = hasAccess('contracts');
   const [showPopup, setShowPopup] = useState(null);
 
   useEffect(() => {
+    if (permissionsLoading) return;
     fetchDashboardData();
-    runReminderCheck();
-    runContractReminderCheck();
-  }, []);
+    if (canViewMaintenance) runReminderCheck();
+    if (canViewContracts) runContractReminderCheck();
+  }, [permissionsLoading, canViewAssets, canViewMaintenance, canViewContracts]);
 
   useEffect(() => {
     if (notifications.length === 0) return;
     const dismissed = sessionStorage.getItem('dashboard_popup_dismissed');
     if (dismissed) return;
 
-    const unread = notifications.filter(n => !n.is_read);
+    const unread = notifications.filter((n) => {
+      if (n.is_read) return false;
+      const isContractNotification = n.notification_type?.startsWith('CONTRACT_') || n.reference_url?.startsWith('/contracts');
+      const isMaintenanceNotification = n.reference_url?.startsWith('/maintenance');
+      if (isContractNotification && !canViewContracts) return false;
+      if (isMaintenanceNotification && !canViewMaintenance) return false;
+      return true;
+    });
     if (unread.length === 0) return;
 
     const priority = unread.find(n => n.notification_type === 'OVERDUE') ||
@@ -55,7 +68,7 @@ export default function DashboardPage() {
                      unread[0];
     setShowPopup(priority);
     sessionStorage.setItem('dashboard_popup_dismissed', '1');
-  }, [notifications]);
+  }, [notifications, canViewContracts, canViewMaintenance]);
 
   const fetchDashboardData = async () => {
     try {
@@ -73,17 +86,17 @@ export default function DashboardPage() {
         categoriesRes,
         assetsRes
       ] = await Promise.all([
-        supabase.from('assets').select('*', { count: 'exact', head: true }),
-        supabase.from('assets').select('*', { count: 'exact', head: true }).eq('is_active', true),
-        supabase.from('maintenance_schedules')
+        canViewAssets ? supabase.from('assets').select('*', { count: 'exact', head: true }) : Promise.resolve({ count: 0 }),
+        canViewAssets ? supabase.from('assets').select('*', { count: 'exact', head: true }).eq('is_active', true) : Promise.resolve({ count: 0 }),
+        canViewMaintenance ? supabase.from('maintenance_schedules')
           .select('*', { count: 'exact', head: true })
           .eq('is_active', true)
-          .lt('next_maintenance_date', today),
-        supabase.from('assets')
+          .lt('next_maintenance_date', today) : Promise.resolve({ count: 0 }),
+        canViewAssets ? supabase.from('assets')
           .select('id, asset_code, asset_name, brand, is_active, category_id')
           .order('created_at', { ascending: false })
-          .limit(5),
-        supabase.from('maintenance_schedules')
+          .limit(5) : Promise.resolve({ data: [] }),
+        canViewMaintenance ? supabase.from('maintenance_schedules')
           .select(`
             id, next_maintenance_date,
             asset:assets!inner(id, asset_code, asset_name, is_active),
@@ -94,9 +107,9 @@ export default function DashboardPage() {
           .gte('next_maintenance_date', today)
           .lte('next_maintenance_date', nextWeekStr)
           .order('next_maintenance_date', { ascending: true })
-          .limit(5),
-        supabase.from('asset_categories').select('id, category_name').eq('is_active', true),
-        supabase.from('assets').select('category_id').eq('is_active', true)
+          .limit(5) : Promise.resolve({ data: [] }),
+        canViewAssets ? supabase.from('asset_categories').select('id, category_name').eq('is_active', true) : Promise.resolve({ data: [] }),
+        canViewAssets ? supabase.from('assets').select('category_id').eq('is_active', true) : Promise.resolve({ data: [] })
       ]);
 
       const totalNum = totalRes.count || 0;
@@ -130,8 +143,8 @@ export default function DashboardPage() {
           .slice(0, 5)
       );
 
-      // Fetch contract data
-      try {
+      // Fetch contract data only for roles with contract module access.
+      if (canViewContracts) try {
         const next30 = new Date();
         next30.setDate(next30.getDate() + 30);
         const next30Str = next30.toISOString().split('T')[0];
@@ -187,6 +200,7 @@ export default function DashboardPage() {
   const statCards = [
     {
       label: 'Total Aset',
+      moduleKey: 'assets',
       value: stats.total,
       sub: `${stats.inactive} nonaktif`,
       icon: Package,
@@ -198,6 +212,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Aset Aktif',
+      moduleKey: 'assets',
       value: stats.active,
       sub: `${activePercent}% dari total`,
       icon: CheckCircle,
@@ -209,6 +224,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Jadwal Terlambat',
+      moduleKey: 'maintenance_schedules',
       value: stats.overdue,
       sub: stats.overdue > 0 ? 'Perlu tindakan' : 'Aman',
       icon: AlertTriangle,
@@ -219,6 +235,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Aset Nonaktif',
+      moduleKey: 'assets',
       value: stats.inactive,
       sub: `${stats.total} total aset`,
       icon: Wrench,
@@ -226,6 +243,16 @@ export default function DashboardPage() {
       iconBg: 'bg-amber-500/10 border-amber-500/20 text-amber-400'
     }
   ];
+  const visibleStatCards = statCards.filter((stat) => hasAccess(stat.moduleKey));
+  const statGridClass = visibleStatCards.length >= 4
+    ? 'grid-cols-2 lg:grid-cols-4'
+    : visibleStatCards.length === 3
+      ? 'grid-cols-1 sm:grid-cols-3'
+      : visibleStatCards.length === 2
+        ? 'grid-cols-1 sm:grid-cols-2'
+        : 'grid-cols-1';
+  const hasSideContent = canViewMaintenance || canViewContracts || (canViewAssets && categoryStats.length > 0);
+  const hasDashboardContent = canViewAssets || canViewMaintenance || canViewContracts;
 
   const catColors = ['bg-primary-500', 'bg-primary-400', 'bg-primary-300', 'bg-indigo-400', 'bg-ink-500'];
   const totalCats = categoryStats.reduce((sum, [, count]) => sum + count, 0) || 1;
@@ -253,26 +280,24 @@ export default function DashboardPage() {
           <p className="text-sm text-ink-400 mt-1">Overview real-time aset dan pemeliharaan perusahaan</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            to="/assets/new"
-            className="btn-secondary"
-          >
-            <Package size={14} />
-            Tambah Aset
-          </Link>
-          <Link
-            to="/maintenance/schedules"
-            className="btn-primary"
-          >
-            <Calendar size={14} />
-            Jadwal
-          </Link>
+          {canViewAssets && (
+            <Link to="/assets/new" className="btn-secondary">
+              <Package size={14} />
+              Tambah Aset
+            </Link>
+          )}
+          {canViewMaintenance && (
+            <Link to="/maintenance/schedules" className="btn-primary">
+              <Calendar size={14} />
+              Jadwal
+            </Link>
+          )}
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((stat, idx) => (
+      {visibleStatCards.length > 0 && <div className={`grid ${statGridClass} gap-4`}>
+        {visibleStatCards.map((stat, idx) => (
           <div key={idx} className="glass glass-hover spotlight rounded-xl p-5 relative overflow-hidden">
             <div className={`orb w-32 h-32 ${stat.orbColor} top-0 right-0 ${stat.pulse ? 'animate-pulse-slow' : ''}`}></div>
             <div className="relative">
@@ -327,12 +352,12 @@ export default function DashboardPage() {
             </div>
           </div>
         ))}
-      </div>
+      </div>}
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {hasDashboardContent ? <div className={`grid grid-cols-1 ${canViewAssets && hasSideContent ? 'lg:grid-cols-3' : ''} gap-6`}>
         {/* Recent Assets Table */}
-        <div className="lg:col-span-2 glass rounded-xl overflow-hidden">
+        {canViewAssets && <div className={`${hasSideContent ? 'lg:col-span-2' : ''} glass rounded-xl overflow-hidden`}>
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
             <div>
               <h2 className="text-base font-semibold text-white flex items-center gap-2">
@@ -408,12 +433,12 @@ export default function DashboardPage() {
               </tbody>
             </table>
           )}
-        </div>
+        </div>}
 
         {/* Side column */}
-        <div className="space-y-6">
+        {hasSideContent && <div className={canViewAssets ? 'space-y-6' : 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start'}>
           {/* Upcoming schedules */}
-          <div className="glass rounded-xl p-5 relative overflow-hidden">
+          {canViewMaintenance && <div className="glass rounded-xl p-5 relative overflow-hidden">
             <div className="orb w-32 h-32 bg-indigo-500/10 top-0 right-0"></div>
             <div className="relative">
               <div className="flex items-center justify-between mb-4">
@@ -477,10 +502,10 @@ export default function DashboardPage() {
                 <ArrowRight size={12} />
               </Link>
             </div>
-          </div>
+          </div>}
 
           {/* Expiring Contracts */}
-          <div className="glass rounded-xl p-5 relative overflow-hidden">
+          {canViewContracts && <div className="glass rounded-xl p-5 relative overflow-hidden">
             <div className="orb w-32 h-32 bg-rose-500/10 top-0 right-0"></div>
             <div className="relative">
               <div className="flex items-center justify-between mb-4">
@@ -548,10 +573,10 @@ export default function DashboardPage() {
                 <ArrowRight size={12} />
               </Link>
             </div>
-          </div>
+          </div>}
 
           {/* Contract Stats Mini Cards */}
-          <div className="grid grid-cols-2 gap-3">
+          {canViewContracts && <div className="grid grid-cols-2 gap-3">
             <div className="glass rounded-lg p-3">
               <div className="flex items-center gap-2 mb-1">
                 <FileSignature size={14} className="text-primary-400" />
@@ -580,10 +605,10 @@ export default function DashboardPage() {
               </div>
               <div className="text-xl font-semibold text-rose-300 tabular-nums">{contractStats.expired}</div>
             </div>
-          </div>
+          </div>}
 
           {/* Distribution */}
-          {categoryStats.length > 0 && (
+          {canViewAssets && categoryStats.length > 0 && (
             <div className="glass rounded-xl p-5 relative overflow-hidden">
               <div className="orb w-32 h-32 bg-primary-500/10 bottom-0 left-0"></div>
               <div className="relative">
@@ -614,8 +639,16 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+        </div>}
+      </div> : (
+        <div className="glass rounded-xl px-6 py-12 text-center">
+          <Shield size={36} className="mx-auto mb-3 text-ink-600" />
+          <h2 className="text-base font-semibold text-white">Belum ada informasi dashboard</h2>
+          <p className="mt-1 text-sm text-ink-400">
+            Informasi akan tampil setelah role ini memperoleh akses ke modul operasional.
+          </p>
         </div>
-      </div>
+      )}
 
       {/* Notification Popup */}
       {showPopup && (

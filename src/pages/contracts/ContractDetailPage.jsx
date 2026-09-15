@@ -29,6 +29,7 @@ export default function ContractDetailPage() {
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionMenu, setActionMenu] = useState(false);
+  const [compensation, setCompensation] = useState(null);
 
   const canManage = role && ['super_admin', 'hrd'].includes(role.role_name);
 
@@ -55,6 +56,14 @@ export default function ContractDetailPage() {
 
       if (error) throw error;
       setContract(data);
+      if (canManage && data.employee_ref_id) {
+        const { data: compensationData } = await supabase
+          .from('employee_contract_compensation')
+          .select('*')
+          .eq('contract_id', id)
+          .maybeSingle();
+        setCompensation(compensationData || null);
+      }
     } catch (error) {
       console.error('Error fetching contract:', error);
       toast.error('Gagal memuat detail kontrak');
@@ -109,6 +118,7 @@ export default function ContractDetailPage() {
   const getStatusBadge = (status) => {
     const colorMap = {
       [CONTRACT_STATUSES.DRAFT]: 'bg-gray-500/10 text-gray-300 border-gray-500/20',
+      [CONTRACT_STATUSES.SUBMITTED]: 'bg-warning-500/10 text-warning-300 border-warning-500/20',
       [CONTRACT_STATUSES.ACTIVE]: 'bg-success-500/10 text-success-300 border-success-500/20',
       [CONTRACT_STATUSES.EXPIRED]: 'bg-danger-500/10 text-danger-300 border-danger-500/20',
       [CONTRACT_STATUSES.TERMINATED]: 'bg-rose-500/10 text-rose-300 border-rose-500/20',
@@ -182,6 +192,18 @@ export default function ContractDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {canManage && contract.contract_status === 'DRAFT' && (
+            <button onClick={() => handleStatusChange('SUBMITTED')}
+              className="btn-primary px-3 py-1.5 text-xs font-medium">
+              Submit Kontrak
+            </button>
+          )}
+          {canManage && contract.contract_status === 'SUBMITTED' && (
+            <button onClick={() => handleStatusChange('ACTIVE')}
+              className="btn-primary px-3 py-1.5 text-xs font-medium">
+              Aktifkan Kontrak
+            </button>
+          )}
           {canManage && contract.contract_status === 'ACTIVE' && (
             <>
               <button
@@ -260,6 +282,16 @@ export default function ContractDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Info */}
         <div className="lg:col-span-2 space-y-6">
+          {canManage && compensation && (
+            <div className="card p-6 space-y-4">
+              <h2 className="text-lg font-semibold text-white">Informasi Gaji</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div><p className="text-xs text-ink-500 uppercase">Gaji Sebelumnya</p><p className="mt-1 text-lg font-semibold text-white">{formatCurrency(compensation.current_salary)}</p></div>
+                <div><p className="text-xs text-ink-500 uppercase">Gaji pada Kontrak Ini</p><p className="mt-1 text-lg font-semibold text-primary-300">{formatCurrency(compensation.has_adjustment ? compensation.adjusted_salary : compensation.current_salary)}</p></div>
+              </div>
+              <p className="text-xs text-ink-400">{compensation.has_adjustment ? 'Terdapat penyesuaian gaji.' : 'Tidak ada perubahan nominal gaji.'}</p>
+            </div>
+          )}
           {/* Informasi Kontrak */}
           <div className="card p-6 space-y-4">
             <h2 className="text-lg font-semibold text-white flex items-center gap-2">

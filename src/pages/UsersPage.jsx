@@ -109,17 +109,18 @@ export default function UsersPage() {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Fetch roles separately to avoid ambiguous relationship error
-      const userIds = data?.map(u => u.id) || [];
+      // Fetch role names from the role_id stored on each user profile.
+      const roleIds = [...new Set((data || []).map(u => u.role_id).filter(Boolean))];
       let rolesMap = {};
-      if (userIds.length > 0) {
-        const { data: roles } = await supabase
-          .from('user_roles')
-          .select('user_id, role_name')
-          .in('user_id', userIds);
+      if (roleIds.length > 0) {
+        const { data: roles, error: rolesError } = await supabase
+          .from('roles')
+          .select('id, role_name')
+          .in('id', roleIds);
+        if (rolesError) throw rolesError;
         if (roles) {
           roles.forEach(r => {
-            rolesMap[r.user_id] = r.role_name;
+            rolesMap[r.id] = r.role_name;
           });
         }
       }
@@ -127,7 +128,7 @@ export default function UsersPage() {
       // Attach role to each user
       const usersWithRoles = data?.map(u => ({
         ...u,
-        role_name: rolesMap[u.id] || null
+        role_name: rolesMap[u.role_id] || null
       })) || [];
 
       // Apply role filter after fetching

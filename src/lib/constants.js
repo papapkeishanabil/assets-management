@@ -3,21 +3,24 @@ export const ROLES = {
   SUPER_ADMIN: 'super_admin',
   DIREKSI: 'direksi',
   HRD: 'hrd',
-  PELAKSANA: 'pelaksana'
+  PELAKSANA: 'pelaksana',
+  FINANCE: 'finance'
 };
 
 export const ROLE_LABELS = {
   [ROLES.SUPER_ADMIN]: 'Super Admin',
   [ROLES.DIREKSI]: 'Direksi',
   [ROLES.HRD]: 'HRD / Admin Asset',
-  [ROLES.PELAKSANA]: 'Pelaksana / Teknisi'
+  [ROLES.PELAKSANA]: 'Pelaksana / Teknisi',
+  [ROLES.FINANCE]: 'Finance / Keuangan'
 };
 
 export const ROLE_OPTIONS = [
   { value: ROLES.SUPER_ADMIN, label: ROLE_LABELS[ROLES.SUPER_ADMIN] },
   { value: ROLES.DIREKSI, label: ROLE_LABELS[ROLES.DIREKSI] },
   { value: ROLES.HRD, label: ROLE_LABELS[ROLES.HRD] },
-  { value: ROLES.PELAKSANA, label: ROLE_LABELS[ROLES.PELAKSANA] }
+  { value: ROLES.PELAKSANA, label: ROLE_LABELS[ROLES.PELAKSANA] },
+  { value: ROLES.FINANCE, label: ROLE_LABELS[ROLES.FINANCE] }
 ];
 
 // Account status

@@ -29,42 +29,63 @@ const emptySubDepartmentForm = {
   is_active: true
 };
 
+const emptyWorkSectionForm = {
+  department_id: '',
+  sub_department_id: '',
+  section_name: '',
+  is_active: true
+};
+
 export default function DepartmentsPage() {
   const { profile } = useAuth();
   const [divisions, setDivisions] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [subDepartments, setSubDepartments] = useState([]);
+  const [workSections, setWorkSections] = useState([]);
+  const [workSectionEmployeeCounts, setWorkSectionEmployeeCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
   const [showDivisionModal, setShowDivisionModal] = useState(false);
   const [showDepartmentModal, setShowDepartmentModal] = useState(false);
   const [showSubModal, setShowSubModal] = useState(false);
+  const [showWorkSectionModal, setShowWorkSectionModal] = useState(false);
 
   const [editingDivisionId, setEditingDivisionId] = useState(null);
   const [editingDepartmentId, setEditingDepartmentId] = useState(null);
   const [editingSubId, setEditingSubId] = useState(null);
+  const [editingWorkSectionId, setEditingWorkSectionId] = useState(null);
 
   const [divisionForm, setDivisionForm] = useState(emptyDivisionForm);
   const [departmentForm, setDepartmentForm] = useState(emptyDepartmentForm);
   const [subForm, setSubForm] = useState(emptySubDepartmentForm);
+  const [workSectionForm, setWorkSectionForm] = useState(emptyWorkSectionForm);
 
   const fetchOrganization = useCallback(async () => {
     setLoading(true);
     try {
-      const [divisionResult, departmentResult, subDepartmentResult] = await Promise.all([
+      const [divisionResult, departmentResult, subDepartmentResult, workSectionResult, employeeResult] = await Promise.all([
         supabase.from('divisions').select('*').order('division_name', { ascending: true }),
         supabase.from('departments').select('*').order('department_name', { ascending: true }),
-        supabase.from('sub_departments').select('*').order('sub_department_name', { ascending: true })
+        supabase.from('sub_departments').select('*').order('sub_department_name', { ascending: true }),
+        supabase.from('employee_work_sections').select('*').order('section_name', { ascending: true }),
+        supabase.from('employees').select('work_section_id').not('work_section_id', 'is', null)
       ]);
 
       if (divisionResult.error) throw divisionResult.error;
       if (departmentResult.error) throw departmentResult.error;
       if (subDepartmentResult.error) throw subDepartmentResult.error;
+      if (workSectionResult.error) throw workSectionResult.error;
 
       setDivisions(divisionResult.data || []);
       setDepartments(departmentResult.data || []);
       setSubDepartments(subDepartmentResult.data || []);
+      setWorkSections(workSectionResult.data || []);
+      const counts = {};
+      (employeeResult.data || []).forEach(employee => {
+        counts[employee.work_section_id] = (counts[employee.work_section_id] || 0) + 1;
+      });
+      setWorkSectionEmployeeCounts(counts);
     } catch (error) {
       console.error('Error fetching organization structure:', error);
       toast.error('Gagal memuat struktur organisasi');
@@ -87,6 +108,7 @@ export default function DepartmentsPage() {
   });
 
   const getSubDepartments = (departmentId) => subDepartments.filter((subDept) => subDept.department_id === departmentId);
+  const getWorkSections = (subDepartmentId) => workSections.filter((section) => section.sub_department_id === subDepartmentId);
 
   const textMatches = (...values) => values
     .filter(Boolean)
@@ -96,7 +118,11 @@ export default function DepartmentsPage() {
 
   const divisionMatches = (division) => textMatches(division.division_code, division.division_name, division.description);
   const departmentMatches = (dept) => textMatches(dept.department_code, dept.department_name, dept.description);
-  const subDepartmentMatches = (subDept) => textMatches(subDept.sub_department_code, subDept.sub_department_name);
+  const workSectionMatches = (section) => textMatches(section.section_name);
+  const subDepartmentMatches = (subDept) => (
+    textMatches(subDept.sub_department_code, subDept.sub_department_name)
+    || getWorkSections(subDept.id).some(workSectionMatches)
+  );
 
   const departmentTreeMatches = (dept) => (
     departmentMatches(dept) || getSubDepartments(dept.id).some(subDepartmentMatches)
@@ -135,6 +161,12 @@ export default function DepartmentsPage() {
     setShowSubModal(false);
     setEditingSubId(null);
     setSubForm(emptySubDepartmentForm);
+  };
+
+  const closeWorkSectionModal = () => {
+    setShowWorkSectionModal(false);
+    setEditingWorkSectionId(null);
+    setWorkSectionForm(emptyWorkSectionForm);
   };
 
   const handleDivisionSubmit = async (e) => {
@@ -244,6 +276,37 @@ export default function DepartmentsPage() {
     }
   };
 
+  const handleWorkSectionSubmit = async (e) => {
+    e.preventDefault();
+    if (!workSectionForm.sub_department_id || !workSectionForm.section_name.trim()) {
+      toast.error('Subdepartemen dan nama Bagian wajib diisi');
+      return;
+    }
+    try {
+      const payload = {
+        sub_department_id: workSectionForm.sub_department_id,
+        section_name: workSectionForm.section_name.trim(),
+        is_active: workSectionForm.is_active,
+        created_by: profile?.id,
+        updated_at: new Date().toISOString()
+      };
+      if (editingWorkSectionId) {
+        const { created_by, ...updates } = payload;
+        const { error } = await supabase.from('employee_work_sections').update(updates).eq('id', editingWorkSectionId);
+        if (error) throw error;
+        toast.success('Bagian berhasil diperbarui');
+      } else {
+        const { error } = await supabase.from('employee_work_sections').insert(payload);
+        if (error) throw error;
+        toast.success('Bagian berhasil ditambahkan');
+      }
+      closeWorkSectionModal();
+      fetchOrganization();
+    } catch (error) {
+      toast.error(error.code === '23505' ? 'Bagian tersebut sudah tersedia' : error.message);
+    }
+  };
+
   const handleDivisionEdit = (division) => {
     setEditingDivisionId(division.id);
     setDivisionForm({
@@ -278,6 +341,18 @@ export default function DepartmentsPage() {
     setShowSubModal(true);
   };
 
+  const handleWorkSectionEdit = (section) => {
+    const subDepartment = subDepartments.find(item => item.id === section.sub_department_id);
+    setEditingWorkSectionId(section.id);
+    setWorkSectionForm({
+      department_id: subDepartment?.department_id || '',
+      sub_department_id: section.sub_department_id,
+      section_name: section.section_name,
+      is_active: section.is_active
+    });
+    setShowWorkSectionModal(true);
+  };
+
   const deactivateRecord = async ({ table, id, label, successMessage }) => {
     if (!confirm(`Nonaktifkan "${label}"? Data lama tetap aman, tetapi tidak akan muncul sebagai pilihan aktif.`)) return;
 
@@ -301,6 +376,32 @@ export default function DepartmentsPage() {
     </span>
   );
 
+  const renderWorkSectionRows = (subDept, parentMatched = false) => getWorkSections(subDept.id)
+    .filter(section => !searchTerm || parentMatched || textMatches(subDept.sub_department_code, subDept.sub_department_name) || workSectionMatches(section))
+    .map(section => (
+      <tr key={section.id} className="bg-white/[0.005]">
+        <td className="pl-20">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
+            <ChevronRight size={12} /> Bagian
+          </span>
+        </td>
+        <td className="text-ink-600 font-mono text-[13px]">-</td>
+        <td><div className="pl-10 border-l border-emerald-500/20 text-ink-300">{section.section_name}</div></td>
+        <td className="text-ink-400">{subDept.sub_department_name}</td>
+        <td className="text-ink-500 text-xs">{workSectionEmployeeCounts[section.id] || 0} karyawan</td>
+        <td>{renderStatus(section.is_active)}</td>
+        <td className="text-right">
+          <div className="flex items-center justify-end gap-1">
+            <button onClick={() => handleWorkSectionEdit(section)} className="p-1.5 text-primary-400 hover:bg-primary-500/10 rounded-md transition-all" title="Edit"><Edit size={14} /></button>
+            {section.is_active && <button onClick={() => deactivateRecord({
+              table: 'employee_work_sections', id: section.id, label: section.section_name,
+              successMessage: 'Bagian berhasil dinonaktifkan'
+            })} className="p-1.5 text-danger-400 hover:bg-danger-500/10 rounded-md transition-all" title="Nonaktifkan"><Ban size={14} /></button>}
+          </div>
+        </td>
+      </tr>
+    ));
+
   const renderSubRows = (dept, parentMatched = false) => {
     const visibleSubDepartments = getSubDepartments(dept.id).filter((subDept) => {
       if (!searchTerm || parentMatched || departmentMatches(dept)) return true;
@@ -308,7 +409,8 @@ export default function DepartmentsPage() {
     });
 
     return visibleSubDepartments.map((subDept) => (
-      <tr key={subDept.id} className="bg-white/[0.01]">
+      <Fragment key={subDept.id}>
+      <tr className="bg-white/[0.01]">
         <td className="pl-14">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-white/5 border border-white/10 text-ink-300">
             <ChevronRight size={12} />
@@ -346,6 +448,8 @@ export default function DepartmentsPage() {
           </div>
         </td>
       </tr>
+      {renderWorkSectionRows(subDept, parentMatched || departmentMatches(dept))}
+      </Fragment>
     ));
   };
 
@@ -401,7 +505,7 @@ export default function DepartmentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">Struktur Organisasi</h1>
-          <p className="text-sm text-ink-400 mt-1">Kelola Divisi, Departemen, dan Subdepartemen perusahaan</p>
+          <p className="text-sm text-ink-400 mt-1">Kelola Divisi, Departemen, Subdepartemen, dan Bagian perusahaan</p>
         </div>
         <button onClick={fetchOrganization} className="btn-secondary text-sm" disabled={loading}>
           <RefreshCw size={14} className={`${loading ? 'animate-spin' : ''}`} />
@@ -416,7 +520,7 @@ export default function DepartmentsPage() {
             <input
               type="text"
               className="input pl-9"
-              placeholder="Cari divisi, departemen, atau subdepartemen..."
+              placeholder="Cari divisi, departemen, subdepartemen, atau bagian..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -442,6 +546,12 @@ export default function DepartmentsPage() {
             <Plus size={14} />
             Tambah Subdepartemen
           </button>
+          <button
+            onClick={() => { setEditingWorkSectionId(null); setWorkSectionForm(emptyWorkSectionForm); setShowWorkSectionModal(true); }}
+            className="btn-primary text-sm whitespace-nowrap"
+          >
+            <Plus size={14} /> Tambah Bagian
+          </button>
         </div>
       </div>
 
@@ -457,6 +567,7 @@ export default function DepartmentsPage() {
               <strong className="text-white">Produksi</strong> sekarang disebut <strong className="text-white">Divisi</strong>.
               Di bawah Divisi ada <strong className="text-white">Departemen</strong> seperti Project Production dan Stock Production.
               Di bawah Departemen ada <strong className="text-white">Subdepartemen</strong> seperti Project Production QC atau Stock Production QC.
+              Di bawah Subdepartemen ada <strong className="text-white">Bagian</strong> sebagai tempat kerja operasional, seperti Steam, Packing, atau Buang Benang.
             </p>
           </div>
         </div>
@@ -473,7 +584,7 @@ export default function DepartmentsPage() {
           <div className="empty-state">
             <div className="empty-state-icon"><Network size={48} /></div>
             <h3 className="empty-state-title">Tidak ada struktur organisasi</h3>
-            <p className="empty-state-text">Tambahkan divisi, departemen, atau subdepartemen untuk mulai mengelompokkan pengguna</p>
+            <p className="empty-state-text">Tambahkan divisi, departemen, subdepartemen, atau bagian untuk mulai membangun struktur</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -548,6 +659,53 @@ export default function DepartmentsPage() {
           </div>
         )}
       </div>
+
+      {showWorkSectionModal && (
+        <div className="modal-overlay">
+          <div className="modal-content max-w-md">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                  <Building2 size={18} className="text-emerald-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-white">{editingWorkSectionId ? 'Edit Bagian' : 'Tambah Bagian'}</h3>
+              </div>
+              <button onClick={closeWorkSectionModal} className="p-1.5 text-ink-400 hover:bg-white/5 hover:text-white rounded-md transition-all"><X size={18} /></button>
+            </div>
+            <form onSubmit={handleWorkSectionSubmit} className="space-y-4">
+              <div>
+                <label className="label">Departemen <span className="text-danger-400">*</span></label>
+                <select className="input" value={workSectionForm.department_id} onChange={(e) => setWorkSectionForm({ ...workSectionForm, department_id: e.target.value, sub_department_id: '' })} required>
+                  <option value="">Pilih departemen...</option>
+                  {activeDepartments.map(department => (
+                    <option key={department.id} value={department.id}>{department.department_name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="label">Subdepartemen <span className="text-danger-400">*</span></label>
+                <select className="input" value={workSectionForm.sub_department_id} onChange={(e) => setWorkSectionForm({ ...workSectionForm, sub_department_id: e.target.value })} disabled={!workSectionForm.department_id} required>
+                  <option value="">{workSectionForm.department_id ? 'Pilih subdepartemen...' : 'Pilih departemen terlebih dahulu'}</option>
+                  {subDepartments.filter(item => item.is_active && item.department_id === workSectionForm.department_id).map(item => (
+                    <option key={item.id} value={item.id}>{item.sub_department_name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="label">Nama Bagian <span className="text-danger-400">*</span></label>
+                <input className="input" value={workSectionForm.section_name} onChange={(e) => setWorkSectionForm({ ...workSectionForm, section_name: e.target.value })} placeholder="Contoh: Steam" required />
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-ink-200">
+                <input type="checkbox" checked={workSectionForm.is_active} onChange={(e) => setWorkSectionForm({ ...workSectionForm, is_active: e.target.checked })} className="w-4 h-4 rounded border-white/10 bg-white/5 text-primary-500 focus:ring-primary-500/30" /> Aktif
+              </label>
+              <div className="flex gap-3 justify-end pt-2">
+                <button type="button" onClick={closeWorkSectionModal} className="btn-secondary">Batal</button>
+                <button type="submit" className="btn-primary"><Save size={14} /> Simpan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {showDivisionModal && (
         <div className="modal-overlay">
