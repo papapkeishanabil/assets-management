@@ -21,7 +21,7 @@ function getGreeting() {
 }
 
 export default function DashboardPage() {
-  const { profile } = useAuth();
+  const { profile, role } = useAuth();
   const [stats, setStats] = useState({
     total: 0, active: 0, inactive: 0, overdue: 0
   });
@@ -36,6 +36,8 @@ export default function DashboardPage() {
   const { runContractReminderCheck } = useContractReminders();
   const { hasAccess, loading: permissionsLoading } = useRolePermissions();
   const canViewAssets = hasAccess('assets');
+  // Hanya super_admin/hrd yang boleh menambah/mengubah aset (sesuai RLS tabel assets).
+  const canManageAssets = role && ['super_admin', 'hrd'].includes(role.role_name);
   const canViewMaintenance = hasAccess('maintenance_schedules');
   const canViewContracts = hasAccess('contracts');
   const [showPopup, setShowPopup] = useState(null);
@@ -280,7 +282,7 @@ export default function DashboardPage() {
           <p className="text-sm text-ink-400 mt-1">Overview real-time aset dan pemeliharaan perusahaan</p>
         </div>
         <div className="flex items-center gap-2">
-          {canViewAssets && (
+          {canViewAssets && canManageAssets && (
             <Link to="/assets/new" className="btn-secondary">
               <Package size={14} />
               Tambah Aset
@@ -392,10 +394,12 @@ export default function DashboardPage() {
             <div className="text-center py-12">
               <Package size={40} className="mx-auto mb-3 text-ink-700" />
               <p className="text-sm text-ink-400 mb-4">Belum ada aset tercatat</p>
-              <Link to="/assets/new" className="btn-primary btn-sm">
-                <Package size={12} />
-                Tambah aset pertama
-              </Link>
+              {canManageAssets && (
+                <Link to="/assets/new" className="btn-primary btn-sm">
+                  <Package size={12} />
+                  Tambah aset pertama
+                </Link>
+              )}
             </div>
           ) : (
             <table className="w-full text-sm">

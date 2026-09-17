@@ -8,7 +8,7 @@ import { ArrowLeft, Save, X, Upload, Check, Loader2 } from 'lucide-react';
 export default function AssetFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, role, loading: authLoading } = useAuth();
   const isEdit = !!id;
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -90,6 +90,16 @@ export default function AssetFormPage() {
       fetchAsset();
     }
   }, [id]);
+
+  // Guard: RLS tabel assets hanya mengizinkan super_admin/hrd menulis.
+  // Blokir akses form (termasuk via URL langsung) agar tidak muncul error RLS mentah.
+  const canManageAssets = role && ['super_admin', 'hrd'].includes(role.role_name);
+  useEffect(() => {
+    if (!authLoading && !canManageAssets) {
+      toast.error('Anda tidak memiliki izin menambah/mengubah data aset');
+      navigate('/assets', { replace: true });
+    }
+  }, [authLoading, canManageAssets, navigate]);
 
   useEffect(() => {
     if (!isEdit && form.category_id) {
@@ -365,7 +375,10 @@ export default function AssetFormPage() {
 
       navigate('/assets');
     } catch (error) {
-      toast.error(error.message);
+      const friendlyMessage = error?.message?.includes('row-level security')
+        ? 'Akses ditolak: role Anda tidak berwenang menyimpan data aset'
+        : error.message;
+      toast.error(friendlyMessage);
     } finally {
       setLoading(false);
     }
