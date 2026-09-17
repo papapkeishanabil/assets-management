@@ -36,8 +36,8 @@ export default function DashboardPage() {
   const { runContractReminderCheck } = useContractReminders();
   const { hasAccess, loading: permissionsLoading } = useRolePermissions();
   const canViewAssets = hasAccess('assets');
-  // Hanya super_admin/hrd yang boleh menambah/mengubah aset (sesuai RLS tabel assets).
-  const canManageAssets = role && ['super_admin', 'hrd'].includes(role.role_name);
+  // super_admin/hrd/finance boleh menambah/mengubah aset (sesuai RLS tabel assets).
+  const canManageAssets = role && ['super_admin', 'hrd', 'finance'].includes(role.role_name);
   const canViewMaintenance = hasAccess('maintenance_schedules');
   const canViewContracts = hasAccess('contracts');
   const [showPopup, setShowPopup] = useState(null);

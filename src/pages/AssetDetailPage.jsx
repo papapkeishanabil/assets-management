@@ -52,7 +52,7 @@ export default function AssetDetailPage() {
   const [editingLogId, setEditingLogId] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-  const canEdit = role && ['super_admin', 'hrd'].includes(role.role_name);
+  const canEdit = role && ['super_admin', 'hrd', 'finance'].includes(role.role_name);
   const canDelete = role?.role_name === ROLES.SUPER_ADMIN;
 
   useEffect(() => {

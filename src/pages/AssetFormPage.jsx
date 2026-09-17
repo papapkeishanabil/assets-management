@@ -91,9 +91,9 @@ export default function AssetFormPage() {
     }
   }, [id]);
 
-  // Guard: RLS tabel assets hanya mengizinkan super_admin/hrd menulis.
+  // Guard: RLS tabel assets mengizinkan super_admin/hrd/finance menulis.
   // Blokir akses form (termasuk via URL langsung) agar tidak muncul error RLS mentah.
-  const canManageAssets = role && ['super_admin', 'hrd'].includes(role.role_name);
+  const canManageAssets = role && ['super_admin', 'hrd', 'finance'].includes(role.role_name);
   useEffect(() => {
     if (!authLoading && !canManageAssets) {
       toast.error('Anda tidak memiliki izin menambah/mengubah data aset');

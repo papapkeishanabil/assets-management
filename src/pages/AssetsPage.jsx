@@ -49,7 +49,7 @@ export default function AssetsPage() {
   const [qrPreview, setQrPreview] = useState(null);
   const [qrLoading, setQrLoading] = useState(false);
 
-  const canEdit = role && ['super_admin', 'hrd'].includes(role.role_name);
+  const canEdit = role && ['super_admin', 'hrd', 'finance'].includes(role.role_name);
   const canDelete = role && role.role_name === ROLES.SUPER_ADMIN;
 
   const fetchMasterData = useCallback(async () => {
