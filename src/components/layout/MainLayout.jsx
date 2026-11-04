@@ -211,6 +211,20 @@ export default function MainLayout() {
             </NavLink>
           ))}
 
+          {hasAccess('vendor_management') && (
+            <>
+              <SectionLabel>Manajemen Vendor</SectionLabel>
+              <NavLink
+                to="/vendor/database"
+                onClick={() => setSidebarOpen(false)}
+                className={navLinkClass}
+              >
+                <Users size={16} className="flex-shrink-0" />
+                Database Calon Vendor
+              </NavLink>
+            </>
+          )}
+
           {showHrdContractSection && (
             <>
               <SectionLabel>SDM & Kontrak</SectionLabel>

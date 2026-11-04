@@ -39,11 +39,14 @@ import PPMMeetingRoomPage from './pages/PPMMeetingRoomPage';
 import PPMPoDetailPage from './pages/PPMPoDetailPage';
 import LoadingScreen from './components/LoadingScreen';
 import { ROLES } from './lib/constants';
+import { useRolePermissions } from './hooks/useRolePermissions';
 import ContractsPage from './pages/contracts/ContractsPage';
 import ContractFormPage from './pages/contracts/ContractFormPage';
 import ContractDetailPage from './pages/contracts/ContractDetailPage';
 import ContractTypesPage from './pages/contracts/ContractTypesPage';
 import EmployeesPage from './pages/contracts/EmployeesPage';
+import VendorDatabasePage from './pages/vendor/VendorDatabasePage';
+import VendorDetailPage from './pages/vendor/VendorDetailPage';
 
 function LogoutButton() {
   const handleLogout = async () => {
@@ -144,6 +147,22 @@ function HRDRoute({ children }) {
   return children;
 }
 
+// Modul Manajemen Vendor: guard kombinasi role + module access
+// (RLS database tetap penjaga utama; ini mencegah akses URL langsung).
+function VendorRoute({ children }) {
+  const { role, profile, loading } = useAuth();
+  const { hasAccess } = useRolePermissions();
+
+  if (loading) return <LoadingScreen />;
+  if (!profile) return <Navigate to="/login" replace />;
+  const roleAllowed = role && ['super_admin', 'hrd', 'direksi', 'sourcing'].includes(role.role_name);
+  if (!roleAllowed || !hasAccess('vendor_management')) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+}
+
 export default function App() {
   const { profile, loading } = useAuth();
 
@@ -205,6 +224,16 @@ export default function App() {
           <HRDRoute>
             <VendorsPage />
           </HRDRoute>
+        } />
+        <Route path="vendor/database" element={
+          <VendorRoute>
+            <VendorDatabasePage />
+          </VendorRoute>
+        } />
+        <Route path="vendor/database/:id" element={
+          <VendorRoute>
+            <VendorDetailPage />
+          </VendorRoute>
         } />
         <Route path="assets" element={<AssetsPage />} />
         <Route path="assets/new" element={<AssetFormPage />} />
