@@ -29,6 +29,7 @@ DROP POLICY IF EXISTS "Vendor contacts insert" ON vendor_contacts;
 DROP POLICY IF EXISTS "Vendor contacts read" ON vendor_contacts;
 DROP POLICY IF EXISTS "Vendor candidate specialties write" ON vendor_candidate_specialties;
 DROP POLICY IF EXISTS "Vendor candidate specialties read" ON vendor_candidate_specialties;
+DROP POLICY IF EXISTS "Vendor candidates approver update" ON vendor_candidates;
 DROP POLICY IF EXISTS "Vendor candidates update" ON vendor_candidates;
 DROP POLICY IF EXISTS "Vendor candidates insert" ON vendor_candidates;
 DROP POLICY IF EXISTS "Vendor candidates read" ON vendor_candidates;

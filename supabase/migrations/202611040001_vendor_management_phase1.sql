@@ -241,8 +241,12 @@ CREATE TRIGGER trg_vendor_candidates_updated_at BEFORE UPDATE ON vendor_candidat
 -- langsung lewat API Supabase. Trigger ini menolak perubahan:
 --   - kelayakan MENJAUH/DARI nilai keputusan (APPROVED/RESERVE/REJECTED/FROZEN)
 --   - operational_status / vendor_id / activated_at / activated_by (aktivasi)
--- kecuali aktor = direksi/super_admin (modul persetujuan) ATAU jalur
--- service/SECURITY DEFINER (auth.uid() NULL — dipakai RPC aktivasi fase 5).
+-- kecuali aktor = direksi/super_admin (modul persetujuan) ATAU konteks backend
+-- yang memang berwenang. Deteksi backend TIDAK memakai auth.uid() IS NULL
+-- (NULL bukan bukti service role — review poin B), melainkan:
+--   - auth.role() = 'service_role'  → permintaan ber-kunci service role
+--   - current_user = postgres/supabase_admin → jalur SECURITY DEFINER
+--     (dipakai RPC aktivasi fase 5) / DBA
 -- Perpindahan pipeline non-keputusan (PROSPECT→UNDER_EVALUATION→PENDING_APPROVAL)
 -- tetap boleh oleh sourcing.
 CREATE OR REPLACE FUNCTION vendor_guard_restricted_columns()
@@ -258,10 +262,13 @@ BEGIN
      OR NEW.activated_at IS DISTINCT FROM OLD.activated_at
      OR NEW.activated_by IS DISTINCT FROM OLD.activated_by THEN
 
-    SELECT (auth.uid() IS NULL
-            OR EXISTS (SELECT 1 FROM user_profiles up JOIN roles r ON up.role_id = r.id
-                       WHERE up.auth_user_id = auth.uid() AND up.account_status = 'ACTIVE'
-                         AND r.role_name IN ('direksi', 'super_admin')))
+    SELECT (
+      auth.role() = 'service_role'
+      OR current_user IN ('postgres', 'supabase_admin')
+      OR EXISTS (SELECT 1 FROM user_profiles up JOIN roles r ON up.role_id = r.id
+                 WHERE up.auth_user_id = auth.uid() AND up.account_status = 'ACTIVE'
+                   AND r.role_name IN ('direksi', 'super_admin'))
+    )
     INTO v_allowed;
 
     IF NOT v_allowed THEN
@@ -277,21 +284,29 @@ CREATE TRIGGER trg_vendor_candidates_guard BEFORE UPDATE ON vendor_candidates
   FOR EACH ROW EXECUTE FUNCTION vendor_guard_restricted_columns();
 
 -- Perubahan 3 dimensi status → vendor_status_history (SECURITY DEFINER:
--- insert history tetap jalan apa pun RLS pemanggil)
+-- insert history tetap jalan apa pun RLS pemanggil).
+-- Aktor diambil dari JWT (auth.uid()) sebagai sumber otoritatif — kolom
+-- updated_by hanya fallback (PATCH yang tidak menyertakan kolom itu
+-- tidak boleh salah mengatribusikan ke penulis sebelumnya — temuan uji D10).
 CREATE OR REPLACE FUNCTION vendor_record_status_change()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_actor UUID;
 BEGIN
+  SELECT up.id INTO v_actor FROM user_profiles up WHERE up.auth_user_id = auth.uid();
+  v_actor := COALESCE(v_actor, NEW.updated_by);
+
   IF OLD.process_stage IS DISTINCT FROM NEW.process_stage THEN
     INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)
-    VALUES (NEW.id, 'process_stage', OLD.process_stage, NEW.process_stage, NEW.updated_by);
+    VALUES (NEW.id, 'process_stage', OLD.process_stage, NEW.process_stage, v_actor);
   END IF;
   IF OLD.qualification_status IS DISTINCT FROM NEW.qualification_status THEN
     INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)
-    VALUES (NEW.id, 'qualification_status', OLD.qualification_status, NEW.qualification_status, NEW.updated_by);
+    VALUES (NEW.id, 'qualification_status', OLD.qualification_status, NEW.qualification_status, v_actor);
   END IF;
   IF OLD.operational_status IS DISTINCT FROM NEW.operational_status THEN
     INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)
-    VALUES (NEW.id, 'operational_status', OLD.operational_status, NEW.operational_status, NEW.updated_by);
+    VALUES (NEW.id, 'operational_status', OLD.operational_status, NEW.operational_status, v_actor);
   END IF;
   RETURN NEW;
 END;
@@ -302,14 +317,19 @@ CREATE TRIGGER trg_vendor_candidates_status_history AFTER UPDATE ON vendor_candi
   FOR EACH ROW EXECUTE FUNCTION vendor_record_status_change();
 
 -- Aktivitas: created + perubahan profil (non-status) → vendor_activity_logs
+-- (aktor juga dari auth.uid() otoritatif — pola sama dengan status history)
 CREATE OR REPLACE FUNCTION vendor_record_activity()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_actor UUID;
 BEGIN
+  SELECT up.id INTO v_actor FROM user_profiles up WHERE up.auth_user_id = auth.uid();
+
   IF TG_OP = 'INSERT' THEN
     INSERT INTO vendor_activity_logs (candidate_id, entity_table, entity_id, action, new_values, actor_id)
     VALUES (NEW.id, 'vendor_candidates', NEW.id, 'created',
             jsonb_build_object('business_name', NEW.business_name, 'process_stage', NEW.process_stage),
-            NEW.created_by);
+            COALESCE(v_actor, NEW.created_by));
     RETURN NEW;
   END IF;
   -- UPDATE: log hanya jika ada kolom non-status/non-audit yang berubah
@@ -335,7 +355,7 @@ BEGIN
             jsonb_build_object('business_name', NEW.business_name, 'category_id', NEW.category_id,
                                'capacity_qty', NEW.capacity_qty, 'lead_time_days', NEW.lead_time_days,
                                'legal_status', NEW.legal_status, 'notes', NEW.notes),
-            NEW.updated_by);
+            COALESCE(v_actor, NEW.updated_by));
   END IF;
   RETURN NEW;
 END;
@@ -412,6 +432,21 @@ CREATE POLICY "Vendor candidates update" ON vendor_candidates
     EXISTS (SELECT 1 FROM user_profiles up JOIN roles r ON up.role_id = r.id
             WHERE up.auth_user_id = auth.uid() AND up.account_status = 'ACTIVE'
               AND r.role_name IN ('sourcing', 'hrd', 'super_admin'))
+  );
+-- Approver (direksi) boleh UPDATE kandidat untuk mencatat keputusan kelayakan
+-- (K5: keputusan akhir = direksi + super_admin). Kolom yang boleh diubah tetap
+-- dibatasi guard: direksi hanya bermakna keputusan — perubahan profil lain tetap
+-- tercatat di activity log. Tanpa policy INSERT/DELETE untuk direksi.
+DROP POLICY IF EXISTS "Vendor candidates approver update" ON vendor_candidates;
+CREATE POLICY "Vendor candidates approver update" ON vendor_candidates
+  FOR UPDATE TO authenticated USING (
+    EXISTS (SELECT 1 FROM user_profiles up JOIN roles r ON up.role_id = r.id
+            WHERE up.auth_user_id = auth.uid() AND up.account_status = 'ACTIVE'
+              AND r.role_name = 'direksi')
+  ) WITH CHECK (
+    EXISTS (SELECT 1 FROM user_profiles up JOIN roles r ON up.role_id = r.id
+            WHERE up.auth_user_id = auth.uid() AND up.account_status = 'ACTIVE'
+              AND r.role_name = 'direksi')
   );
 
 DROP POLICY IF EXISTS "Vendor candidate specialties read" ON vendor_candidate_specialties;
