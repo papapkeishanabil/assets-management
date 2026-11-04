@@ -9,7 +9,7 @@ import {
   QUALIFICATION_LABELS, QUALIFICATION_BADGES,
   OPERATIONAL_LABELS, OPERATIONAL_BADGES,
   VENDOR_SOURCES, LEGAL_STATUS, LEGAL_STATUS_BADGES, BUSINESS_TYPES,
-  VENDOR_WRITE_ROLES, VENDOR_APPROVER_ROLES, DECISION_QUALIFICATION_STATUSES
+  VENDOR_WRITE_ROLES, DECISION_QUALIFICATION_STATUSES
 } from '../../lib/vendor-constants';
 import { fetchVendorCandidateDetail, fetchCandidateHistory, formatRupiah } from '../../lib/vendor-helpers';
 import { formatDateID } from '../../lib/maintenance-helpers';
@@ -37,11 +37,11 @@ export default function VendorDetailPage() {
   const navigate = useNavigate();
   const { profile, role } = useAuth();
   const canWrite = role && VENDOR_WRITE_ROLES.includes(role.role_name);
-  // Hanya approver boleh memilih nilai kelayakan berupa keputusan akhir
-  // (database menolak via trigger guard bila bocor lewat API).
-  const isApprover = role && VENDOR_APPROVER_ROLES.includes(role.role_name);
+  // Persetujuan akhir tidak operasional di Fase 1: nilai keputusan
+  // disembunyikan dari SEMUA role — nanti hanya via mekanisme persetujuan
+  // khusus Fase 5 (guard DB juga memblokir UPDATE langsung by siapa pun).
   const qualificationOptions = Object.entries(QUALIFICATION_LABELS).filter(
-    ([value]) => isApprover || !DECISION_QUALIFICATION_STATUSES.includes(value)
+    ([value]) => !DECISION_QUALIFICATION_STATUSES.includes(value)
   );
 
   const [candidate, setCandidate] = useState(null);
@@ -291,16 +291,14 @@ export default function VendorDetailPage() {
                     <select
                       className="input"
                       value={candidate.qualification_status}
-                      disabled={savingStatus || (!isApprover && DECISION_QUALIFICATION_STATUSES.includes(candidate.qualification_status))}
+                      disabled={savingStatus || DECISION_QUALIFICATION_STATUSES.includes(candidate.qualification_status)}
                       onChange={(e) => changeStatus('qualification_status', e.target.value)}
                     >
                       {qualificationOptions.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                     </select>
-                    {!isApprover && (
-                      <p className="text-[10px] text-ink-500 mt-1">
-                        Nilai keputusan (Disetujui/Cadangan/Ditolak/Dibekukan) hanya bisa ditetapkan Direksi/Super Admin.
-                      </p>
-                    )}
+                    <p className="text-[10px] text-ink-500 mt-1">
+                      Keputusan akhir (Disetujui/Cadangan/Ditolak/Dibekukan) ditetapkan Direksi/Super Admin melalui mekanisme persetujuan khusus — hadir pada Fase 5.
+                    </p>
                   </div>
                   <p className="text-[10px] text-ink-500 leading-relaxed">
                     Setiap perubahan tercatat otomatis di tab Riwayat (siapa & kapan). Status operasional (aktif) hanya berubah lewat aktivasi persetujuan — Fase 5.

@@ -6,10 +6,9 @@ import {
   QUALIFICATION_LABELS,
   OPERATIONAL_LABELS,
   VENDOR_SOURCES, LEGAL_STATUS, CAPACITY_UNITS, BUSINESS_TYPES,
-  VENDOR_APPROVER_ROLES, DECISION_QUALIFICATION_STATUSES
+  DECISION_QUALIFICATION_STATUSES
 } from '../../lib/vendor-constants';
 import { saveVendorCandidate, findDuplicateCandidates } from '../../lib/vendor-helpers';
-import { useAuth } from '../../contexts/AuthContext';
 
 const EMPTY_FORM = {
   business_name: '',
@@ -35,11 +34,10 @@ const EMPTY_CONTACT = { contact_name: '', role_title: '', phone: '', whatsapp: '
 
 // Modal tambah/edit calon vendor. Disimpan setelah deteksi duplikat nama/telepon.
 export default function VendorFormModal({ open, onClose, onSaved, editing = null, categories = [], users = [], currentUserId }) {
-  const { role } = useAuth();
-  const isApprover = role && VENDOR_APPROVER_ROLES.includes(role.role_name);
-  // Nilai keputusan akhir disembunyikan dari non-approver (guard DB tetap berlaku).
+  // Persetujuan akhir tidak operasional di Fase 1: nilai keputusan
+  // disembunyikan dari semua role (guard DB memblokir UPDATE langsung).
   const qualificationOptions = Object.entries(QUALIFICATION_LABELS).filter(
-    ([value]) => isApprover || !DECISION_QUALIFICATION_STATUSES.includes(value)
+    ([value]) => !DECISION_QUALIFICATION_STATUSES.includes(value)
   );
   const [form, setForm] = useState(EMPTY_FORM);
   const [specialtyIds, setSpecialtyIds] = useState([]);
@@ -301,17 +299,15 @@ export default function VendorFormModal({ open, onClose, onSaved, editing = null
                     className="input"
                     value={form.qualification_status}
                     onChange={set('qualification_status')}
-                    disabled={!isApprover && DECISION_QUALIFICATION_STATUSES.includes(form.qualification_status)}
+                    disabled={DECISION_QUALIFICATION_STATUSES.includes(form.qualification_status)}
                   >
                     {qualificationOptions.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                   </select>
-                  {!isApprover && (
-                    <p className="text-[10px] text-ink-500 mt-1">
-                      {DECISION_QUALIFICATION_STATUSES.includes(form.qualification_status)
-                        ? 'Sudah berstatus keputusan — hanya Direksi/Super Admin dapat mengubahnya'
-                        : 'Keputusan akhir ditetapkan Direksi/Super Admin'}
-                    </p>
-                  )}
+                  <p className="text-[10px] text-ink-500 mt-1">
+                    {DECISION_QUALIFICATION_STATUSES.includes(form.qualification_status)
+                      ? 'Sudah berstatus keputusan — mekanisme persetujuan hadir pada Fase 5'
+                      : 'Keputusan akhir oleh Direksi/Super Admin via mekanisme persetujuan (Fase 5)'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-[11px] text-ink-500 mb-1.5">Operasional</p>

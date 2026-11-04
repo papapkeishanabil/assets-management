@@ -235,25 +235,34 @@ DROP TRIGGER IF EXISTS trg_vendor_candidates_updated_at ON vendor_candidates;
 CREATE TRIGGER trg_vendor_candidates_updated_at BEFORE UPDATE ON vendor_candidates
   FOR EACH ROW EXECUTE FUNCTION vendor_set_updated_at();
 
--- GUARD KEOLOSAN HAK AKSES (review poin 3):
--- RLS policy UPDATE hanya memeriksa role tulis; tanpa guard ini sourcing
--- bisa set qualification_status='APPROVED' atau operational_status='ACTIVE'
--- langsung lewat API Supabase. Trigger ini menolak perubahan:
---   - kelayakan MENJAUH/DARI nilai keputusan (APPROVED/RESERVE/REJECTED/FROZEN)
---   - operational_status / vendor_id / activated_at / activated_by (aktivasi)
--- kecuali aktor = direksi/super_admin (modul persetujuan) ATAU konteks backend
--- yang memang berwenang. Deteksi backend TIDAK memakai auth.uid() IS NULL
--- (NULL bukan bukti service role — review poin B), melainkan:
---   - auth.role() = 'service_role'  → permintaan ber-kunci service role
---   - current_user = postgres/supabase_admin → jalur SECURITY DEFINER
---     (dipakai RPC aktivasi fase 5) / DBA
--- Perpindahan pipeline non-keputusan (PROSPECT→UNDER_EVALUATION→PENDING_APPROVAL)
--- tetap boleh oleh sourcing.
+-- GUARD KEPUTUSAN & AKTIVASI (penyempurnaan akhir review user):
+-- 1) Status kerja sama ACTIVE tidak boleh diubah lewat UPDATE biasa oleh
+--    SIAPA PUN termasuk direksi/super_admin — hanya fungsi aktivasi Fase 5
+--    (jalur service/SECURITY DEFINER) yang boleh, setelah memvalidasi:
+--    vendor disetujui, identitas valid, tanpa duplikasi vendors, relasi
+--    tercatat, dan audit log dihasilkan.
+-- 2) Persetujuan akhir (APPROVED/RESERVE/REJECTED/FROZEN) juga tidak
+--    operasional di Fase 1 — mekanisme keputusan database yang aman hadir
+--    di Fase 5, bukan ubah status langsung. Sampai itu tersedia, SEMUA
+--    perubahan nilai keputusan via UPDATE diblokir (menjauh ataupun menuju).
+-- 3) Deteksi konteks backend yang berwenang TIDAK memakai auth.uid() IS NULL:
+--    - auth.role() = 'service_role' → permintaan ber-kunci service role
+--    - current_user = postgres/supabase_admin → jalur SECURITY DEFINER / DBA
+--    (Fungsi RPC Fase 5 akan ber-SECURITY DEFINER dan memvalidasi syarat
+--    sebelum menulis — konteks inilah satu-satunya pintu.)
+-- 4) Perpindahan pipeline non-keputusan (PROSPECT→UNDER_EVALUATION→
+--    PENDING_APPROVAL) tetap boleh oleh sourcing/hrd/super_admin.
 CREATE OR REPLACE FUNCTION vendor_guard_restricted_columns()
 RETURNS TRIGGER AS $$
 DECLARE
-  v_allowed BOOLEAN;
+  v_service_context BOOLEAN;
 BEGIN
+  SELECT (
+    auth.role() = 'service_role'
+    OR current_user IN ('postgres', 'supabase_admin')
+  )
+  INTO v_service_context;
+
   IF (NEW.qualification_status IS DISTINCT FROM OLD.qualification_status
       AND (NEW.qualification_status IN ('APPROVED','RESERVE','REJECTED','FROZEN')
            OR OLD.qualification_status IN ('APPROVED','RESERVE','REJECTED','FROZEN')))
@@ -262,17 +271,8 @@ BEGIN
      OR NEW.activated_at IS DISTINCT FROM OLD.activated_at
      OR NEW.activated_by IS DISTINCT FROM OLD.activated_by THEN
 
-    SELECT (
-      auth.role() = 'service_role'
-      OR current_user IN ('postgres', 'supabase_admin')
-      OR EXISTS (SELECT 1 FROM user_profiles up JOIN roles r ON up.role_id = r.id
-                 WHERE up.auth_user_id = auth.uid() AND up.account_status = 'ACTIVE'
-                   AND r.role_name IN ('direksi', 'super_admin'))
-    )
-    INTO v_allowed;
-
-    IF NOT v_allowed THEN
-      RAISE EXCEPTION 'DITOLAK: keputusan kelayakan/aktivasi vendor hanya boleh direksi/super_admin melalui modul persetujuan';
+    IF NOT v_service_context THEN
+      RAISE EXCEPTION 'DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung';
     END IF;
   END IF;
   RETURN NEW;
@@ -433,21 +433,12 @@ CREATE POLICY "Vendor candidates update" ON vendor_candidates
             WHERE up.auth_user_id = auth.uid() AND up.account_status = 'ACTIVE'
               AND r.role_name IN ('sourcing', 'hrd', 'super_admin'))
   );
--- Approver (direksi) boleh UPDATE kandidat untuk mencatat keputusan kelayakan
--- (K5: keputusan akhir = direksi + super_admin). Kolom yang boleh diubah tetap
--- dibatasi guard: direksi hanya bermakna keputusan — perubahan profil lain tetap
--- tercatat di activity log. Tanpa policy INSERT/DELETE untuk direksi.
+-- CATATAN: direksi READ-ONLY di Fase 1. Policy UPDATE khusus approver
+-- ("Vendor candidates approver update") sengaja TIDAK dibuat — keputusan
+-- akhir menunggu mekanisme persetujuan Fase 5 (RPC tervalidasi + audit),
+-- sesuai penyempurnaan review user. (Drop IF EXISTS di bawah membersihkan
+-- sisa uji sebelumnya dan menjaga idempotensi.)
 DROP POLICY IF EXISTS "Vendor candidates approver update" ON vendor_candidates;
-CREATE POLICY "Vendor candidates approver update" ON vendor_candidates
-  FOR UPDATE TO authenticated USING (
-    EXISTS (SELECT 1 FROM user_profiles up JOIN roles r ON up.role_id = r.id
-            WHERE up.auth_user_id = auth.uid() AND up.account_status = 'ACTIVE'
-              AND r.role_name = 'direksi')
-  ) WITH CHECK (
-    EXISTS (SELECT 1 FROM user_profiles up JOIN roles r ON up.role_id = r.id
-            WHERE up.auth_user_id = auth.uid() AND up.account_status = 'ACTIVE'
-              AND r.role_name = 'direksi')
-  );
 
 DROP POLICY IF EXISTS "Vendor candidate specialties read" ON vendor_candidate_specialties;
 CREATE POLICY "Vendor candidate specialties read" ON vendor_candidate_specialties
