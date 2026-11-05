@@ -1,48 +1,88 @@
 -- ============================================================
--- PROPOSAL HARDENING #2 (v2 hasil validasi lokal) — MENUNGGU
--- PERSETUJUAN, JANGAN DIJALANKAN DI PRODUKSI TANPA PERSETUJUAN.
+-- HARDENING RLS 3 TABEL — v3 FINAL, DISETUJUI USER 4 Nov 2026
+-- Target HANYA: public.user_profiles, public.roles,
+-- public.notifications. Menutup kebocoran anon (terbukti) TANPA
+-- mengganggu alur aplikasi.
 --
--- Temuan audit 4 Nov 2026 (read-only): tiga tabel TANPA RLS sehingga
--- bisa dibaca ANON (terbukti probe: HTTP 200 + data):
---   - public.user_profiles  (nama, email, telepon semua user)
---   - public.notifications  (isi notifikasi internal)
---   - public.roles
---
--- v2: versi awal menimpa INFINITE RECURSION (policy user_profiles
--- membaca user_profiles/roles secara melingkar). Solusi standar
--- Supabase: helper SECURITY DEFINER sehingga pengecekan role tidak
--- menerapkan RLS tabel yang diperiksa. Tervalidasi lokal (stack uji):
--- anon tertutup; registrasi insert profil sendiri jalan; dropdown PIC
--- jalan; roles hanya super_admin; notifikasi milik sendiri.
+-- Riwayat versi:
+--  v1: policy inline → infinite recursion (self-read melingkar)
+--  v2: helper SECURITY DEFINER → tervalidasi, tapi checklist akhir
+--      user menemukan 2 celah eskalasi: self-insert bebas memilih
+--      role_id (termasuk super_admin) & self-update role_id/
+--      account_status (privesc)
+--  v3: insert sendiri DIBATASI (role pelaksana/NULL + PENDING —
+--      persis alur RegisterPage.jsx), kolom administratif profile
+--      dilindungi trigger guard (pola vendor_guard yang sudah
+--      tervalidasi), helper eksplisit schema-qualified + search_path
+--      dikunci.
 -- ============================================================
 
 -- ---------- Helper pengecekan role (SECURITY DEFINER anti-rekursi) ----------
-CREATE OR REPLACE FUNCTION public.is_app_role(p_roles text[])
+-- CASCADE: policy lama yang bergantung di-drop dan dibuat ulang di bawah.
+DROP FUNCTION IF EXISTS public.is_app_role(text[]) CASCADE;
+CREATE FUNCTION public.is_app_role(p_roles text[])
 RETURNS boolean
 LANGUAGE sql STABLE SECURITY DEFINER
-SET search_path = public
+SET search_path = public, pg_temp
 AS $$
   SELECT EXISTS (
-    SELECT 1 FROM user_profiles up JOIN roles r ON r.id = up.role_id
-    WHERE up.auth_user_id = auth.uid() AND up.account_status = 'ACTIVE'
+    SELECT 1 FROM public.user_profiles up
+    JOIN public.roles r ON r.id = up.role_id
+    WHERE up.auth_user_id = auth.uid()
+      AND up.account_status = 'ACTIVE'
       AND r.role_name = ANY(p_roles)
   );
 $$;
 
-CREATE OR REPLACE FUNCTION public.my_profile_id()
+DROP FUNCTION IF EXISTS public.my_profile_id() CASCADE;
+CREATE FUNCTION public.my_profile_id()
 RETURNS uuid
 LANGUAGE sql STABLE SECURITY DEFINER
-SET search_path = public
+SET search_path = public, pg_temp
 AS $$
-  SELECT up.id FROM user_profiles up WHERE up.auth_user_id = auth.uid();
+  SELECT up.id FROM public.user_profiles up WHERE up.auth_user_id = auth.uid();
 $$;
 
--- Helper hanya menilai diri pemanggil: boleh dieksekusi role internal,
--- tidak berguna bagi penyerang (output boolean/uuid milik sendiri).
+-- Helper hanya menilai identitas PEMANGGIL (auth.uid()) — tidak bisa
+-- dipakai membaca/mengubah data orang lain. Execute minimal.
 REVOKE ALL ON FUNCTION public.is_app_role(text[]) FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.my_profile_id() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.is_app_role(text[]) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.my_profile_id() TO authenticated;
+
+-- ---------- Guard kolom administratif user_profiles (anti-privesc) ----------
+-- Perubahan role_id / account_status / approved_by / approved_at /
+-- auth_user_id hanya untuk admin (hrd/super_admin) atau konteks
+-- service tepercaya (RPC/backend). Tanpa guard, policy self-update
+-- masih mengizinkan pengguna menaikkan role dirinya sendiri.
+CREATE OR REPLACE FUNCTION public.profiles_guard_admin_fields()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_service BOOLEAN;
+  v_admin BOOLEAN;
+BEGIN
+  IF NEW.role_id IS DISTINCT FROM OLD.role_id
+     OR NEW.account_status IS DISTINCT FROM OLD.account_status
+     OR NEW.approved_by IS DISTINCT FROM OLD.approved_by
+     OR NEW.approved_at IS DISTINCT FROM OLD.approved_at
+     OR NEW.auth_user_id IS DISTINCT FROM OLD.auth_user_id THEN
+
+    SELECT (auth.role() = 'service_role'
+            OR current_user IN ('postgres', 'supabase_admin'))
+    INTO v_service;
+    SELECT public.is_app_role(ARRAY['hrd', 'super_admin']) INTO v_admin;
+
+    IF NOT (v_service OR v_admin) THEN
+      RAISE EXCEPTION 'DITOLAK: kolom administratif profil (role/status) hanya boleh diubah admin';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_profiles_guard_admin_fields ON public.user_profiles;
+CREATE TRIGGER trg_profiles_guard_admin_fields BEFORE UPDATE ON public.user_profiles
+  FOR EACH ROW EXECUTE FUNCTION public.profiles_guard_admin_fields();
 
 -- ---------- user_profiles ----------
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
@@ -51,14 +91,26 @@ DROP POLICY IF EXISTS "profiles select authenticated" ON public.user_profiles;
 CREATE POLICY "profiles select authenticated" ON public.user_profiles
   FOR SELECT TO authenticated USING (true);
 
--- Registrasi: user baru memasang profil SENDIRI (RegisterPage tetap jalan);
--- admin (hrd/super_admin) mengelola semua user (UsersPage).
+-- Registrasi (RegisterPage.jsx): user baru memasang profil SENDIRI dengan
+-- role pelaksana/NULL dan status PENDING — selain itu ditolak.
+-- Admin (hrd/super_admin) bebas mengelola (UsersPage).
 DROP POLICY IF EXISTS "profiles insert own or admin" ON public.user_profiles;
 CREATE POLICY "profiles insert own or admin" ON public.user_profiles
   FOR INSERT TO authenticated WITH CHECK (
-    auth_user_id = auth.uid() OR public.is_app_role(ARRAY['hrd', 'super_admin'])
+    (
+      auth_user_id = auth.uid()
+      AND (account_status IS NULL OR account_status = 'PENDING')
+      AND (
+        role_id IS NULL
+        OR EXISTS (SELECT 1 FROM public.roles rr
+                   WHERE rr.id = role_id AND rr.role_name = 'pelaksana')
+      )
+    )
+    OR public.is_app_role(ARRAY['hrd', 'super_admin'])
   );
 
+-- Update baris: profil sendiri (kolom aman saja — kolom administratif
+-- dijaga trigger di atas) atau admin.
 DROP POLICY IF EXISTS "profiles update own or admin" ON public.user_profiles;
 CREATE POLICY "profiles update own or admin" ON public.user_profiles
   FOR UPDATE TO authenticated
@@ -87,8 +139,6 @@ CREATE POLICY "notifications select own" ON public.notifications
   FOR SELECT TO authenticated USING (user_id = public.my_profile_id());
 
 -- INSERT oleh authenticated (pengirim reminder internal; anon tertutup).
--- Penguatan lebih ketat (batasi role pengirim) menyusul terpisah agar
--- tidak memutus fitur reminder yang berjalan.
 DROP POLICY IF EXISTS "notifications insert authenticated" ON public.notifications;
 CREATE POLICY "notifications insert authenticated" ON public.notifications
   FOR INSERT TO authenticated WITH CHECK (true);
