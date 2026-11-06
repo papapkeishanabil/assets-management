@@ -1,12 +1,12 @@
 // Buat/hapus akun uji E2E sementara di PRODUKSI (via GoTrue admin API +
 // service key). Akun: super_admin + ACTIVE — hanya untuk verifikasi
 // operasional pasca-hardening; dihapus setelah selesai.
-// Env: SUPABASE_URL, SUPABASE_SERVICE_KEY. Arg: create | delete
+// Env: SUPABASE_URL, SUPABASE_SERVICE_KEY; create juga butuh HARMAS_E2E_PASSWORD. Arg: create | delete
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const mode = process.argv[2];
 const EMAIL = 'e2e-temp@harmas-test.local';
-const PASSWORD = 'HarmasE2E!2026x9Kq';
+const PASSWORD = process.env.HARMAS_E2E_PASSWORD;
 
 if (!SUPABASE_URL || !SERVICE_KEY) {
   console.error('Butuh env SUPABASE_URL, SUPABASE_SERVICE_KEY');
@@ -14,6 +14,10 @@ if (!SUPABASE_URL || !SERVICE_KEY) {
 }
 
 if (mode === 'create') {
+  if (!PASSWORD) {
+    console.error('Butuh env HARMAS_E2E_PASSWORD untuk membuat akun uji');
+    process.exit(1);
+  }
   // 1) User auth
   const r1 = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
     method: 'POST',
