@@ -14,10 +14,11 @@ import {
 import { fetchVendorCandidateDetail, fetchCandidateHistory, formatRupiah } from '../../lib/vendor-helpers';
 import { formatDateID } from '../../lib/maintenance-helpers';
 import VendorFormModal from '../../components/vendor/VendorFormModal';
+import VendorFollowupsPanel from '../../components/vendor/VendorFollowupsPanel';
+import { useRolePermissions } from '../../hooks/useRolePermissions';
 
 // Tab yang hadir di fase berikutnya (placeholder agar struktur jelas).
 const FUTURE_TABS = [
-  { key: 'followup', label: 'Follow-Up', phase: 'Fase 2' },
   { key: 'sample', label: 'Sampel & QC', phase: 'Fase 4' },
   { key: 'location', label: 'Lokasi & Foto', phase: 'Fase 3' },
   { key: 'decision', label: 'Keputusan', phase: 'Fase 5' }
@@ -36,6 +37,7 @@ export default function VendorDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { profile, role } = useAuth();
+  const { hasAccess } = useRolePermissions();
   const canWrite = role && VENDOR_WRITE_ROLES.includes(role.role_name);
   // Persetujuan akhir tidak operasional di Fase 1: nilai keputusan
   // disembunyikan dari SEMUA role — nanti hanya via mekanisme persetujuan
@@ -156,6 +158,10 @@ export default function VendorDetailPage() {
         >
           <Layers size={14} className="inline mr-1.5 -mt-0.5" /> Ringkasan
         </button>
+        {hasAccess('vendor_followups') && <button onClick={() => setActiveTab('followup')}
+          className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${activeTab === 'followup' ? 'border-primary-400 text-white' : 'border-transparent text-ink-400 hover:text-white'}`}>
+          Follow-Up
+        </button>}
         {FUTURE_TABS.map((t) => (
           <button
             key={t.key}
@@ -178,6 +184,8 @@ export default function VendorDetailPage() {
       </div>
 
       {/* Placeholder fase berikutnya */}
+      {activeTab === 'followup' && <VendorFollowupsPanel candidateId={id}
+        onChanged={() => fetchCandidateHistory(id).then(setHistory).catch(() => toast.error('Gagal menyegarkan riwayat'))} />}
       {FUTURE_TABS.some((t) => t.key === activeTab) && (
         <div className="card p-10 text-center">
           <div className="inline-flex p-3 rounded-xl bg-primary-500/10 border border-primary-500/20 mb-3">
@@ -329,7 +337,7 @@ export default function VendorDetailPage() {
                     <div key={`a-${a.id}`} className="flex gap-3">
                       <History size={13} className="text-ink-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-xs text-white">{a.action === 'created' ? 'Kandidat dibuat' : 'Profil diperbarui'}</p>
+                        <p className="text-xs text-white">{a.action === 'created' ? 'Kandidat dibuat' : a.action === 'followup_created' ? 'Follow-up dicatat' : a.action === 'followup_task_closed' ? 'Tugas follow-up ditutup' : 'Profil diperbarui'}</p>
                         <p className="text-[10px] text-ink-500">{a.actor?.full_name || 'Sistem'} · {formatDateID(a.created_at?.slice(0, 10))}</p>
                       </div>
                     </div>
@@ -362,8 +370,8 @@ export default function VendorDetailPage() {
                     key: `a-${a.id}`,
                     at: a.created_at,
                     who: a.actor?.full_name || 'Sistem',
-                    title: a.action === 'created' ? 'Kandidat dibuat' : a.action === 'profile_updated' ? 'Profil diperbarui' : a.action,
-                    detail: a.new_values?.business_name ? `"${a.new_values.business_name}"` : ''
+                    title: a.action === 'created' ? 'Kandidat dibuat' : a.action === 'profile_updated' ? 'Profil diperbarui' : a.action === 'followup_created' ? 'Follow-up dicatat' : a.action === 'followup_task_closed' ? 'Tugas follow-up ditutup' : a.action,
+                    detail: a.new_values?.business_name ? `"${a.new_values.business_name}"` : a.new_values?.followup_code ? `${a.new_values.followup_code} · ${a.new_values.task_status}` : ''
                   }))
                 ].sort((a, b) => new Date(b.at) - new Date(a.at));
 

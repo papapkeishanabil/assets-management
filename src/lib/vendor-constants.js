@@ -157,3 +157,11 @@ export const DECISION_QUALIFICATION_STATUSES = [
 ];
 
 export const VENDOR_APPROVER_ROLES = ['direksi', 'super_admin'];
+
+export const FOLLOWUP_CHANNELS = {
+  TELEPON: 'Telepon', WHATSAPP: 'WhatsApp', KUNJUNGAN: 'Kunjungan',
+  EMAIL: 'Email', VIDEO_CALL: 'Video Call', PAMERAN: 'Pameran', LAINNYA: 'Lainnya'
+};
+export const FOLLOWUP_STATUSES = { OPEN: 'Terbuka', SELESAI: 'Selesai', DIBATALKAN: 'Dibatalkan' };
+export const FOLLOWUP_OUTCOMES = { TERHUBUNG: 'Berhasil terhubung', TIDAK_TERHUBUNG: 'Belum terhubung', BELUM_DINILAI: 'Belum dinilai' };
+export const FOLLOWUP_BADGES = { OPEN: 'badge-blue', SELESAI: 'badge-green', DIBATALKAN: 'badge-gray' };

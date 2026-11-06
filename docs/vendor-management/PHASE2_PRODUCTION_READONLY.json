@@ -1,0 +1,1051 @@
+{
+  "checked_at": "2026-11-06T06:14:59.176Z",
+  "target": "https://uwlxkwyauxwewoexfgwi.supabase.co",
+  "mode": "SELECT only; forced transaction rollback",
+  "data": {
+    "roles": [
+      "direksi",
+      "finance",
+      "hrd",
+      "pelaksana",
+      "sourcing",
+      "super_admin"
+    ],
+    "columns": [
+      {
+        "type": "uuid",
+        "table": "notifications",
+        "column": "id",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "notifications",
+        "column": "user_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "notifications",
+        "column": "notification_type",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "notifications",
+        "column": "title",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "notifications",
+        "column": "message",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "notifications",
+        "column": "reference_type",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "notifications",
+        "column": "reference_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "boolean",
+        "table": "notifications",
+        "column": "is_read",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "notifications",
+        "column": "scheduled_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "notifications",
+        "column": "sent_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "notifications",
+        "column": "created_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "notifications",
+        "column": "maintenance_schedule_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "notifications",
+        "column": "reference_url",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "notifications",
+        "column": "read_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "date",
+        "table": "notifications",
+        "column": "notification_date",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "notifications",
+        "column": "maintenance_record_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "user_profiles",
+        "column": "id",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "user_profiles",
+        "column": "auth_user_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "user_profiles",
+        "column": "full_name",
+        "nullable": "NO"
+      },
+      {
+        "type": "character varying",
+        "table": "user_profiles",
+        "column": "email",
+        "nullable": "NO"
+      },
+      {
+        "type": "character varying",
+        "table": "user_profiles",
+        "column": "phone",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "user_profiles",
+        "column": "department",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "user_profiles",
+        "column": "position",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "user_profiles",
+        "column": "role",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "user_profiles",
+        "column": "account_status",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "user_profiles",
+        "column": "avatar_url",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "user_profiles",
+        "column": "created_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "user_profiles",
+        "column": "updated_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "user_profiles",
+        "column": "role_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "user_profiles",
+        "column": "approved_by",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "user_profiles",
+        "column": "approved_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "user_profiles",
+        "column": "department_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "user_profiles",
+        "column": "sub_department_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "bigint",
+        "table": "vendor_activity_logs",
+        "column": "id",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "vendor_activity_logs",
+        "column": "candidate_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "vendor_activity_logs",
+        "column": "entity_table",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "vendor_activity_logs",
+        "column": "entity_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "vendor_activity_logs",
+        "column": "action",
+        "nullable": "NO"
+      },
+      {
+        "type": "jsonb",
+        "table": "vendor_activity_logs",
+        "column": "old_values",
+        "nullable": "YES"
+      },
+      {
+        "type": "jsonb",
+        "table": "vendor_activity_logs",
+        "column": "new_values",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "vendor_activity_logs",
+        "column": "actor_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "vendor_activity_logs",
+        "column": "created_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "vendor_candidates",
+        "column": "id",
+        "nullable": "NO"
+      },
+      {
+        "type": "character varying",
+        "table": "vendor_candidates",
+        "column": "candidate_code",
+        "nullable": "NO"
+      },
+      {
+        "type": "character varying",
+        "table": "vendor_candidates",
+        "column": "business_name",
+        "nullable": "NO"
+      },
+      {
+        "type": "character varying",
+        "table": "vendor_candidates",
+        "column": "business_type",
+        "nullable": "NO"
+      },
+      {
+        "type": "uuid",
+        "table": "vendor_candidates",
+        "column": "category_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "vendor_candidates",
+        "column": "internal_pic_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "vendor_candidates",
+        "column": "source",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "vendor_candidates",
+        "column": "process_stage",
+        "nullable": "NO"
+      },
+      {
+        "type": "character varying",
+        "table": "vendor_candidates",
+        "column": "qualification_status",
+        "nullable": "NO"
+      },
+      {
+        "type": "character varying",
+        "table": "vendor_candidates",
+        "column": "operational_status",
+        "nullable": "NO"
+      },
+      {
+        "type": "numeric",
+        "table": "vendor_candidates",
+        "column": "capacity_qty",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "vendor_candidates",
+        "column": "capacity_unit",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "vendor_candidates",
+        "column": "moq",
+        "nullable": "YES"
+      },
+      {
+        "type": "integer",
+        "table": "vendor_candidates",
+        "column": "lead_time_days",
+        "nullable": "YES"
+      },
+      {
+        "type": "numeric",
+        "table": "vendor_candidates",
+        "column": "indicative_price",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "vendor_candidates",
+        "column": "payment_term",
+        "nullable": "YES"
+      },
+      {
+        "type": "text",
+        "table": "vendor_candidates",
+        "column": "service_area",
+        "nullable": "YES"
+      },
+      {
+        "type": "character varying",
+        "table": "vendor_candidates",
+        "column": "legal_status",
+        "nullable": "NO"
+      },
+      {
+        "type": "text",
+        "table": "vendor_candidates",
+        "column": "notes",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "vendor_candidates",
+        "column": "vendor_id",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "vendor_candidates",
+        "column": "activated_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "vendor_candidates",
+        "column": "activated_by",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "vendor_candidates",
+        "column": "created_by",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "vendor_candidates",
+        "column": "created_at",
+        "nullable": "YES"
+      },
+      {
+        "type": "uuid",
+        "table": "vendor_candidates",
+        "column": "updated_by",
+        "nullable": "YES"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "vendor_candidates",
+        "column": "updated_at",
+        "nullable": "YES"
+      }
+    ],
+    "baseline": {
+      "roles": {
+        "count": 6,
+        "checksum": "0d09bfb492494d737fcfa12f6bc0fd05"
+      },
+      "assets": {
+        "count": 55,
+        "checksum": "6fa73186fb684f5005c3b917b5953dad"
+      },
+      "vendors": {
+        "count": 10,
+        "checksum": "450f7ecfc371b3136c868c450528730a"
+      },
+      "contracts": {
+        "count": 27,
+        "checksum": "0e06c8775d5eb01df049766499077424"
+      },
+      "employees": {
+        "count": 44,
+        "checksum": "52fa8cbe1a9ed8735fcf77600b7fc329"
+      },
+      "notifications": {
+        "count": 115,
+        "checksum": "ef96a820d98e1bfa196a63a8b310e3b7"
+      },
+      "user_profiles": {
+        "count": 6,
+        "checksum": "a8fdc0ba81b4617ce2c6a3f8b426fe12"
+      },
+      "role_permissions": {
+        "count": 152,
+        "checksum": "2ca26d84b5d110a4b3140642225821b4"
+      },
+      "vendor_candidates": {
+        "count": 0,
+        "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+      }
+    },
+    "policies": [
+      {
+        "cmd": "DELETE",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((r.role_name)::text = 'super_admin'::text) AND ((up.account_status)::text = 'ACTIVE'::text))))",
+        "roles": [
+          "public"
+        ],
+        "tablename": "assets",
+        "permissive": "PERMISSIVE",
+        "policyname": "Delete assets",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "assets",
+        "permissive": "PERMISSIVE",
+        "policyname": "Finance insert assets",
+        "schemaname": "public",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((r.role_name)::text = 'finance'::text) AND ((up.account_status)::text = 'ACTIVE'::text))))"
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((r.role_name)::text = 'finance'::text) AND ((up.account_status)::text = 'ACTIVE'::text))))",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "assets",
+        "permissive": "PERMISSIVE",
+        "policyname": "Finance update assets",
+        "schemaname": "public",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((r.role_name)::text = 'finance'::text) AND ((up.account_status)::text = 'ACTIVE'::text))))"
+      },
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "public"
+        ],
+        "tablename": "assets",
+        "permissive": "PERMISSIVE",
+        "policyname": "Insert assets",
+        "schemaname": "public",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((r.role_name)::text = ANY ((ARRAY['super_admin'::character varying, 'hrd'::character varying])::text[])) AND ((up.account_status)::text = 'ACTIVE'::text))))"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "(auth.role() = 'authenticated'::text)",
+        "roles": [
+          "public"
+        ],
+        "tablename": "assets",
+        "permissive": "PERMISSIVE",
+        "policyname": "Read assets",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((r.role_name)::text = ANY ((ARRAY['super_admin'::character varying, 'hrd'::character varying])::text[])) AND ((up.account_status)::text = 'ACTIVE'::text))))",
+        "roles": [
+          "public"
+        ],
+        "tablename": "assets",
+        "permissive": "PERMISSIVE",
+        "policyname": "Update assets",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "notifications",
+        "permissive": "PERMISSIVE",
+        "policyname": "notifications insert authenticated",
+        "schemaname": "public",
+        "with_check": "true"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "(user_id = my_profile_id())",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "notifications",
+        "permissive": "PERMISSIVE",
+        "policyname": "notifications select own",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "(user_id = my_profile_id())",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "notifications",
+        "permissive": "PERMISSIVE",
+        "policyname": "notifications update own",
+        "schemaname": "public",
+        "with_check": "(user_id = my_profile_id())"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "true",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "roles",
+        "permissive": "PERMISSIVE",
+        "policyname": "roles select authenticated",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "qual": "is_app_role(ARRAY['super_admin'::text])",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "roles",
+        "permissive": "PERMISSIVE",
+        "policyname": "roles write super admin",
+        "schemaname": "public",
+        "with_check": "is_app_role(ARRAY['super_admin'::text])"
+      },
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "user_profiles",
+        "permissive": "PERMISSIVE",
+        "policyname": "profiles insert own or admin",
+        "schemaname": "public",
+        "with_check": "(((auth_user_id = auth.uid()) AND ((account_status IS NULL) OR ((account_status)::text = 'PENDING'::text)) AND ((role_id IS NULL) OR (EXISTS ( SELECT 1\n   FROM roles rr\n  WHERE ((rr.id = user_profiles.role_id) AND ((rr.role_name)::text = 'pelaksana'::text)))))) OR is_app_role(ARRAY['hrd'::text, 'super_admin'::text]))"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "true",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "user_profiles",
+        "permissive": "PERMISSIVE",
+        "policyname": "profiles select authenticated",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "((auth_user_id = auth.uid()) OR is_app_role(ARRAY['hrd'::text, 'super_admin'::text]))",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "user_profiles",
+        "permissive": "PERMISSIVE",
+        "policyname": "profiles update own or admin",
+        "schemaname": "public",
+        "with_check": "((auth_user_id = auth.uid()) OR is_app_role(ARRAY['hrd'::text, 'super_admin'::text]))"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "true",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_activity_logs",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor activity logs read",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "true",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_candidate_specialties",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor candidate specialties read",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((up.account_status)::text = 'ACTIVE'::text) AND ((r.role_name)::text = ANY ((ARRAY['sourcing'::character varying, 'hrd'::character varying, 'super_admin'::character varying])::text[])))))",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_candidate_specialties",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor candidate specialties write",
+        "schemaname": "public",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((up.account_status)::text = 'ACTIVE'::text) AND ((r.role_name)::text = ANY ((ARRAY['sourcing'::character varying, 'hrd'::character varying, 'super_admin'::character varying])::text[])))))"
+      },
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_candidates",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor candidates insert",
+        "schemaname": "public",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((up.account_status)::text = 'ACTIVE'::text) AND ((r.role_name)::text = ANY ((ARRAY['sourcing'::character varying, 'hrd'::character varying, 'super_admin'::character varying])::text[])))))"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "true",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_candidates",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor candidates read",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((up.account_status)::text = 'ACTIVE'::text) AND ((r.role_name)::text = ANY ((ARRAY['sourcing'::character varying, 'hrd'::character varying, 'super_admin'::character varying])::text[])))))",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_candidates",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor candidates update",
+        "schemaname": "public",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((up.account_status)::text = 'ACTIVE'::text) AND ((r.role_name)::text = ANY ((ARRAY['sourcing'::character varying, 'hrd'::character varying, 'super_admin'::character varying])::text[])))))"
+      },
+      {
+        "cmd": "DELETE",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((up.account_status)::text = 'ACTIVE'::text) AND ((r.role_name)::text = ANY ((ARRAY['sourcing'::character varying, 'hrd'::character varying, 'super_admin'::character varying])::text[])))))",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_contacts",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor contacts delete",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_contacts",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor contacts insert",
+        "schemaname": "public",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((up.account_status)::text = 'ACTIVE'::text) AND ((r.role_name)::text = ANY ((ARRAY['sourcing'::character varying, 'hrd'::character varying, 'super_admin'::character varying])::text[])))))"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "true",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_contacts",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor contacts read",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((up.account_status)::text = 'ACTIVE'::text) AND ((r.role_name)::text = ANY ((ARRAY['sourcing'::character varying, 'hrd'::character varying, 'super_admin'::character varying])::text[])))))",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_contacts",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor contacts update",
+        "schemaname": "public",
+        "with_check": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((up.account_status)::text = 'ACTIVE'::text) AND ((r.role_name)::text = ANY ((ARRAY['sourcing'::character varying, 'hrd'::character varying, 'super_admin'::character varying])::text[])))))"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "true",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_status_history",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor status history read",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "(auth.role() = 'authenticated'::text)",
+        "roles": [
+          "public"
+        ],
+        "tablename": "vendors",
+        "permissive": "PERMISSIVE",
+        "policyname": "Read master data",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (user_profiles up\n     JOIN roles r ON ((up.role_id = r.id)))\n  WHERE ((up.auth_user_id = auth.uid()) AND ((r.role_name)::text = ANY ((ARRAY['super_admin'::character varying, 'hrd'::character varying])::text[])) AND ((up.account_status)::text = 'ACTIVE'::text))))",
+        "roles": [
+          "public"
+        ],
+        "tablename": "vendors",
+        "permissive": "PERMISSIVE",
+        "policyname": "Write vendors",
+        "schemaname": "public",
+        "with_check": null
+      }
+    ],
+    "triggers": [
+      {
+        "name": "trg_profiles_guard_admin_fields",
+        "table": "user_profiles",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_profiles_guard_admin_fields BEFORE UPDATE ON public.user_profiles FOR EACH ROW EXECUTE FUNCTION profiles_guard_admin_fields()"
+      },
+      {
+        "name": "trg_vendor_candidates_activity",
+        "table": "vendor_candidates",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_candidates_activity AFTER INSERT OR UPDATE ON public.vendor_candidates FOR EACH ROW EXECUTE FUNCTION vendor_record_activity()"
+      },
+      {
+        "name": "trg_vendor_candidates_guard",
+        "table": "vendor_candidates",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_candidates_guard BEFORE UPDATE ON public.vendor_candidates FOR EACH ROW EXECUTE FUNCTION vendor_guard_restricted_columns()"
+      },
+      {
+        "name": "trg_vendor_candidates_status_history",
+        "table": "vendor_candidates",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_candidates_status_history AFTER UPDATE ON public.vendor_candidates FOR EACH ROW EXECUTE FUNCTION vendor_record_status_change()"
+      },
+      {
+        "name": "trg_vendor_candidates_updated_at",
+        "table": "vendor_candidates",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_candidates_updated_at BEFORE UPDATE ON public.vendor_candidates FOR EACH ROW EXECUTE FUNCTION vendor_set_updated_at()"
+      }
+    ],
+    "functions": [
+      {
+        "owner": "postgres",
+        "config": null,
+        "definer": true,
+        "signature": "exec_sql(text)",
+        "definition": "CREATE OR REPLACE FUNCTION public.exec_sql(sql text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nBEGIN\r\n  EXECUTE sql;\r\nEND;\r\n$function$\n",
+        "anon_execute": false,
+        "service_execute": true,
+        "authenticated_execute": false
+      },
+      {
+        "owner": "postgres",
+        "config": [
+          "search_path=public, pg_temp"
+        ],
+        "definer": true,
+        "signature": "is_app_role(text[])",
+        "definition": "CREATE OR REPLACE FUNCTION public.is_app_role(p_roles text[])\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  SELECT EXISTS (\n    SELECT 1 FROM public.user_profiles up\n    JOIN public.roles r ON r.id = up.role_id\n    WHERE up.auth_user_id = auth.uid()\n      AND up.account_status = 'ACTIVE'\n      AND r.role_name = ANY(p_roles)\n  );\n$function$\n",
+        "anon_execute": false,
+        "service_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "owner": "postgres",
+        "config": [
+          "search_path=public, pg_temp"
+        ],
+        "definer": true,
+        "signature": "my_profile_id()",
+        "definition": "CREATE OR REPLACE FUNCTION public.my_profile_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  SELECT up.id FROM public.user_profiles up WHERE up.auth_user_id = auth.uid();\n$function$\n",
+        "anon_execute": false,
+        "service_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "owner": "postgres",
+        "config": null,
+        "definer": false,
+        "signature": "profiles_guard_admin_fields()",
+        "definition": "CREATE OR REPLACE FUNCTION public.profiles_guard_admin_fields()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n  v_service BOOLEAN;\n  v_admin BOOLEAN;\nBEGIN\n  IF NEW.role_id IS DISTINCT FROM OLD.role_id\n     OR NEW.account_status IS DISTINCT FROM OLD.account_status\n     OR NEW.approved_by IS DISTINCT FROM OLD.approved_by\n     OR NEW.approved_at IS DISTINCT FROM OLD.approved_at\n     OR NEW.auth_user_id IS DISTINCT FROM OLD.auth_user_id THEN\n\n    SELECT (auth.role() = 'service_role'\n            OR current_user IN ('postgres', 'supabase_admin'))\n    INTO v_service;\n    SELECT public.is_app_role(ARRAY['hrd', 'super_admin']) INTO v_admin;\n\n    IF NOT (v_service OR v_admin) THEN\n      RAISE EXCEPTION 'DITOLAK: kolom administratif profil (role/status) hanya boleh diubah admin';\n    END IF;\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": true,
+        "service_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "owner": "postgres",
+        "config": null,
+        "definer": false,
+        "signature": "vendor_guard_restricted_columns()",
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_guard_restricted_columns()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n  v_service_context BOOLEAN;\nBEGIN\n  SELECT (\n    auth.role() = 'service_role'\n    OR current_user IN ('postgres', 'supabase_admin')\n  )\n  INTO v_service_context;\n\n  IF (NEW.qualification_status IS DISTINCT FROM OLD.qualification_status\n      AND (NEW.qualification_status IN ('APPROVED','RESERVE','REJECTED','FROZEN')\n           OR OLD.qualification_status IN ('APPROVED','RESERVE','REJECTED','FROZEN')))\n     OR NEW.operational_status IS DISTINCT FROM OLD.operational_status\n     OR NEW.vendor_id IS DISTINCT FROM OLD.vendor_id\n     OR NEW.activated_at IS DISTINCT FROM OLD.activated_at\n     OR NEW.activated_by IS DISTINCT FROM OLD.activated_by THEN\n\n    IF NOT v_service_context THEN\n      RAISE EXCEPTION 'DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung';\n    END IF;\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": true,
+        "service_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "owner": "postgres",
+        "config": null,
+        "definer": true,
+        "signature": "vendor_record_activity()",
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_record_activity()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\nDECLARE\n  v_actor UUID;\nBEGIN\n  SELECT up.id INTO v_actor FROM user_profiles up WHERE up.auth_user_id = auth.uid();\n\n  IF TG_OP = 'INSERT' THEN\n    INSERT INTO vendor_activity_logs (candidate_id, entity_table, entity_id, action, new_values, actor_id)\n    VALUES (NEW.id, 'vendor_candidates', NEW.id, 'created',\n            jsonb_build_object('business_name', NEW.business_name, 'process_stage', NEW.process_stage),\n            COALESCE(v_actor, NEW.created_by));\n    RETURN NEW;\n  END IF;\n  -- UPDATE: log hanya jika ada kolom non-status/non-audit yang berubah\n  IF NEW.business_name IS DISTINCT FROM OLD.business_name\n     OR NEW.business_type IS DISTINCT FROM OLD.business_type\n     OR NEW.category_id IS DISTINCT FROM OLD.category_id\n     OR NEW.internal_pic_id IS DISTINCT FROM OLD.internal_pic_id\n     OR NEW.source IS DISTINCT FROM OLD.source\n     OR NEW.capacity_qty IS DISTINCT FROM OLD.capacity_qty\n     OR NEW.capacity_unit IS DISTINCT FROM OLD.capacity_unit\n     OR NEW.moq IS DISTINCT FROM OLD.moq\n     OR NEW.lead_time_days IS DISTINCT FROM OLD.lead_time_days\n     OR NEW.indicative_price IS DISTINCT FROM OLD.indicative_price\n     OR NEW.payment_term IS DISTINCT FROM OLD.payment_term\n     OR NEW.service_area IS DISTINCT FROM OLD.service_area\n     OR NEW.legal_status IS DISTINCT FROM OLD.legal_status\n     OR NEW.notes IS DISTINCT FROM OLD.notes THEN\n    INSERT INTO vendor_activity_logs (candidate_id, entity_table, entity_id, action, old_values, new_values, actor_id)\n    VALUES (NEW.id, 'vendor_candidates', NEW.id, 'profile_updated',\n            jsonb_build_object('business_name', OLD.business_name, 'category_id', OLD.category_id,\n                               'capacity_qty', OLD.capacity_qty, 'lead_time_days', OLD.lead_time_days,\n                               'legal_status', OLD.legal_status, 'notes', OLD.notes),\n            jsonb_build_object('business_name', NEW.business_name, 'category_id', NEW.category_id,\n                               'capacity_qty', NEW.capacity_qty, 'lead_time_days', NEW.lead_time_days,\n                               'legal_status', NEW.legal_status, 'notes', NEW.notes),\n            COALESCE(v_actor, NEW.updated_by));\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": true,
+        "service_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "owner": "postgres",
+        "config": null,
+        "definer": true,
+        "signature": "vendor_record_status_change()",
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_record_status_change()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\nDECLARE\n  v_actor UUID;\nBEGIN\n  SELECT up.id INTO v_actor FROM user_profiles up WHERE up.auth_user_id = auth.uid();\n  v_actor := COALESCE(v_actor, NEW.updated_by);\n\n  IF OLD.process_stage IS DISTINCT FROM NEW.process_stage THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'process_stage', OLD.process_stage, NEW.process_stage, v_actor);\n  END IF;\n  IF OLD.qualification_status IS DISTINCT FROM NEW.qualification_status THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'qualification_status', OLD.qualification_status, NEW.qualification_status, v_actor);\n  END IF;\n  IF OLD.operational_status IS DISTINCT FROM NEW.operational_status THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'operational_status', OLD.operational_status, NEW.operational_status, v_actor);\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": true,
+        "service_execute": true,
+        "authenticated_execute": true
+      }
+    ],
+    "table_security": [
+      {
+        "rls": true,
+        "name": "assets"
+      },
+      {
+        "rls": true,
+        "name": "notifications"
+      },
+      {
+        "rls": true,
+        "name": "roles"
+      },
+      {
+        "rls": true,
+        "name": "user_profiles"
+      },
+      {
+        "rls": true,
+        "name": "vendor_activity_logs"
+      },
+      {
+        "rls": true,
+        "name": "vendor_candidate_specialties"
+      },
+      {
+        "rls": true,
+        "name": "vendor_candidates"
+      },
+      {
+        "rls": true,
+        "name": "vendor_contacts"
+      },
+      {
+        "rls": true,
+        "name": "vendor_status_history"
+      },
+      {
+        "rls": true,
+        "name": "vendors"
+      }
+    ],
+    "phase2_collisions": {
+      "table": null,
+      "reminder": null,
+      "sequence": null,
+      "dashboard": null
+    },
+    "module_permissions": [
+      {
+        "role": "direksi",
+        "access": true,
+        "module": "vendor_approval"
+      },
+      {
+        "role": "direksi",
+        "access": true,
+        "module": "vendor_followups"
+      },
+      {
+        "role": "direksi",
+        "access": true,
+        "module": "vendor_management"
+      },
+      {
+        "role": "direksi",
+        "access": true,
+        "module": "vendor_map"
+      },
+      {
+        "role": "direksi",
+        "access": true,
+        "module": "vendor_qc"
+      },
+      {
+        "role": "direksi",
+        "access": true,
+        "module": "vendor_samples"
+      },
+      {
+        "role": "direksi",
+        "access": true,
+        "module": "vendors"
+      },
+      {
+        "role": "finance",
+        "access": true,
+        "module": "vendors"
+      },
+      {
+        "role": "hrd",
+        "access": true,
+        "module": "vendor_management"
+      },
+      {
+        "role": "hrd",
+        "access": true,
+        "module": "vendors"
+      },
+      {
+        "role": "pelaksana",
+        "access": false,
+        "module": "vendors"
+      },
+      {
+        "role": "sourcing",
+        "access": true,
+        "module": "vendor_approval"
+      },
+      {
+        "role": "sourcing",
+        "access": true,
+        "module": "vendor_followups"
+      },
+      {
+        "role": "sourcing",
+        "access": true,
+        "module": "vendor_management"
+      },
+      {
+        "role": "sourcing",
+        "access": true,
+        "module": "vendor_map"
+      },
+      {
+        "role": "sourcing",
+        "access": true,
+        "module": "vendor_qc"
+      },
+      {
+        "role": "sourcing",
+        "access": true,
+        "module": "vendor_samples"
+      },
+      {
+        "role": "super_admin",
+        "access": true,
+        "module": "vendors"
+      }
+    ],
+    "asset_vendor_orphans": 0,
+    "notification_indexes": [
+      "CREATE INDEX idx_notifications_read ON public.notifications USING btree (is_read)",
+      "CREATE INDEX idx_notifications_user ON public.notifications USING btree (user_id)",
+      "CREATE UNIQUE INDEX notifications_pkey ON public.notifications USING btree (id)",
+      "CREATE UNIQUE INDEX notifications_recipient_unique ON public.notifications USING btree (user_id, maintenance_schedule_id, notification_type, notification_date)"
+    ],
+    "asset_vendor_relations": 16,
+    "notification_constraints": [
+      "FOREIGN KEY (maintenance_record_id) REFERENCES maintenance_records(id)",
+      "FOREIGN KEY (maintenance_schedule_id) REFERENCES maintenance_schedules(id) ON DELETE CASCADE",
+      "PRIMARY KEY (id)",
+      "FOREIGN KEY (user_id) REFERENCES user_profiles(id) ON DELETE CASCADE"
+    ]
+  }
+}

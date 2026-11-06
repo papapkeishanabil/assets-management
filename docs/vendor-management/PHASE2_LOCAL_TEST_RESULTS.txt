@@ -1,0 +1,73 @@
+PASS | Migration idempotent 2x | COMMIT 2x; checksum data, policy existing, dan fungsi guard tetap sama
+PASS | Struktur / RLS / ACL | t, 3, 0, f, f, f, f
+PASS | INSERT sourcing | PASS
+PASS | CLOSE sourcing | PASS
+PASS | DELETE sourcing ditolak | ERROR:  permission denied for table vendor_followups
+PASS | Guard Fase 1 sourcing qualification_status='APPROVED' | ERROR:  DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung
+PASS | Guard Fase 1 sourcing operational_status='ACTIVE' | ERROR:  DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung
+PASS | INSERT hrd | PASS
+PASS | CLOSE hrd | PASS
+PASS | DELETE hrd ditolak | ERROR:  permission denied for table vendor_followups
+PASS | Guard Fase 1 hrd qualification_status='APPROVED' | ERROR:  DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung
+PASS | Guard Fase 1 hrd operational_status='ACTIVE' | ERROR:  DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung
+PASS | INSERT super_admin | PASS
+PASS | CLOSE super_admin | PASS
+PASS | DELETE super_admin ditolak | ERROR:  permission denied for table vendor_followups
+PASS | Guard Fase 1 super_admin qualification_status='APPROVED' | ERROR:  DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung
+PASS | Guard Fase 1 super_admin operational_status='ACTIVE' | ERROR:  DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung
+PASS | READ direksi | PASS
+PASS | INSERT direksi ditolak | ERROR:  new row violates row-level security policy for table "vendor_followups"
+PASS | UPDATE direksi 0 row | PASS
+PASS | READ pelaksana | PASS
+PASS | INSERT pelaksana ditolak | ERROR:  new row violates row-level security policy for table "vendor_followups"
+PASS | UPDATE pelaksana 0 row | PASS
+PASS | READ finance | PASS
+PASS | INSERT finance ditolak | ERROR:  new row violates row-level security policy for table "vendor_followups"
+PASS | UPDATE finance 0 row | PASS
+PASS | Anon tidak melihat log | PASS
+PASS | Anon INSERT ditolak | ERROR:  new row violates row-level security policy for table "vendor_followups"
+PASS | JWT tanpa sub ditolak | ERROR:  new row violates row-level security policy for table "vendor_followups"
+PASS | Akun disabled ditolak | ERROR:  new row violates row-level security policy for table "vendor_followups"
+PASS | Append-only contact_result | ERROR:  Follow-up permanen: hanya task_status/completed_at boleh diubah
+PASS | Append-only contact_outcome | ERROR:  Follow-up permanen: hanya task_status/completed_at boleh diubah
+PASS | Append-only new_info | ERROR:  Follow-up permanen: hanya task_status/completed_at boleh diubah
+PASS | Append-only candidate_id | ERROR:  Follow-up permanen: hanya task_status/completed_at boleh diubah
+PASS | Append-only internal_pic_id | ERROR:  Follow-up permanen: hanya task_status/completed_at boleh diubah
+PASS | Append-only created_by | ERROR:  Follow-up permanen: hanya task_status/completed_at boleh diubah
+PASS | Append-only created_at | ERROR:  Follow-up permanen: hanya task_status/completed_at boleh diubah
+PASS | Append-only next_action_due | ERROR:  Follow-up permanen: hanya task_status/completed_at boleh diubah
+PASS | Append-only attachment_path | ERROR:  Follow-up permanen: hanya task_status/completed_at boleh diubah
+PASS | DELETE backend juga ditolak | ERROR:  Follow-up permanen: DELETE tidak diizinkan
+PASS | Waktu selesai otoritatif | PASS
+PASS | Cancel tetap tanpa completed_at | PASS
+PASS | Buka ulang terminal ditolak | ERROR:  Tugas sudah ditutup; catat follow-up baru
+PASS | Tiga follow-up berbeda tidak tertimpa | PASS
+PASS | Reapply migration dengan log terisi | PASS
+PASS | Hasil kosong ditolak | ERROR:  new row for relation "vendor_followups" violates check constraint "vendor_followups_contact_result_check"
+PASS | Channel invalid ditolak | ERROR:  new row for relation "vendor_followups" violates check constraint "vendor_followups_channel_check"
+PASS | FK kandidat invalid ditolak | ERROR:  insert or update on table "vendor_followups" violates foreign key constraint "vendor_followups_candidate_id_fkey"
+PASS | Audit actor dari JWT | PASS
+PASS | INSERT audit palsu ditolak | ERROR:  new row violates row-level security policy for table "vendor_activity_logs"
+PASS | KPI dan prioritas akurat | PASS
+PASS | Dashboard filter kategori + PIC | PASS
+PASS | Dashboard kosong valid | PASS
+PASS | Produktivitas memisahkan pencatat dan PIC tugas | PASS
+PASS | KPI tugas selesai dan batal terpisah | PASS
+PASS | Log belum dinilai tidak diasumsikan kontak berhasil | PASS
+PASS | Outcome invalid ditolak | ERROR:  new row for relation "vendor_followups" violates check constraint "vendor_followups_contact_outcome_check"
+PASS | Policy tak dikenal memblokir reapply | ERROR:  Policy vendor_followups tidak dikenal; audit dahulu, jangan aktifkan policy dorman
+PASS | Dashboard tanpa limit REST | PASS
+PASS | Dashboard finance ditolak | ERROR:  Akses dashboard vendor ditolak
+PASS | Anon dashboard RPC ditolak | ERROR:  permission denied for function vendor_sourcing_dashboard
+PASS | Reminder INSERT + deduplikasi | PASS
+PASS | Reminder tidak berulang setelah pergantian hari | PASS
+PASS | Reminder lintas pengirim tetap satu | PASS
+PASS | Reminder tidak dikirim untuk tugas selesai | PASS
+PASS | Reminder direksi ditolak | ERROR:  Akses reminder vendor ditolak
+PASS | Notifikasi hanya penerima dapat baca | PASS
+PASS | Penerima pakai profile.id bukan auth.uid | PASS
+PASS | Data existing setelah seluruh skenario | Checksum identik; semua fixture/transaksi uji ROLLBACK
+PASS | Rollback 2x + apply ulang | PASS; objek Fase 2 hilang lalu pulih, existing tetap sama
+PASS | Kode FU melewati 9999 tidak terpotong | PASS
+TOTAL: 71 PASS; 0 FAIL
+SNAPSHOT EXISTING: {"guards": "bc9c094563242d049737afd6955b590d", "tables": {"roles": "8a5ae5ae0205a69b59b57e974eba3ec5", "assets": "0609dde4c07396feb4a186aec9af9282", "vendors": "92c300becc561563ce5bd91200238d6e", "notifications": "310f8123def1b70798223196b2ff4843", "user_profiles": "f108557c06ddd6c3163c85e26dad483f", "role_permissions": "a67baf9b4cf48a2f06458ab14a0c29c2"}, "policies": "b51b3b6d21e88d5eaf60c0e2fd02831c"}

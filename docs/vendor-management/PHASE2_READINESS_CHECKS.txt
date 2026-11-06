@@ -1,0 +1,10 @@
+PASS | RLS seluruh 10 tabel relevan produksi aktif
+PASS | Tidak ada objek Fase 2 yang bertabrakan; 16 relasi aset-vendor valid, 0 orphan
+PASS | Delapan policy hardening dan seluruh policy pipeline terkait identik secara definisi dengan lokal tervalidasi; tanpa policy lama tambahan
+PASS | Enam helper/guard/audit produksi identik dengan definisi lokal; tidak ada drift
+PASS | Helper SECURITY DEFINER/search_path benar; exec_sql tertutup anon/authenticated; guard dan trigger produksi enabled
+PASS | Kolom reminder dan primary key notifikasi kompatibel; tidak ada CHECK yang menolak tipe notifikasi baru
+PASS | Sourcing/Direksi memiliki dua module key; tidak ada role QC; Super Admin memakai bypass frontend dan role RLS yang sah
+PASS | Migration hanya mengelola objek Fase 2, menolak policy asing, tidak mengganti guard existing; rollback berada di supabase/rollbacks
+Snapshot UTC: 2026-11-06T06:14:59.176Z
+RESULT: 8 checks PASS; production migration remains NOT EXECUTED.

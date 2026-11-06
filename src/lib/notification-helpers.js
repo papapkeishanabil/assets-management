@@ -2,6 +2,7 @@
 
 // Tipe notifikasi
 export const NOTIFICATION_TYPES = {
+  VENDOR_FOLLOWUP_OVERDUE: 'VENDOR_FOLLOWUP_OVERDUE',
   REMINDER_7_DAYS: 'REMINDER_7_DAYS',
   REMINDER_3_DAYS: 'REMINDER_3_DAYS',
   REMINDER_1_DAY: 'REMINDER_1_DAY',
@@ -15,6 +16,7 @@ export const NOTIFICATION_TYPES = {
 
 // Label untuk setiap tipe notifikasi
 export const NOTIFICATION_TYPE_LABELS = {
+  [NOTIFICATION_TYPES.VENDOR_FOLLOWUP_OVERDUE]: 'Follow-Up Vendor Terlambat',
   [NOTIFICATION_TYPES.REMINDER_7_DAYS]: 'Pengingatan 7 Hari',
   [NOTIFICATION_TYPES.REMINDER_3_DAYS]: 'Pengingatan 3 Hari',
   [NOTIFICATION_TYPES.REMINDER_1_DAY]: 'Pengingatan 1 Hari',
@@ -28,6 +30,7 @@ export const NOTIFICATION_TYPE_LABELS = {
 
 // Warna badge untuk setiap tipe notifikasi
 export const NOTIFICATION_TYPE_COLORS = {
+  [NOTIFICATION_TYPES.VENDOR_FOLLOWUP_OVERDUE]: 'red',
   [NOTIFICATION_TYPES.REMINDER_7_DAYS]: 'blue',
   [NOTIFICATION_TYPES.REMINDER_3_DAYS]: 'yellow',
   [NOTIFICATION_TYPES.REMINDER_1_DAY]: 'orange',
@@ -41,6 +44,7 @@ export const NOTIFICATION_TYPE_COLORS = {
 
 // Ikon untuk setiap tipe notifikasi (nama icon lucide-react)
 export const NOTIFICATION_TYPE_ICONS = {
+  [NOTIFICATION_TYPES.VENDOR_FOLLOWUP_OVERDUE]: 'AlertTriangle',
   [NOTIFICATION_TYPES.REMINDER_7_DAYS]: 'Calendar',
   [NOTIFICATION_TYPES.REMINDER_3_DAYS]: 'Calendar',
   [NOTIFICATION_TYPES.REMINDER_1_DAY]: 'Calendar',
@@ -203,7 +207,7 @@ export function isDueNotification(type) {
  * @returns {boolean}
  */
 export function isOverdueNotification(type) {
-  return type === NOTIFICATION_TYPES.OVERDUE;
+  return type === NOTIFICATION_TYPES.OVERDUE || type === NOTIFICATION_TYPES.VENDOR_FOLLOWUP_OVERDUE;
 }
 
 /**

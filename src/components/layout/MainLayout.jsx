@@ -133,8 +133,10 @@ export default function MainLayout() {
   return (
     <div className="min-h-screen bg-ink-950 relative">
       {/* Ambient orbs */}
-      <div className="orb w-[500px] h-[500px] bg-primary-600/15 top-[-200px] left-[-150px] animate-orbit pointer-events-none fixed"></div>
-      <div className="orb w-[400px] h-[400px] bg-indigo-600/10 bottom-[-100px] right-[10%] animate-orbit pointer-events-none fixed" style={{ animationDelay: '-10s' }}></div>
+      <div aria-hidden="true" className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="orb w-[500px] h-[500px] bg-primary-600/15 top-[-200px] left-[-150px] animate-orbit absolute"></div>
+        <div className="orb w-[400px] h-[400px] bg-indigo-600/10 bottom-[-100px] right-[10%] animate-orbit absolute" style={{ animationDelay: '-10s' }}></div>
+      </div>
 
       {/* Mobile Overlay */}
       {sidebarOpen && (
@@ -146,7 +148,7 @@ export default function MainLayout() {
       )}
 
       {/* Sidebar */}
-      <aside className={`
+      <aside id="main-sidebar" className={`
         fixed top-0 left-0 z-50 h-full w-64 bg-ink-990/85 backdrop-blur-xl border-r border-white/5
         transform transition-transform duration-300 ease-in-out
         lg:translate-x-0 lg:fixed lg:z-40
@@ -211,9 +213,13 @@ export default function MainLayout() {
             </NavLink>
           ))}
 
-          {hasAccess('vendor_management') && (
+          {['super_admin', 'hrd', 'direksi', 'sourcing'].includes(role?.role_name) && (hasAccess('vendor_management') || hasAccess('vendor_followups')) && (
             <>
               <SectionLabel>Manajemen Vendor</SectionLabel>
+              {hasAccess('vendor_management') && <>
+              <NavLink to="/vendor" end onClick={() => setSidebarOpen(false)} className={navLinkClass}>
+                <Home size={16} className="flex-shrink-0" /> Dashboard Vendor
+              </NavLink>
               <NavLink
                 to="/vendor/database"
                 onClick={() => setSidebarOpen(false)}
@@ -222,6 +228,10 @@ export default function MainLayout() {
                 <Users size={16} className="flex-shrink-0" />
                 Database Calon Vendor
               </NavLink>
+              </>}
+              {hasAccess('vendor_followups') && <NavLink to="/vendor/followups" onClick={() => setSidebarOpen(false)} className={navLinkClass}>
+                <MessageSquare size={16} className="flex-shrink-0" /> Follow-Up Vendor
+              </NavLink>}
             </>
           )}
 

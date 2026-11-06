@@ -47,6 +47,8 @@ import ContractTypesPage from './pages/contracts/ContractTypesPage';
 import EmployeesPage from './pages/contracts/EmployeesPage';
 import VendorDatabasePage from './pages/vendor/VendorDatabasePage';
 import VendorDetailPage from './pages/vendor/VendorDetailPage';
+import VendorDashboardPage from './pages/vendor/VendorDashboardPage';
+import VendorFollowupsPage from './pages/vendor/VendorFollowupsPage';
 
 function LogoutButton() {
   const handleLogout = async () => {
@@ -149,14 +151,14 @@ function HRDRoute({ children }) {
 
 // Modul Manajemen Vendor: guard kombinasi role + module access
 // (RLS database tetap penjaga utama; ini mencegah akses URL langsung).
-function VendorRoute({ children }) {
+function VendorRoute({ children, moduleKey = 'vendor_management' }) {
   const { role, profile, loading } = useAuth();
-  const { hasAccess } = useRolePermissions();
+  const { hasAccess, loading: permissionsLoading } = useRolePermissions();
 
-  if (loading) return <LoadingScreen />;
+  if (loading || permissionsLoading) return <LoadingScreen />;
   if (!profile) return <Navigate to="/login" replace />;
   const roleAllowed = role && ['super_admin', 'hrd', 'direksi', 'sourcing'].includes(role.role_name);
-  if (!roleAllowed || !hasAccess('vendor_management')) {
+  if (!roleAllowed || !hasAccess(moduleKey)) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -225,6 +227,8 @@ export default function App() {
             <VendorsPage />
           </HRDRoute>
         } />
+        <Route path="vendor" element={<VendorRoute><VendorDashboardPage /></VendorRoute>} />
+        <Route path="vendor/followups" element={<VendorRoute moduleKey="vendor_followups"><VendorFollowupsPage /></VendorRoute>} />
         <Route path="vendor/database" element={
           <VendorRoute>
             <VendorDatabasePage />

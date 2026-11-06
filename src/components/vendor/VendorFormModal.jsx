@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Plus, Trash2, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
-  PROCESS_STAGE, PROCESS_STAGE_LABELS,
+  PROCESS_STAGE, PROCESS_STAGE_LABELS, QUALIFICATION_STATUS, OPERATIONAL_STATUS,
   QUALIFICATION_LABELS,
   OPERATIONAL_LABELS,
   VENDOR_SOURCES, LEGAL_STATUS, CAPACITY_UNITS, BUSINESS_TYPES,

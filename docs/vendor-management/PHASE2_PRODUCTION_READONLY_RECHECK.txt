@@ -1,0 +1,3 @@
+PASS | Second read-only probe matches baseline exactly
+Checked at: 2026-11-06T06:19:18.608Z
+SQL contains SELECT only and terminates with forced rollback (P0001).

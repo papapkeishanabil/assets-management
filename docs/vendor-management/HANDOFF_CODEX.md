@@ -3,6 +3,19 @@
 **Dokumen serah terima untuk agent penerus (Codex).** Disusun 6 November 2026.
 Dokumen induk: [AUDIT_DAN_RENCANA_IMPLEMENTASI.md](AUDIT_DAN_RENCANA_IMPLEMENTASI.md) · Spesifikasi user: [HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md](HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md)
 
+**Pembaruan Fase 2 (6 November 2026):** implementasi lokal selesai atas instruksi user.
+Migration `202611060001_vendor_management_phase2.sql` dan rollback terpisah sudah diuji
+di Docker lokal awal: 64 pemeriksaan SQL dan 16 browser diterima user; finalisasi memperluas
+verifikasi menjadi **71 pemeriksaan SQL lulus**, **20 pemeriksaan browser lulus**, build lulus.
+Lihat [laporan Fase 2](PHASE2_IMPLEMENTATION_REPORT.md) untuk file, SQL lengkap, hasil uji,
+screenshot, dan batas fitur. User mengizinkan commit lokal Fase 2 dengan pesan
+`feat(vendor): implement phase 2 sourcing followup and dashboard` (lihat git log/laporan akhir untuk hash).
+Push/deploy dan migration produksi belum diizinkan. Lihat [kesiapan rilis](PHASE1_PHASE2_RELEASE_READINESS.md).
+Finalisasi mencakup dua probe produksi SELECT-only: baseline/checksum, delapan policy hardening,
+dan enam definisi helper/guard/audit identik dengan lokal. Tidak ada write produksi.
+**Migration Fase 2 BELUM dieksekusi di produksi. Jangan membuka aplikasi dengan env produksi
+untuk menguji Fase 2; halaman monitoring dapat membuat notifikasi ketika RPC tersedia.**
+
 ---
 
 ## 1. Baca Dulu — 7 Aturan yang TIDAK BOLEH Dilanggar
@@ -24,7 +37,8 @@ Dokumen induk: [AUDIT_DAN_RENCANA_IMPLEMENTASI.md](AUDIT_DAN_RENCANA_IMPLEMENTAS
 | Security hardening produksi | ✅ `exec_sql` di-revoke dari PUBLIC/anon/authenticated · RLS aktif di `user_profiles`/`roles`/`notifications` (8 policy v3 + trigger guard profil) |
 | Backup terverifikasi | ✅ `D:\Backups\harmas-2026-11-04.dump` & `harmas-2026-11-05.dump` (yang kedua memuat RLS final; keduanya sudah diuji restore penuh) |
 | Git | Lokal s/d `91b8d092` + commit handoff ini. `origin/main` masih di `db2ee7cb` — **belum di-push** |
-| Fase 2–5 | Belum dimulai. Rancangan lengkap di dokumen induk §D–G |
+| Fase 2 | Selesai dan diuji lokal; migration produksi, push, dan deploy menunggu persetujuan eksplisit |
+| Fase 3–5 | Belum dimulai. Rancangan lengkap di dokumen induk §D–G |
 
 ## 3. Stack & Konvensi Kode
 
@@ -81,13 +95,13 @@ Label Indonesia + kelas badge ada di `src/lib/vendor-constants.js`; query/sinkro
 
 ## 7. Lingkungan Uji Lokal (masih hidup)
 
-Stack Supabase CLI v3 di `%TEMP%\harmas-vendor-test` (container `supabase_db_harmas-vendor-test`, psql via `docker exec`, Studio `http://127.0.0.1:54323`, kunci demo standar lokal). Skrip uji di folder yang sama: `base-schema.sql` (skema minimal sintetis), `test-structure.sql`, `test-guard-v3.sh` (21 skenario), `test-features.sh` (D4–D13), `test-rls-v2.sh` (matriks RLS profil), `test-guard.sh`/`v2` (versi lama). User uji: `<role>.test@harmas.local` / password `UjiHarmas#2026`. Struktur: base-schema → migration → RLS hardening (urutan ini meniru produksi). Ulangi pola ini untuk menguji setiap fase berikutnya SEBELUM produksi.
+Stack Supabase CLI v3 di `%TEMP%\harmas-vendor-test` (container `supabase_db_harmas-vendor-test`, psql via `docker exec`, Studio `http://127.0.0.1:54323`, kunci demo standar lokal). Skrip uji di folder yang sama: `base-schema.sql` (skema minimal sintetis), `test-structure.sql`, `test-guard-v3.sh` (21 skenario), `test-features.sh` (D4–D13), `test-rls-v2.sh` (matriks RLS profil), `test-guard.sh`/`v2` (versi lama). User uji: `<role>.test@harmas.local`; password diberikan lewat env sesi `HARMAS_LOCAL_TEST_PASSWORD`, jangan disimpan dalam kode/dokumen yang di-commit. Struktur: base-schema → migration → RLS hardening (urutan ini meniru produksi). Ulangi pola ini untuk menguji setiap fase berikutnya SEBELUM produksi.
 
 Skrip produksi berguna (baca env, tidak hardcode): `check-prod-compat.js` (probe read-only), `compare-policies-prod-local.js`, `verify-post-recovery.js`, `apply-exec-sql-hardening.js`, `apply-phase1-migration.js`, `e2e-temp-account.js` (akun uji sementara — PEMBUATAN akun privilese butuh persetujuan user).
 
 ## 8. Roadmap Fase Berikutnya (rancangan sudah disetujui user)
 
-**Fase 2 — Follow-Up & Dashboard Monitoring Sourcing** *(berikutnya; butuh persetujuan implementasi)*
+**Fase 2 — Follow-Up & Dashboard Monitoring Sourcing** *(implementasi lokal selesai; belum produksi)*
 - Tabel `vendor_followups` (append-only; UPDATE hanya `task_status`/`completed_at`): `contact_at, candidate_id, internal_pic_id, channel (TELEPON/WHATSAPP/KUNJUNGAN/EMAIL/VIDEO_CALL/PAMERAN/LAINNYA), contact_result, new_info, next_action, next_action_due, task_status (OPEN/SELESAI/DIBATALKAN), completed_at, attachment_path, notes, created_by/at`.
 - Halaman `/vendor/followups` (log lintas vendor + filter overdue), tab Follow-Up di detail, tombol "Catat Follow-Up" (modal).
 - Dashboard `/vendor` : KPI (total kandidat, perlu follow-up, overdue, lokasi belum lengkap, sampel berjalan, menunggu QC/approval, approved) + tabel prioritas + alur kualifikasi. Trigger/penyesuaian `process_stage` saat follow-up dicatat (opsional).
@@ -106,7 +120,7 @@ Skrip produksi berguna (baca env, tidak hardcode): `check-prod-compat.js` (probe
 
 ## 9. Hal yang Menunggu Keputusan User
 
-1. Persetujuan implementasi **Fase 2** (ruang lingkup di §8).
+1. Review hasil **Fase 2**, persetujuan migration produksi (setelah backup baru), push Git, dan deploy secara eksplisit. Implementasi lokal sudah disetujui dan selesai; laporan di `PHASE2_IMPLEMENTATION_REPORT.md`.
 2. **Deploy/push frontend Fase 1** (menu vendor baru muncul di aplikasi setelah ini; user juga perlu menugaskan role Sourcing ke user tertentu via Pengguna).
 3. Setup **Google Cloud Maps** (untuk Fase 3) — bisa diperlambat.
 
