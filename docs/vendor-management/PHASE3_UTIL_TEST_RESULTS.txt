@@ -1,0 +1,22 @@
+PASS | Kosong tidak menjadi 0,0
+PASS | Nol eksplisit sah
+PASS | Pasangan parsial ditolak
+PASS | Non-finite/rentang ditolak
+PASS | Tempel pasangan desimal
+PASS | URL @lat,lng
+PASS | URL query ter-encode
+PASS | URL q
+PASS | Data posisi place didahulukan dari kamera
+PASS | Shortlink tidak mengarang koordinat
+PASS | Host palsu/protokol/script ditolak
+PASS | URL tanpa koordinat ditolak
+PASS | Navigasi mengarah pada koordinat sebenarnya
+PASS | Navigasi kosong tidak membuat URL palsu
+PASS | Cluster mewakili seluruh 1005 titik
+PASS | Filter sembilan dimensi dan pencarian
+PASS | Filter aktif tidak mencampur calon
+PASS | Signature PNG valid
+PASS | Signature palsu ditolak
+PASS | Ekstensi/MIME berbeda ditolak
+PASS | File >5 MB ditolak
+TOTAL: 21 PASS

@@ -1,0 +1,6 @@
+PASS | Reviewer menerima snapshot kompatibel sintetis; hasil hanya di TEMP
+PASS | Reviewer menolak benturan tabel Fase 3
+PASS | Reviewer menolak ACL helper yang terbuka ke anon
+PASS | Reviewer menolak perubahan checksum selama pemeriksaan
+PASS | Reviewer menolak snapshot kedaluwarsa
+TOTAL: 5 PASS; offline synthetic only

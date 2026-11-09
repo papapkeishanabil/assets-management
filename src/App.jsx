@@ -1,5 +1,6 @@
 ﻿import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import { lazy, Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from './lib/supabase';
 import MainLayout from './components/layout/MainLayout';
@@ -49,6 +50,7 @@ import VendorDatabasePage from './pages/vendor/VendorDatabasePage';
 import VendorDetailPage from './pages/vendor/VendorDetailPage';
 import VendorDashboardPage from './pages/vendor/VendorDashboardPage';
 import VendorFollowupsPage from './pages/vendor/VendorFollowupsPage';
+const VendorMapPage = lazy(() => import('./pages/vendor/VendorMapPage'));
 
 function LogoutButton() {
   const handleLogout = async () => {
@@ -229,6 +231,7 @@ export default function App() {
         } />
         <Route path="vendor" element={<VendorRoute><VendorDashboardPage /></VendorRoute>} />
         <Route path="vendor/followups" element={<VendorRoute moduleKey="vendor_followups"><VendorFollowupsPage /></VendorRoute>} />
+        <Route path="vendor/map" element={<VendorRoute moduleKey="vendor_map"><Suspense fallback={<LoadingScreen />}><VendorMapPage /></Suspense></VendorRoute>} />
         <Route path="vendor/database" element={
           <VendorRoute>
             <VendorDatabasePage />

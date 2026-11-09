@@ -1,0 +1,21 @@
+Fase 3 — review working tree lokal, 9 November 2026
+
+SHA-256 migration:
+7f38d171690ceaf1afb2d0b8df4eb3462d48c41a49caf63bca7c2dd3bc945e2f
+supabase/migrations/202611090001_vendor_management_phase3.sql
+
+SHA-256 rollback:
+11e32d1dc89587ef1eb1c58ad44b117604ca839d5ce31936ceab8e775cae9858
+supabase/rollbacks/202611090001_vendor_management_phase3_rollback.sql
+
+Pemindaian 24 file kode/konfigurasi/harness Fase 3:
+possible_embedded_credentials: []
+Pola yang diperiksa: literal secret key Supabase, API key Google, JWT dan URL DB
+berpassword. Ini bukan jaminan umum bahwa seluruh riwayat repo bebas rahasia.
+Tidak memindai/mencetak isi file environment privat.
+
+git diff --check: exit 0 (warning normalisasi LF/CRLF tetap ada).
+Implementasi Fase 3 difinalisasi dalam commit lokal terpisah (lihat git log).
+Tidak ada push/deploy atau migration produksi Fase 3.
+Hash ini untuk byte working tree saat review; normalisasi line ending saat Git
+dapat mengubah hash. Hitung ulang dari artifact yang disetujui sebelum eksekusi.

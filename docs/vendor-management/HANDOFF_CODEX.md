@@ -3,18 +3,30 @@
 **Dokumen serah terima untuk agent penerus (Codex).** Disusun 6 November 2026.
 Dokumen induk: [AUDIT_DAN_RENCANA_IMPLEMENTASI.md](AUDIT_DAN_RENCANA_IMPLEMENTASI.md) · Spesifikasi user: [HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md](HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md)
 
-**Pembaruan Fase 2 (6 November 2026):** implementasi lokal selesai atas instruksi user.
-Migration `202611060001_vendor_management_phase2.sql` dan rollback terpisah sudah diuji
-di Docker lokal awal: 64 pemeriksaan SQL dan 16 browser diterima user; finalisasi memperluas
-verifikasi menjadi **71 pemeriksaan SQL lulus**, **20 pemeriksaan browser lulus**, build lulus.
-Lihat [laporan Fase 2](PHASE2_IMPLEMENTATION_REPORT.md) untuk file, SQL lengkap, hasil uji,
-screenshot, dan batas fitur. User mengizinkan commit lokal Fase 2 dengan pesan
-`feat(vendor): implement phase 2 sourcing followup and dashboard` (lihat git log/laporan akhir untuk hash).
-Push/deploy dan migration produksi belum diizinkan. Lihat [kesiapan rilis](PHASE1_PHASE2_RELEASE_READINESS.md).
-Finalisasi mencakup dua probe produksi SELECT-only: baseline/checksum, delapan policy hardening,
-dan enam definisi helper/guard/audit identik dengan lokal. Tidak ada write produksi.
-**Migration Fase 2 BELUM dieksekusi di produksi. Jangan membuka aplikasi dengan env produksi
-untuk menguji Fase 2; halaman monitoring dapat membuat notifikasi ketika RPC tersedia.**
+**Pembaruan 9 November 2026:** Fase 2 **sudah terpasang di produksi**; isi empat fungsi cocok
+dengan migration dan frontend publik memuat Fase 1+2. Commit Fase 2 `c02a66d5`, HEAD lokal
+`12de0de4`; reflog mencatat push 6 November pukul 14.39 WIB. Jangan ulangi migration/deploy.
+Uji lokal final: **71 SQL + 20 browser lulus**, build lulus. Pemeriksaan pascarilis read-only:
+**9 kelompok lulus**, hardening existing tetap identik, checksum sepuluh tabel tidak berubah.
+Backup pra-Fase 2 tanggal 6 November ditemukan dan hash cocok; restore aplikasi terverifikasi,
+tetapi restore seluruh platform Supabase belum lengkap (extension/platform pada postgres:17).
+**UAT baca login produksi selesai:** user menyetujui dua akun sementara Super Admin/Sourcing;
+9 pemeriksaan browser/API dan 6 lifecycle lulus, kedua sesi logout dan akun/profil sudah dihapus.
+Checksum 11 tabel kembali identik. Sourcing permanen belum ditetapkan; jangan meninggalkan
+akun uji untuk operasional. [Status penerimaan terbaru](PRODUCTION_ACCEPTANCE_STATUS_20261109.md).
+Jangan menjalankan skrip E2E lokal terhadap produksi: ia membuat/menghapus fixture.
+Halaman monitoring dapat menulis notifikasi; harness baca menonaktifkan request tersebut.
+
+**Fase 3 lokal (9 November 2026):** implementasi lokasi multi-fasilitas, GPS, foto privat,
+verifikasi, retrofit master aktif dan peta/fallback selesai dan difinalisasi dalam commit lokal. Migration baru
+`202611090001_vendor_management_phase3.sql` hanya diterapkan pada Docker sintetis;
+belum migration produksi, push atau deploy. Hasil final dan batas pengujian:
+[Laporan Fase 3](PHASE3_IMPLEMENTATION_REPORT.md). Google Maps nyata belum diuji karena
+API key/Map ID belum tersedia; pengujian SDK tiruan tidak menggantikan UAT layanan Google.
+Preflight produksi/backup baru masih menunggu kredensial environment. Skrip dan langkah
+terminal siap di [kesiapan rilis Fase 3](PHASE3_RELEASE_READINESS.md); jangan mengklaim
+preflight atau backup sudah lulus. Pengambilan service key dari file legacy ditolak
+auto-review pada persiapan ini; gunakan environment yang disediakan user.
 
 ---
 
@@ -22,23 +34,24 @@ untuk menguji Fase 2; halaman monitoring dapat membuat notifikasi ketika RPC ter
 
 1. **Database produksi = database "lokal".** `.env` lokal dan aplikasi Vercel menunjuk project Supabase yang SAMA (`uwlxkwyauxwewoexfgwi.supabase.co`). TIDAK ADA dev-DB terpisah. Setiap tulis = menulis produksi. Verifikasi target koneksi sebelum setiap perintah DB.
 2. **Gerbang persetujuan user (eksplisit, per aksi):** eksekusi migration produksi · deployment Vercel · push Git · perubahan DB di luar yang disetujui · pembuatan akun berprivilese. Pola kerja yang diterima: bangun → uji lokal → laporkan → tunggu persetujuan → eksekusi → verifikasi → laporkan.
-3. **Fase 1 sudah TEREKSEKUSI di produksi (5 Nov 2026).** Jangan jalankan ulang `202611040001_vendor_management_phase1.sql` di produksi tanpa alasan (idempotent sih, tapi tak perlu). Frontend-nya **belum dideploy**.
+3. **Fase 1 dan Fase 2 sudah TEREKSEKUSI di produksi** (diverifikasi 9 Nov 2026). Jangan jalankan ulang migration keduanya tanpa alasan dan persetujuan. Frontend publik memuat Fase 1+2; UAT baca login kedua role lulus dengan akun sementara yang sudah dihapus. CRUD/reminder produksi belum diuji pada data bisnis.
 4. **Invariant keamanan yang wajib dipertahankan** (lihat §4): guard keputusan/aktivasi vendor, helper SECURITY DEFINER anti-rekursi, RLS 3 tabel, `exec_sql` ter-revoke, guard kolom administratif profil.
-5. **Tabel `vendors` existing + 16 relasi aset TIDAK boleh disentuh** pipeline vendor. Kandidat hidup di `vendor_candidates`; hubungan ke master hanya via kolom `vendor_id` yang diisi RPC aktivasi Fase 5.
+5. **Tabel `vendors` existing + 16 relasi aset TIDAK boleh disentuh** pipeline vendor. Kandidat hidup di `vendor_candidates`; hubungan ke master melalui RPC aktivasi Fase 5. Pengecualian K3 untuk Fase 3: RPC `vendor_link_existing_active` membuat kandidat ter-link hanya untuk master yang SUDAH aktif, tanpa menulis master/aset atau menyetujui prospect existing. Guard keputusan langsung tetap utuh.
 6. **Tidak ada role QC.** Keputusan K1 final: hanya role `sourcing`. Petugas QC HARMAS tanpa akun; hasil QC diinput Sourcing atas nama petugas (`inspector_name` + opsional `inspector_employee_id → employees`), dengan jejak koreksi (`vendor_qc_run_revisions`).
-7. **Laporan jujur berbasis bukti.** User menuntut verifikasi nyata (bukan "harusnya jalan"), melaporkan kegagalan apa adanya, dan tabel hasil pemeriksaan. Commit lokal diterima; push/deploy tidak.
+7. **Laporan jujur berbasis bukti.** User menuntut verifikasi nyata, melaporkan kegagalan apa adanya, dan tabel hasil pemeriksaan. Setiap push/deploy baru memerlukan persetujuan eksplisit; status pascarilis bukan izin untuk tindakan rilis berikutnya.
 
-## 2. Snapshot Status (6 Nov 2026)
+## 2. Snapshot Status (9 Nov 2026)
 
 | Area | Status |
 |---|---|
 | Migration Fase 1 di produksi | ✅ TEREKSEKUSI 5 Nov — 7 tabel `vendor_*`, role `sourcing`, 15 policy, guard, seed 9 kategori/27 spesialisasi, sequence `VR-####` |
-| Frontend Fase 1 | ✅ Selesai & build lolos, ada di commit lokal — **BELUM deploy** (menu "Manajemen Vendor" baru muncul setelah deploy) |
+| Frontend Fase 1+2 | Bundle publik HTTP 200, akses anonim terlindungi; UAT baca Super Admin/Sourcing lulus, tanpa error browser/API |
 | Security hardening produksi | ✅ `exec_sql` di-revoke dari PUBLIC/anon/authenticated · RLS aktif di `user_profiles`/`roles`/`notifications` (8 policy v3 + trigger guard profil) |
-| Backup terverifikasi | ✅ `D:\Backups\harmas-2026-11-04.dump` & `harmas-2026-11-05.dump` (yang kedua memuat RLS final; keduanya sudah diuji restore penuh) |
-| Git | Lokal s/d `91b8d092` + commit handoff ini. `origin/main` masih di `db2ee7cb` — **belum di-push** |
-| Fase 2 | Selesai dan diuji lokal; migration produksi, push, dan deploy menunggu persetujuan eksplisit |
-| Fase 3–5 | Belum dimulai. Rancangan lengkap di dokumen induk §D–G |
+| Backup pra-Fase 2 | `D:\Backups\harmas-pre-phase2-2026-11-06.dump`, SHA-256 cocok. Restore aplikasi 90 tabel terverifikasi; platform Supabase tidak pulih penuh pada image postgres:17 |
+| Git | Fase 2 `c02a66d5`, origin lokal `12de0de4`; dokumentasi penerimaan Fase 1+2 `73b8680a`, implementasi Fase 3 pada commit lokal berikutnya (lihat git log). Tidak ada push baru |
+| Fase 2 | Schema dan frontend produksi; UAT baca 9 PASS + lifecycle 6 PASS, akun uji bersih; kandidat/follow-up masih 0 |
+| Fase 3 | Implementasi lokal selesai, migration/rollback dan bukti uji di [laporan](PHASE3_IMPLEMENTATION_REPORT.md); menunggu persetujuan rilis terpisah dan konfigurasi Google Maps |
+| Fase 4–5 | Belum dimulai. Rancangan lengkap di dokumen induk §D–G |
 
 ## 3. Stack & Konvensi Kode
 
@@ -48,7 +61,7 @@ untuk menguji Fase 2; halaman monitoring dapat membuat notifikasi ketika RPC ter
 - **RBAC 3 lapis**: (1) sidebar/menu via tabel `role_permissions(module_key, can_access)` → `useRolePermissions()` (super_admin bypass); (2) guard halaman by `role.role_name`; (3) RLS Postgres. Role existing: `super_admin, direksi, hrd, finance, pelaksana, sourcing` (baru).
 - **Module key vendor**: `vendor_management, vendor_followups, vendor_samples, vendor_qc, vendor_map, vendor_approval` (konstanta `MODULES` di `src/lib/permissions.js`; UI "Akses Modul per Role" otomatis menampilkannya).
 - **Konvensi file migration**: `supabase/migrations/YYYYMMDDNNNN_nama.sql` (12-digit, repo-consistent), HARUS idempotent + additive + 100% aman diulang. **Rollback dipisah di `supabase/rollbacks/`** (JANGAN taruh di `migrations/` — berisiko tereksekusi runner CLI). File hardening khusus di `supabase/hardening/`.
-- **Akses kredensial**: service key JANGAN hardcode di script (classifier memblok). Ambil dari script lama via env: `export SUPABASE_SERVICE_KEY=$(grep -o "SERVICE_KEY = '[^']*'" scripts/run-migration.js | cut -d"'" -f2)` dan `SUPABASE_URL` dari `grep -o 'https://[a-z0-9]*\.supabase\.co' ...`. Kunci anon/publishable ada di `.env` (`VITE_SUPABASE_PUBLISHABLE_KEY`).
+- **Akses kredensial**: service key JANGAN hardcode di script. Gunakan `SUPABASE_SERVICE_KEY` yang disediakan user melalui environment; untuk koneksi PostgreSQL/backup gunakan `PGPASSWORD` dari environment. Pengambilan service key dari file legacy ditolak auto-review pada persiapan rilis Fase 3, jangan mengulanginya lewat jalur lain. Kunci publishable frontend ada di `.env` (`VITE_SUPABASE_PUBLISHABLE_KEY`), bukan pengganti password PostgreSQL.
 
 ## 4. Invariant Keamanan yang Sudah Terpasang (WAJIB dipertahankan)
 
@@ -101,7 +114,7 @@ Skrip produksi berguna (baca env, tidak hardcode): `check-prod-compat.js` (probe
 
 ## 8. Roadmap Fase Berikutnya (rancangan sudah disetujui user)
 
-**Fase 2 — Follow-Up & Dashboard Monitoring Sourcing** *(implementasi lokal selesai; belum produksi)*
+**Fase 2 — Follow-Up & Dashboard Monitoring Sourcing** *(sudah produksi; UAT baca kedua role selesai)*
 - Tabel `vendor_followups` (append-only; UPDATE hanya `task_status`/`completed_at`): `contact_at, candidate_id, internal_pic_id, channel (TELEPON/WHATSAPP/KUNJUNGAN/EMAIL/VIDEO_CALL/PAMERAN/LAINNYA), contact_result, new_info, next_action, next_action_due, task_status (OPEN/SELESAI/DIBATALKAN), completed_at, attachment_path, notes, created_by/at`.
 - Halaman `/vendor/followups` (log lintas vendor + filter overdue), tab Follow-Up di detail, tombol "Catat Follow-Up" (modal).
 - Dashboard `/vendor` : KPI (total kandidat, perlu follow-up, overdue, lokasi belum lengkap, sampel berjalan, menunggu QC/approval, approved) + tabel prioritas + alur kualifikasi. Trigger/penyesuaian `process_stage` saat follow-up dicatat (opsional).
@@ -116,13 +129,14 @@ Skrip produksi berguna (baca env, tidak hardcode): `check-prod-compat.js` (probe
 
 **Fase 6 (opsional)** — KPI kinerja vendor aktif.
 
-**Rencana deploy frontend Fase 1 (+2)**: setelah user setujui — push Git + deploy Vercel (pola deploy user: `git reset` → stage subset → `git stash push --keep-index` → build → commit/push → `stash pop`; PWA perlu hard refresh; bundle >500 kB warning — pertimbangkan code-split Maps nanti).
+**Rencana rilis Fase 3:** jangan mengulang migration Fase 1+2 yang sudah produksi. Review/snapshot produksi read-only terbaru → backup baru + verifikasi restore aplikasi dan Storage → persetujuan migration Fase 3 → verifikasi schema/RLS → persetujuan terpisah push/deploy → UAT Super Admin/Sourcing. Halaman peta dimuat lazy; bundle utama masih memberi warning >500 kB. PWA perlu diperiksa setelah rilis. Jangan melakukan reset/stash massal pada working tree yang berisi pekerjaan lain.
 
 ## 9. Hal yang Menunggu Keputusan User
 
-1. Review hasil **Fase 2**, persetujuan migration produksi (setelah backup baru), push Git, dan deploy secara eksplisit. Implementasi lokal sudah disetujui dan selesai; laporan di `PHASE2_IMPLEMENTATION_REPORT.md`.
-2. **Deploy/push frontend Fase 1** (menu vendor baru muncul di aplikasi setelah ini; user juga perlu menugaskan role Sourcing ke user tertentu via Pengguna).
+1. **Penetapan petugas Sourcing permanen** untuk penggunaan operasional: belum dilakukan. UAT baca dengan dua akun sementara yang disetujui sudah selesai, akun/sesi sudah dibersihkan; jangan menjalankan ulang lifecycle tanpa persetujuan baru.
+2. Tentukan scope pengujian tulis/reminder nyata bila diperlukan. Jangan membuat riwayat follow-up dummy permanen atau mengubah akun existing tanpa izin. Migration/push/deploy Fase 1+2 sudah teramati; jangan ulangi untuk UAT.
 3. Setup **Google Cloud Maps** (untuk Fase 3) — bisa diperlambat.
+4. Review hasil lokal Fase 3, lalu persetujuan eksplisit migration produksi dan persetujuan terpisah push/deploy. Lihat [urutan, backup dan checklist UAT](PHASE3_IMPLEMENTATION_REPORT.md). Jangan menjalankan harness lokal terhadap produksi.
 
 ## 10. Cara Memulai (untuk Codex)
 

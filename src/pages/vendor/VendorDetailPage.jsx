@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -15,12 +15,12 @@ import { fetchVendorCandidateDetail, fetchCandidateHistory, formatRupiah } from 
 import { formatDateID } from '../../lib/maintenance-helpers';
 import VendorFormModal from '../../components/vendor/VendorFormModal';
 import VendorFollowupsPanel from '../../components/vendor/VendorFollowupsPanel';
+import VendorLocationsPanel from '../../components/vendor/VendorLocationsPanel';
 import { useRolePermissions } from '../../hooks/useRolePermissions';
 
 // Tab yang hadir di fase berikutnya (placeholder agar struktur jelas).
 const FUTURE_TABS = [
   { key: 'sample', label: 'Sampel & QC', phase: 'Fase 4' },
-  { key: 'location', label: 'Lokasi & Foto', phase: 'Fase 3' },
   { key: 'decision', label: 'Keputusan', phase: 'Fase 5' }
 ];
 
@@ -35,6 +35,7 @@ function InfoItem({ label, value }) {
 
 export default function VendorDetailPage() {
   const { id } = useParams();
+  const [params] = useSearchParams();
   const navigate = useNavigate();
   const { profile, role } = useAuth();
   const { hasAccess } = useRolePermissions();
@@ -49,7 +50,7 @@ export default function VendorDetailPage() {
   const [candidate, setCandidate] = useState(null);
   const [history, setHistory] = useState({ statusHistory: [], activityLogs: [] });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('summary');
+  const [activeTab, setActiveTab] = useState(() => params.get('tab') === 'location' ? 'location' : 'summary');
   const [showForm, setShowForm] = useState(false);
   const [savingStatus, setSavingStatus] = useState(false);
 
@@ -173,6 +174,10 @@ export default function VendorDetailPage() {
             {t.label}
           </button>
         ))}
+        {hasAccess('vendor_map') && <button onClick={() => setActiveTab('location')}
+          className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${activeTab === 'location' ? 'border-primary-400 text-white' : 'border-transparent text-ink-400 hover:text-white'}`}>
+          <MapPin size={14} className="inline mr-1.5" /> Lokasi & Foto
+        </button>}
         <button
           onClick={() => setActiveTab('history')}
           className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${
@@ -185,6 +190,8 @@ export default function VendorDetailPage() {
 
       {/* Placeholder fase berikutnya */}
       {activeTab === 'followup' && <VendorFollowupsPanel candidateId={id}
+        onChanged={() => fetchCandidateHistory(id).then(setHistory).catch(() => toast.error('Gagal menyegarkan riwayat'))} />}
+      {activeTab === 'location' && <VendorLocationsPanel candidateId={id}
         onChanged={() => fetchCandidateHistory(id).then(setHistory).catch(() => toast.error('Gagal menyegarkan riwayat'))} />}
       {FUTURE_TABS.some((t) => t.key === activeTab) && (
         <div className="card p-10 text-center">

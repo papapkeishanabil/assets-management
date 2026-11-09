@@ -1,0 +1,7 @@
+PASS | SDK double dimuat lazy sekali dengan libraries maps/marker dan Map ID
+PASS | AdvancedMarker titik tunggal membuka vendor/fasilitas yang benar
+PASS | 1005 lokasi dikelompokkan; klik cluster memperbesar tanpa kehilangan titik
+PASS | Klik peta dan drag AdvancedMarker mengubah draf koordinat tanpa memuat SDK berulang
+PASS | Kegagalan autentikasi Maps menampilkan pesan konfigurasi dan tombol coba lagi
+PASS | Kegagalan jaringan dapat dicoba ulang sampai pin muncul
+PASS | Tidak ada pageerror, database atau jaringan eksternal nyata; Google SDK hanya double

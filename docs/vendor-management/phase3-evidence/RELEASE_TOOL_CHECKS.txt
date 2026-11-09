@@ -1,0 +1,2 @@
+PASS | Query preflight SQL berhasil pada Docker sintetis: 17 baseline dan 10 fungsi yang tersedia (exec_sql memang tidak disediakan lokal); fixture pendukung di-rollback.
+PASS | Parser PowerShell dan node --check lulus; guard PGPASSWORD kosong menolak sebelum koneksi/tulis file. Skrip PowerShell memerlukan ExecutionPolicy Bypass hanya pada proses pemanggil di mesin ini.

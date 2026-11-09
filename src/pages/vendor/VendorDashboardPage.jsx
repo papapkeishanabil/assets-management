@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useRolePermissions } from '../../hooks/useRolePermissions';
 import { PROCESS_STAGE_LABELS, PROCESS_STAGE_BADGES, VENDOR_WRITE_ROLES } from '../../lib/vendor-constants';
 import { fetchFollowupOptions, fetchSourcingDashboard, formatFollowupTime, remindOverdueFollowups } from '../../lib/vendor-followup-helpers';
+import { fetchLocationMonitoring } from '../../lib/vendor-location-helpers';
 
 const METRICS = [
   ['total', 'Total kandidat unik', 'Satu kandidat dihitung sekali'], ['new_leads', 'Lead baru', 'Tahap Lead Masuk'],
@@ -16,7 +17,7 @@ const METRICS = [
   ['cancelled_tasks', 'Tugas dibatalkan', 'Jumlah tugas berstatus dibatalkan'],
   ['needs_followup', 'Perlu follow-up', 'Kandidat aktif tanpa log atau dengan tugas terbuka'],
   ['overdue', 'Tugas overdue', 'Tugas terbuka melewati deadline'],
-  ['location_incomplete', 'Lokasi belum lengkap', 'Belum dinilai · tersedia Fase 3'],
+  ['location_incomplete', 'Lokasi belum lengkap', 'Kandidat tanpa lokasi utama, alamat, GPS atau foto tampak luar'],
   ['samples_running', 'Sampel berjalan', 'Kandidat pada tahap sampel/revisi'],
   ['awaiting_qc', 'Menunggu / proses QC', 'Kandidat pada tahap sampel diterima/QC'],
   ['awaiting_approval', 'Menunggu approval', 'Tahap keputusan atau status pending approval'],
@@ -28,12 +29,13 @@ export default function VendorDashboardPage() {
   const { hasAccess, loading: permissionsLoading } = useRolePermissions();
   const allowed = hasAccess('vendor_management') && ['sourcing', 'hrd', 'direksi', 'super_admin'].includes(role?.role_name);
   const canFollowups = hasAccess('vendor_followups');
+  const canMap = hasAccess('vendor_map');
   const canRemind = allowed && canFollowups && VENDOR_WRITE_ROLES.includes(role?.role_name);
   const [options, setOptions] = useState({ categories: [], users: [] });
   const [category, setCategory] = useState('');
   const [pic, setPic] = useState('');
   const [version, setVersion] = useState(0);
-  const [data, setData] = useState(null);
+  const [data, setData] = useState(null), [locations, setLocations] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reminderError, setReminderError] = useState('');
@@ -42,12 +44,12 @@ export default function VendorDashboardPage() {
     if (!allowed) return;
     let ignore = false;
     setLoading(true); setError('');
-    Promise.all([fetchSourcingDashboard(category, pic), fetchFollowupOptions()]).then(([dashboard, opts]) => {
-      if (!ignore) { setData(dashboard); setOptions(opts); }
+    Promise.all([fetchSourcingDashboard(category, pic), fetchFollowupOptions(), canMap ? fetchLocationMonitoring(category, pic) : Promise.resolve(null)]).then(([dashboard, opts, locationData]) => {
+      if (!ignore) { setData({ ...dashboard, kpis: { ...dashboard.kpis, location_incomplete: locationData?.incomplete ?? null } }); setLocations(locationData); setOptions(opts); }
     }).catch((err) => { if (!ignore) setError(`Gagal memuat dashboard: ${err.message}`); })
       .finally(() => { if (!ignore) setLoading(false); });
     return () => { ignore = true; };
-  }, [allowed, category, pic, version]);
+  }, [allowed, canMap, category, pic, version]);
 
   useEffect(() => {
     if (!canRemind) return;
@@ -72,6 +74,7 @@ export default function VendorDashboardPage() {
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">{METRICS.map(([key, label, hint]) => <div key={key} className="card p-4">
         <p className="text-sm text-ink-300">{label}</p><p className={`text-3xl font-semibold mt-2 ${key === 'overdue' && data.kpis[key] > 0 ? 'text-rose-300' : 'text-white'}`}>{data.kpis[key] == null ? '—' : data.kpis[key]}</p><p className="text-[11px] text-ink-500 mt-1">{hint}</p>
       </div>)}</div>
+      {locations && <div className="card p-5 flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-ink-300">Lokasi: {locations.verified} terverifikasi · {locations.unverified} siap diperiksa · {locations.unmapped} vendor belum dipetakan</p><Link className="btn-secondary" to="/vendor/map">Peta Vendor →</Link></div>}
       <div className="card overflow-hidden"><div className="p-5 flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold text-white">Prioritas tindak lanjut</h2><p className="text-xs text-ink-400 mt-1">Maksimal 20 kandidat · overdue didahulukan</p></div>{canFollowups && <Link className="text-sm text-primary-400" to="/vendor/followups?overdue=1">Lihat tugas overdue →</Link>}</div>
         {data.priority.length === 0 ? <p className="empty-state p-8">Tidak ada kandidat yang memerlukan tindak lanjut.</p> : <div className="overflow-x-auto"><table className="table"><thead><tr><th>Calon vendor</th><th>PIC</th><th>Tahap</th><th>Deadline terdekat</th><th>Prioritas</th></tr></thead><tbody>
           {data.priority.map((c) => <tr key={c.id}><td><Link className="text-primary-400" to={`/vendor/database/${c.id}`}>{c.business_name}</Link><p className="text-xs text-ink-500">{c.candidate_code} · {c.category_name || 'Tanpa kategori'}</p></td><td>{c.pic_name || 'Belum ditugaskan'}</td><td><span className={PROCESS_STAGE_BADGES[c.process_stage]}>{PROCESS_STAGE_LABELS[c.process_stage]}</span></td><td>{formatFollowupTime(c.next_due)}</td><td>{c.overdue_tasks > 0 ? <span className="badge-red">{c.overdue_tasks} overdue</span> : <span className="badge-yellow">{c.total_followups === 0 ? 'Belum dihubungi' : `${c.open_tasks} tugas terbuka`}</span>}</td></tr>)}

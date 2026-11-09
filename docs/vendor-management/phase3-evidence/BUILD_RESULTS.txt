@@ -1,0 +1,21 @@
+9 November 2026 — build lokal, bukan deployment
+Command: npm.cmd run build
+Exit code: 0
+
+vite v5.4.21 building for production...
+✓ 1574 modules transformed.
+dist/assets/index-CnYEn-_P.css            81.41 kB │ gzip:  14.00 kB
+dist/assets/VendorMapPage-Biu-OC1f.js     10.67 kB │ gzip:   3.73 kB
+dist/assets/index-CoXfFcNB.js          1,251.89 kB │ gzip: 305.24 kB
+✓ built in 4.52s
+dist/sw.js  18.40 kB │ gzip: 6.13 kB
+✓ built in 121ms
+
+PWA v0.17.5
+mode      injectManifest
+precache  6 entries (1391.47 KiB)
+files generated: dist/sw.js
+
+Warning yang tetap ada: Some chunks are larger than 500 kB after minification.
+Halaman peta sudah lazy-loaded. SDK Google hanya diminta saat komponen peta
+digunakan dan kedua variabel konfigurasi tersedia. Tidak ada dependency baru.

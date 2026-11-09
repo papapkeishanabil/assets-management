@@ -213,7 +213,7 @@ export default function MainLayout() {
             </NavLink>
           ))}
 
-          {['super_admin', 'hrd', 'direksi', 'sourcing'].includes(role?.role_name) && (hasAccess('vendor_management') || hasAccess('vendor_followups')) && (
+          {['super_admin', 'hrd', 'direksi', 'sourcing'].includes(role?.role_name) && (hasAccess('vendor_management') || hasAccess('vendor_followups') || hasAccess('vendor_map')) && (
             <>
               <SectionLabel>Manajemen Vendor</SectionLabel>
               {hasAccess('vendor_management') && <>
@@ -231,6 +231,9 @@ export default function MainLayout() {
               </>}
               {hasAccess('vendor_followups') && <NavLink to="/vendor/followups" onClick={() => setSidebarOpen(false)} className={navLinkClass}>
                 <MessageSquare size={16} className="flex-shrink-0" /> Follow-Up Vendor
+              </NavLink>}
+              {hasAccess('vendor_map') && <NavLink to="/vendor/map" onClick={() => setSidebarOpen(false)} className={navLinkClass}>
+                <MapPin size={16} className="flex-shrink-0" /> Peta Vendor
               </NavLink>}
             </>
           )}

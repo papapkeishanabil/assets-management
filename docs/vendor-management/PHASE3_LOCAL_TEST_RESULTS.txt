@@ -1,0 +1,64 @@
+PASS | Migration 2x: data/policy/bucket/guard existing identik | PASS
+PASS | Struktur RLS, bucket PRIVATE dan batas 5 MB | PASS
+PASS | INSERT lokasi sourcing | PASS
+PASS | UPDATE lokasi sourcing | PASS
+PASS | DELETE lokasi sourcing ditolak | ERROR:  permission denied for table vendor_locations
+PASS | Guard approval sourcing tidak berubah | ERROR:  DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung
+PASS | INSERT lokasi hrd | PASS
+PASS | UPDATE lokasi hrd | PASS
+PASS | DELETE lokasi hrd ditolak | ERROR:  permission denied for table vendor_locations
+PASS | Guard approval hrd tidak berubah | ERROR:  DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung
+PASS | INSERT lokasi super_admin | PASS
+PASS | UPDATE lokasi super_admin | PASS
+PASS | DELETE lokasi super_admin ditolak | ERROR:  permission denied for table vendor_locations
+PASS | Guard approval super_admin tidak berubah | ERROR:  DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung
+PASS | Direksi READ lokasi/foto | PASS
+PASS | Direksi INSERT ditolak | ERROR:  new row violates row-level security policy for table "vendor_locations"
+PASS | Direksi primary RPC ditolak | ERROR:  Akses lokasi utama ditolak
+PASS | pelaksana tidak melihat lokasi/foto/view | PASS
+PASS | pelaksana INSERT ditolak | ERROR:  new row violates row-level security policy for table "vendor_locations"
+PASS | finance tidak melihat lokasi/foto/view | PASS
+PASS | finance INSERT ditolak | ERROR:  new row violates row-level security policy for table "vendor_locations"
+PASS | Anon SELECT ditolak | ERROR:  permission denied for table vendor_locations
+PASS | Anon view ditolak | ERROR:  permission denied for view vendor_map_points
+PASS | Akun disabled ditolak | ERROR:  new row violates row-level security policy for table "vendor_locations"
+PASS | JWT tanpa sub ditolak | ERROR:  new row violates row-level security policy for table "vendor_locations"
+PASS | Pasangan koordinat wajib | ERROR:  new row for relation "vendor_locations" violates check constraint "vendor_locations_check"
+PASS | Rentang latitude | ERROR:  new row for relation "vendor_locations" violates check constraint "vendor_locations_latitude_check"
+PASS | Rentang longitude | ERROR:  new row for relation "vendor_locations" violates check constraint "vendor_locations_longitude_check"
+PASS | Lokasi tanpa GPS boleh | PASS
+PASS | Lokasi utama hanya satu | ERROR:  duplicate key value violates unique constraint "idx_vendor_locations_one_primary"
+PASS | Unmark primary langsung ditolak | ERROR:  Ganti lokasi utama melalui vendor_set_primary_location
+PASS | Primary switch atomik | PASS
+PASS | Sourcing tidak memverifikasi | ERROR:  Verifikasi lokasi hanya HRD/Super Admin
+PASS | HRD verifikasi tanpa exterior ditolak | ERROR:  Verifikasi perlu alamat, kota/provinsi, koordinat dan foto exterior aktif
+PASS | hrd verifikasi lengkap | PASS
+PASS | super_admin verifikasi lengkap | PASS
+PASS | Edit koordinat membatalkan verifikasi | PASS
+PASS | Identitas lokasi immutable | ERROR:  Identitas dan pembuat lokasi immutable
+PASS | File/pengunggah immutable | ERROR:  Identitas/file/pengunggah foto immutable
+PASS | Sourcing tidak mengarsipkan | ERROR:  Arsip foto hanya Super Admin
+PASS | Arsip exterior terakhir membatalkan verifikasi | PASS
+PASS | Ubah jenis exterior membatalkan verifikasi | PASS
+PASS | Cover switch atomik | PASS
+PASS | Audit lokasi aktor JWT | PASS
+PASS | Audit foto old/new | PASS
+PASS | Multi fasilitas dan belum dipetakan di view | PASS
+PASS | Kelengkapan tidak otomatis verified | PASS
+PASS | Retrofit master aktif idempotent dan teraudit | PASS
+PASS | Retrofit master nonaktif ditolak | ERROR:  Master vendor aktif tidak ditemukan
+PASS | Direksi retrofit ditolak | ERROR:  Akses retrofit vendor ditolak
+PASS | Reapply saat tabel berisi data | PASS
+PASS | Policy dorman ditolak | ERROR:  Policy lokasi/foto tidak dikenal; audit policy dorman dahulu
+PASS | Rollback menolak bucket berisi berkas | ERROR:  Bucket berisi file: backup dan kosongkan via Storage API dengan persetujuan sebelum rollback
+PASS | Policy storage lama tidak membocorkan bucket baru ke anon | PASS
+PASS | Policy storage lama tidak membocorkan ke pelaksana | PASS
+PASS | Overwrite/move blob ditolak meski policy legacy luas | PASS
+PASS | Path upload lintas kandidat ditolak | ERROR:  new row violates row-level security policy for table "objects"
+PASS | Blob terkait foto tidak dapat dihapus | PASS
+PASS | Orphan milik sendiri dapat dibersihkan | PASS
+PASS | Orphan orang lain tidak dapat dibersihkan sourcing | PASS
+PASS | Semua fixture rollback; data/policy existing tetap identik | PASS
+PASS | Rollback 2x + reapply; bucket dihapus lewat Storage API, existing utuh | PASS
+TOTAL: 62 PASS; 0 FAIL
+BASELINE: {"data": {"roles": "8a5ae5ae0205a69b59b57e974eba3ec5", "assets": "0609dde4c07396feb4a186aec9af9282", "vendors": "92c300becc561563ce5bd91200238d6e", "notifications": "310f8123def1b70798223196b2ff4843", "user_profiles": "f108557c06ddd6c3163c85e26dad483f", "vendor_contacts": "1d573473d1b9053cc27621a4b08f8992", "role_permissions": "a67baf9b4cf48a2f06458ab14a0c29c2", "vendor_followups": "d41d8cd98f00b204e9800998ecf8427e", "vendor_candidates": "ac614f6774d3361dabbde50c68feb0f1", "vendor_categories": "fb1ed93f4b2969b4b65b02beaf0d1eb6", "vendor_specialties": "13f2b2171a8c94693f15bfc0ab17c252", "vendor_activity_logs": "841ca204f33aa3104ad9928992cf2216", "vendor_status_history": "10f700599e44c9eb688ea50e46584f1f", "vendor_candidate_specialties": "84f49e52a4f687038833cc7735735660"}, "guards": "805db87fba43001f8388a95e7a9a8e91", "buckets": "d41d8cd98f00b204e9800998ecf8427e", "policies": "7d894a230acb33d8af290523ded81453"}
