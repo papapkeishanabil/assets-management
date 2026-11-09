@@ -1,5 +1,12 @@
 # Kesiapan rilis terintegrasi Manajemen Vendor Fase 1 + Fase 2
 
+> **Pembaruan 9 November 2026:** migration dan frontend Fase 1+2 sudah tersedia di produksi,
+> backup pra-Fase 2 ditemukan (restore aplikasi terverifikasi; platform Supabase belum penuh).
+> UAT baca login Super Admin/Sourcing sudah lulus dengan dua akun sementara yang disetujui,
+> lalu dihapus; checksum 11 tabel kembali identik. Lihat [status penerimaan terbaru](PRODUCTION_ACCEPTANCE_STATUS_20261109.md).
+> Isi bertanggal 6 November di bawah dipertahankan sebagai catatan perencanaan historis,
+> bukan instruksi untuk mengulang migration/push/deploy atau klaim hasil UAT produksi.
+
 Tanggal: 6 November 2026 (WIB). **Migration produksi, push Git dan deployment BELUM dilakukan.** Backup baru sebelum Fase 2 juga belum dibuat; dokumen ini menyiapkan langkah dan gerbang persetujuannya.
 
 Commit lokal Fase 2 menggunakan pesan persis:

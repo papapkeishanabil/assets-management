@@ -1,0 +1,775 @@
+{
+  "checked_at": "2026-11-09T02:41:57.038Z",
+  "target": "https://harmas-asset-management.vercel.app",
+  "mode": "anonymous browser + read-only production metadata",
+  "checks": [
+    {
+      "status": "PASS",
+      "label": "Keempat isi fungsi Fase 2 produksi identik dengan migration yang direview"
+    },
+    {
+      "status": "PASS",
+      "label": "RLS aktif, tiga policy follow-up tanpa DELETE, guard/audit trigger enabled"
+    },
+    {
+      "status": "PASS",
+      "label": "Delapan policy hardening dan tujuh fungsi existing tetap identik dengan snapshot pra-Fase 2"
+    },
+    {
+      "status": "PASS",
+      "label": "exec_sql tertutup anon/authenticated; dua RPC Fase 2 tetap INVOKER dan tertutup anon"
+    },
+    {
+      "status": "PASS",
+      "label": "Checksum vendors/assets sama dengan pra-Fase 2; relasi aset-vendor tidak yatim"
+    },
+    {
+      "status": "PASS",
+      "label": "Lima endpoint internal menolak/menyembunyikan data dari anon"
+    },
+    {
+      "status": "PASS",
+      "label": "Bundle publik berisi Fase 2, HTTP 200, dan tidak memuat service key"
+    },
+    {
+      "status": "PASS",
+      "label": "Browser anonim dialihkan ke login pada empat route; tanpa pageerror atau request tulis"
+    },
+    {
+      "status": "PASS",
+      "label": "Snapshot/checksum sepuluh tabel dan metadata identik sebelum/sesudah pemeriksaan"
+    }
+  ],
+  "before": {
+    "rls": {
+      "roles": true,
+      "notifications": true,
+      "user_profiles": true,
+      "vendor_followups": true,
+      "vendor_candidates": true
+    },
+    "baseline": {
+      "roles": {
+        "count": 6,
+        "checksum": "0d09bfb492494d737fcfa12f6bc0fd05"
+      },
+      "assets": {
+        "count": 55,
+        "checksum": "6fa73186fb684f5005c3b917b5953dad"
+      },
+      "vendors": {
+        "count": 10,
+        "checksum": "450f7ecfc371b3136c868c450528730a"
+      },
+      "contracts": {
+        "count": 28,
+        "checksum": "eec5aa2d254cae4a24ecc90c97cd045d"
+      },
+      "employees": {
+        "count": 45,
+        "checksum": "dd2dfa07f38795d82b7427cc6f1fe8e5"
+      },
+      "notifications": {
+        "count": 115,
+        "checksum": "ef96a820d98e1bfa196a63a8b310e3b7"
+      },
+      "user_profiles": {
+        "count": 6,
+        "checksum": "a8fdc0ba81b4617ce2c6a3f8b426fe12"
+      },
+      "role_permissions": {
+        "count": 152,
+        "checksum": "2ca26d84b5d110a4b3140642225821b4"
+      },
+      "vendor_followups": {
+        "count": 0,
+        "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "vendor_candidates": {
+        "count": 0,
+        "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+      }
+    },
+    "policies": [
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "notifications",
+        "permissive": "PERMISSIVE",
+        "policyname": "notifications insert authenticated",
+        "schemaname": "public",
+        "with_check": "true"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "(user_id = my_profile_id())",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "notifications",
+        "permissive": "PERMISSIVE",
+        "policyname": "notifications select own",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "(user_id = my_profile_id())",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "notifications",
+        "permissive": "PERMISSIVE",
+        "policyname": "notifications update own",
+        "schemaname": "public",
+        "with_check": "(user_id = my_profile_id())"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "true",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "roles",
+        "permissive": "PERMISSIVE",
+        "policyname": "roles select authenticated",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "qual": "is_app_role(ARRAY['super_admin'::text])",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "roles",
+        "permissive": "PERMISSIVE",
+        "policyname": "roles write super admin",
+        "schemaname": "public",
+        "with_check": "is_app_role(ARRAY['super_admin'::text])"
+      },
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "user_profiles",
+        "permissive": "PERMISSIVE",
+        "policyname": "profiles insert own or admin",
+        "schemaname": "public",
+        "with_check": "(((auth_user_id = auth.uid()) AND ((account_status IS NULL) OR ((account_status)::text = 'PENDING'::text)) AND ((role_id IS NULL) OR (EXISTS ( SELECT 1\n   FROM roles rr\n  WHERE ((rr.id = user_profiles.role_id) AND ((rr.role_name)::text = 'pelaksana'::text)))))) OR is_app_role(ARRAY['hrd'::text, 'super_admin'::text]))"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "true",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "user_profiles",
+        "permissive": "PERMISSIVE",
+        "policyname": "profiles select authenticated",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "((auth_user_id = auth.uid()) OR is_app_role(ARRAY['hrd'::text, 'super_admin'::text]))",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "user_profiles",
+        "permissive": "PERMISSIVE",
+        "policyname": "profiles update own or admin",
+        "schemaname": "public",
+        "with_check": "((auth_user_id = auth.uid()) OR is_app_role(ARRAY['hrd'::text, 'super_admin'::text]))"
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "is_app_role(ARRAY['sourcing'::text, 'hrd'::text, 'super_admin'::text])",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_followups",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor followups close task",
+        "schemaname": "public",
+        "with_check": "is_app_role(ARRAY['sourcing'::text, 'hrd'::text, 'super_admin'::text])"
+      },
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_followups",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor followups insert",
+        "schemaname": "public",
+        "with_check": "(is_app_role(ARRAY['sourcing'::text, 'hrd'::text, 'super_admin'::text]) AND (created_by = my_profile_id()))"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "true",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_followups",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor followups read",
+        "schemaname": "public",
+        "with_check": null
+      }
+    ],
+    "triggers": [
+      {
+        "name": "trg_profiles_guard_admin_fields",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_profiles_guard_admin_fields BEFORE UPDATE ON public.user_profiles FOR EACH ROW EXECUTE FUNCTION profiles_guard_admin_fields()"
+      },
+      {
+        "name": "trg_vendor_candidates_activity",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_candidates_activity AFTER INSERT OR UPDATE ON public.vendor_candidates FOR EACH ROW EXECUTE FUNCTION vendor_record_activity()"
+      },
+      {
+        "name": "trg_vendor_candidates_guard",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_candidates_guard BEFORE UPDATE ON public.vendor_candidates FOR EACH ROW EXECUTE FUNCTION vendor_guard_restricted_columns()"
+      },
+      {
+        "name": "trg_vendor_candidates_status_history",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_candidates_status_history AFTER UPDATE ON public.vendor_candidates FOR EACH ROW EXECUTE FUNCTION vendor_record_status_change()"
+      },
+      {
+        "name": "trg_vendor_candidates_updated_at",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_candidates_updated_at BEFORE UPDATE ON public.vendor_candidates FOR EACH ROW EXECUTE FUNCTION vendor_set_updated_at()"
+      },
+      {
+        "name": "trg_vendor_followups_audit",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_followups_audit AFTER INSERT OR UPDATE ON public.vendor_followups FOR EACH ROW EXECUTE FUNCTION vendor_followups_audit()"
+      },
+      {
+        "name": "trg_vendor_followups_guard",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_followups_guard BEFORE INSERT OR DELETE OR UPDATE ON public.vendor_followups FOR EACH ROW EXECUTE FUNCTION vendor_followups_guard()"
+      }
+    ],
+    "functions": [
+      {
+        "name": "exec_sql",
+        "config": null,
+        "source": "\r\nBEGIN\r\n  EXECUTE sql;\r\nEND;\r\n",
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.exec_sql(sql text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nBEGIN\r\n  EXECUTE sql;\r\nEND;\r\n$function$\n",
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "name": "is_app_role",
+        "config": [
+          "search_path=public, pg_temp"
+        ],
+        "source": "\n  SELECT EXISTS (\n    SELECT 1 FROM public.user_profiles up\n    JOIN public.roles r ON r.id = up.role_id\n    WHERE up.auth_user_id = auth.uid()\n      AND up.account_status = 'ACTIVE'\n      AND r.role_name = ANY(p_roles)\n  );\n",
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.is_app_role(p_roles text[])\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  SELECT EXISTS (\n    SELECT 1 FROM public.user_profiles up\n    JOIN public.roles r ON r.id = up.role_id\n    WHERE up.auth_user_id = auth.uid()\n      AND up.account_status = 'ACTIVE'\n      AND r.role_name = ANY(p_roles)\n  );\n$function$\n",
+        "anon_execute": false,
+        "authenticated_execute": true
+      },
+      {
+        "name": "my_profile_id",
+        "config": [
+          "search_path=public, pg_temp"
+        ],
+        "source": "\n  SELECT up.id FROM public.user_profiles up WHERE up.auth_user_id = auth.uid();\n",
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.my_profile_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  SELECT up.id FROM public.user_profiles up WHERE up.auth_user_id = auth.uid();\n$function$\n",
+        "anon_execute": false,
+        "authenticated_execute": true
+      },
+      {
+        "name": "profiles_guard_admin_fields",
+        "config": null,
+        "source": "\nDECLARE\n  v_service BOOLEAN;\n  v_admin BOOLEAN;\nBEGIN\n  IF NEW.role_id IS DISTINCT FROM OLD.role_id\n     OR NEW.account_status IS DISTINCT FROM OLD.account_status\n     OR NEW.approved_by IS DISTINCT FROM OLD.approved_by\n     OR NEW.approved_at IS DISTINCT FROM OLD.approved_at\n     OR NEW.auth_user_id IS DISTINCT FROM OLD.auth_user_id THEN\n\n    SELECT (auth.role() = 'service_role'\n            OR current_user IN ('postgres', 'supabase_admin'))\n    INTO v_service;\n    SELECT public.is_app_role(ARRAY['hrd', 'super_admin']) INTO v_admin;\n\n    IF NOT (v_service OR v_admin) THEN\n      RAISE EXCEPTION 'DITOLAK: kolom administratif profil (role/status) hanya boleh diubah admin';\n    END IF;\n  END IF;\n  RETURN NEW;\nEND;\n",
+        "definer": false,
+        "definition": "CREATE OR REPLACE FUNCTION public.profiles_guard_admin_fields()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n  v_service BOOLEAN;\n  v_admin BOOLEAN;\nBEGIN\n  IF NEW.role_id IS DISTINCT FROM OLD.role_id\n     OR NEW.account_status IS DISTINCT FROM OLD.account_status\n     OR NEW.approved_by IS DISTINCT FROM OLD.approved_by\n     OR NEW.approved_at IS DISTINCT FROM OLD.approved_at\n     OR NEW.auth_user_id IS DISTINCT FROM OLD.auth_user_id THEN\n\n    SELECT (auth.role() = 'service_role'\n            OR current_user IN ('postgres', 'supabase_admin'))\n    INTO v_service;\n    SELECT public.is_app_role(ARRAY['hrd', 'super_admin']) INTO v_admin;\n\n    IF NOT (v_service OR v_admin) THEN\n      RAISE EXCEPTION 'DITOLAK: kolom administratif profil (role/status) hanya boleh diubah admin';\n    END IF;\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "name": "vendor_followups_audit",
+        "config": [
+          "search_path=public, pg_temp"
+        ],
+        "source": "\nBEGIN\n  IF TG_OP = 'INSERT' OR NEW IS DISTINCT FROM OLD THEN\n    INSERT INTO public.vendor_activity_logs(candidate_id, entity_table, entity_id, action, old_values, new_values, actor_id)\n    VALUES (NEW.candidate_id, 'vendor_followups', NEW.id,\n      CASE WHEN TG_OP = 'INSERT' THEN 'followup_created' ELSE 'followup_task_closed' END,\n      CASE WHEN TG_OP = 'UPDATE' THEN to_jsonb(OLD) ELSE NULL END, to_jsonb(NEW),\n      coalesce(public.my_profile_id(), NEW.created_by));\n  END IF;\n  RETURN NEW;\nEND;\n",
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_followups_audit()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nBEGIN\n  IF TG_OP = 'INSERT' OR NEW IS DISTINCT FROM OLD THEN\n    INSERT INTO public.vendor_activity_logs(candidate_id, entity_table, entity_id, action, old_values, new_values, actor_id)\n    VALUES (NEW.candidate_id, 'vendor_followups', NEW.id,\n      CASE WHEN TG_OP = 'INSERT' THEN 'followup_created' ELSE 'followup_task_closed' END,\n      CASE WHEN TG_OP = 'UPDATE' THEN to_jsonb(OLD) ELSE NULL END, to_jsonb(NEW),\n      coalesce(public.my_profile_id(), NEW.created_by));\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "name": "vendor_followups_guard",
+        "config": [
+          "search_path=public, pg_temp"
+        ],
+        "source": "\nBEGIN\n  IF TG_OP = 'DELETE' THEN\n    RAISE EXCEPTION 'Follow-up permanen: DELETE tidak diizinkan' USING ERRCODE = '42501';\n  END IF;\n  IF TG_OP = 'UPDATE' THEN\n    IF (to_jsonb(NEW) - ARRAY['task_status','completed_at']) IS DISTINCT FROM\n       (to_jsonb(OLD) - ARRAY['task_status','completed_at']) THEN\n      RAISE EXCEPTION 'Follow-up permanen: hanya task_status/completed_at boleh diubah' USING ERRCODE = '42501';\n    END IF;\n    IF OLD.task_status <> 'OPEN' AND NEW IS DISTINCT FROM OLD THEN\n      RAISE EXCEPTION 'Tugas sudah ditutup; catat follow-up baru' USING ERRCODE = '42501';\n    END IF;\n  ELSE\n    -- JWT otoritatif, bukan identitas/timestamp kiriman browser.\n    IF auth.role() = 'authenticated' THEN\n      NEW.created_by := public.my_profile_id();\n    END IF;\n    NEW.created_at := now();\n  END IF;\n  NEW.completed_at := CASE WHEN NEW.task_status = 'SELESAI'\n    THEN CASE WHEN TG_OP = 'UPDATE' AND OLD.task_status = 'SELESAI' THEN OLD.completed_at ELSE now() END\n    ELSE NULL END;\n  RETURN NEW;\nEND;\n",
+        "definer": false,
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_followups_guard()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nBEGIN\n  IF TG_OP = 'DELETE' THEN\n    RAISE EXCEPTION 'Follow-up permanen: DELETE tidak diizinkan' USING ERRCODE = '42501';\n  END IF;\n  IF TG_OP = 'UPDATE' THEN\n    IF (to_jsonb(NEW) - ARRAY['task_status','completed_at']) IS DISTINCT FROM\n       (to_jsonb(OLD) - ARRAY['task_status','completed_at']) THEN\n      RAISE EXCEPTION 'Follow-up permanen: hanya task_status/completed_at boleh diubah' USING ERRCODE = '42501';\n    END IF;\n    IF OLD.task_status <> 'OPEN' AND NEW IS DISTINCT FROM OLD THEN\n      RAISE EXCEPTION 'Tugas sudah ditutup; catat follow-up baru' USING ERRCODE = '42501';\n    END IF;\n  ELSE\n    -- JWT otoritatif, bukan identitas/timestamp kiriman browser.\n    IF auth.role() = 'authenticated' THEN\n      NEW.created_by := public.my_profile_id();\n    END IF;\n    NEW.created_at := now();\n  END IF;\n  NEW.completed_at := CASE WHEN NEW.task_status = 'SELESAI'\n    THEN CASE WHEN TG_OP = 'UPDATE' AND OLD.task_status = 'SELESAI' THEN OLD.completed_at ELSE now() END\n    ELSE NULL END;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "name": "vendor_guard_restricted_columns",
+        "config": null,
+        "source": "\nDECLARE\n  v_service_context BOOLEAN;\nBEGIN\n  SELECT (\n    auth.role() = 'service_role'\n    OR current_user IN ('postgres', 'supabase_admin')\n  )\n  INTO v_service_context;\n\n  IF (NEW.qualification_status IS DISTINCT FROM OLD.qualification_status\n      AND (NEW.qualification_status IN ('APPROVED','RESERVE','REJECTED','FROZEN')\n           OR OLD.qualification_status IN ('APPROVED','RESERVE','REJECTED','FROZEN')))\n     OR NEW.operational_status IS DISTINCT FROM OLD.operational_status\n     OR NEW.vendor_id IS DISTINCT FROM OLD.vendor_id\n     OR NEW.activated_at IS DISTINCT FROM OLD.activated_at\n     OR NEW.activated_by IS DISTINCT FROM OLD.activated_by THEN\n\n    IF NOT v_service_context THEN\n      RAISE EXCEPTION 'DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung';\n    END IF;\n  END IF;\n  RETURN NEW;\nEND;\n",
+        "definer": false,
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_guard_restricted_columns()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n  v_service_context BOOLEAN;\nBEGIN\n  SELECT (\n    auth.role() = 'service_role'\n    OR current_user IN ('postgres', 'supabase_admin')\n  )\n  INTO v_service_context;\n\n  IF (NEW.qualification_status IS DISTINCT FROM OLD.qualification_status\n      AND (NEW.qualification_status IN ('APPROVED','RESERVE','REJECTED','FROZEN')\n           OR OLD.qualification_status IN ('APPROVED','RESERVE','REJECTED','FROZEN')))\n     OR NEW.operational_status IS DISTINCT FROM OLD.operational_status\n     OR NEW.vendor_id IS DISTINCT FROM OLD.vendor_id\n     OR NEW.activated_at IS DISTINCT FROM OLD.activated_at\n     OR NEW.activated_by IS DISTINCT FROM OLD.activated_by THEN\n\n    IF NOT v_service_context THEN\n      RAISE EXCEPTION 'DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung';\n    END IF;\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "name": "vendor_record_activity",
+        "config": null,
+        "source": "\nDECLARE\n  v_actor UUID;\nBEGIN\n  SELECT up.id INTO v_actor FROM user_profiles up WHERE up.auth_user_id = auth.uid();\n\n  IF TG_OP = 'INSERT' THEN\n    INSERT INTO vendor_activity_logs (candidate_id, entity_table, entity_id, action, new_values, actor_id)\n    VALUES (NEW.id, 'vendor_candidates', NEW.id, 'created',\n            jsonb_build_object('business_name', NEW.business_name, 'process_stage', NEW.process_stage),\n            COALESCE(v_actor, NEW.created_by));\n    RETURN NEW;\n  END IF;\n  -- UPDATE: log hanya jika ada kolom non-status/non-audit yang berubah\n  IF NEW.business_name IS DISTINCT FROM OLD.business_name\n     OR NEW.business_type IS DISTINCT FROM OLD.business_type\n     OR NEW.category_id IS DISTINCT FROM OLD.category_id\n     OR NEW.internal_pic_id IS DISTINCT FROM OLD.internal_pic_id\n     OR NEW.source IS DISTINCT FROM OLD.source\n     OR NEW.capacity_qty IS DISTINCT FROM OLD.capacity_qty\n     OR NEW.capacity_unit IS DISTINCT FROM OLD.capacity_unit\n     OR NEW.moq IS DISTINCT FROM OLD.moq\n     OR NEW.lead_time_days IS DISTINCT FROM OLD.lead_time_days\n     OR NEW.indicative_price IS DISTINCT FROM OLD.indicative_price\n     OR NEW.payment_term IS DISTINCT FROM OLD.payment_term\n     OR NEW.service_area IS DISTINCT FROM OLD.service_area\n     OR NEW.legal_status IS DISTINCT FROM OLD.legal_status\n     OR NEW.notes IS DISTINCT FROM OLD.notes THEN\n    INSERT INTO vendor_activity_logs (candidate_id, entity_table, entity_id, action, old_values, new_values, actor_id)\n    VALUES (NEW.id, 'vendor_candidates', NEW.id, 'profile_updated',\n            jsonb_build_object('business_name', OLD.business_name, 'category_id', OLD.category_id,\n                               'capacity_qty', OLD.capacity_qty, 'lead_time_days', OLD.lead_time_days,\n                               'legal_status', OLD.legal_status, 'notes', OLD.notes),\n            jsonb_build_object('business_name', NEW.business_name, 'category_id', NEW.category_id,\n                               'capacity_qty', NEW.capacity_qty, 'lead_time_days', NEW.lead_time_days,\n                               'legal_status', NEW.legal_status, 'notes', NEW.notes),\n            COALESCE(v_actor, NEW.updated_by));\n  END IF;\n  RETURN NEW;\nEND;\n",
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_record_activity()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\nDECLARE\n  v_actor UUID;\nBEGIN\n  SELECT up.id INTO v_actor FROM user_profiles up WHERE up.auth_user_id = auth.uid();\n\n  IF TG_OP = 'INSERT' THEN\n    INSERT INTO vendor_activity_logs (candidate_id, entity_table, entity_id, action, new_values, actor_id)\n    VALUES (NEW.id, 'vendor_candidates', NEW.id, 'created',\n            jsonb_build_object('business_name', NEW.business_name, 'process_stage', NEW.process_stage),\n            COALESCE(v_actor, NEW.created_by));\n    RETURN NEW;\n  END IF;\n  -- UPDATE: log hanya jika ada kolom non-status/non-audit yang berubah\n  IF NEW.business_name IS DISTINCT FROM OLD.business_name\n     OR NEW.business_type IS DISTINCT FROM OLD.business_type\n     OR NEW.category_id IS DISTINCT FROM OLD.category_id\n     OR NEW.internal_pic_id IS DISTINCT FROM OLD.internal_pic_id\n     OR NEW.source IS DISTINCT FROM OLD.source\n     OR NEW.capacity_qty IS DISTINCT FROM OLD.capacity_qty\n     OR NEW.capacity_unit IS DISTINCT FROM OLD.capacity_unit\n     OR NEW.moq IS DISTINCT FROM OLD.moq\n     OR NEW.lead_time_days IS DISTINCT FROM OLD.lead_time_days\n     OR NEW.indicative_price IS DISTINCT FROM OLD.indicative_price\n     OR NEW.payment_term IS DISTINCT FROM OLD.payment_term\n     OR NEW.service_area IS DISTINCT FROM OLD.service_area\n     OR NEW.legal_status IS DISTINCT FROM OLD.legal_status\n     OR NEW.notes IS DISTINCT FROM OLD.notes THEN\n    INSERT INTO vendor_activity_logs (candidate_id, entity_table, entity_id, action, old_values, new_values, actor_id)\n    VALUES (NEW.id, 'vendor_candidates', NEW.id, 'profile_updated',\n            jsonb_build_object('business_name', OLD.business_name, 'category_id', OLD.category_id,\n                               'capacity_qty', OLD.capacity_qty, 'lead_time_days', OLD.lead_time_days,\n                               'legal_status', OLD.legal_status, 'notes', OLD.notes),\n            jsonb_build_object('business_name', NEW.business_name, 'category_id', NEW.category_id,\n                               'capacity_qty', NEW.capacity_qty, 'lead_time_days', NEW.lead_time_days,\n                               'legal_status', NEW.legal_status, 'notes', NEW.notes),\n            COALESCE(v_actor, NEW.updated_by));\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "name": "vendor_record_status_change",
+        "config": null,
+        "source": "\nDECLARE\n  v_actor UUID;\nBEGIN\n  SELECT up.id INTO v_actor FROM user_profiles up WHERE up.auth_user_id = auth.uid();\n  v_actor := COALESCE(v_actor, NEW.updated_by);\n\n  IF OLD.process_stage IS DISTINCT FROM NEW.process_stage THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'process_stage', OLD.process_stage, NEW.process_stage, v_actor);\n  END IF;\n  IF OLD.qualification_status IS DISTINCT FROM NEW.qualification_status THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'qualification_status', OLD.qualification_status, NEW.qualification_status, v_actor);\n  END IF;\n  IF OLD.operational_status IS DISTINCT FROM NEW.operational_status THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'operational_status', OLD.operational_status, NEW.operational_status, v_actor);\n  END IF;\n  RETURN NEW;\nEND;\n",
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_record_status_change()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\nDECLARE\n  v_actor UUID;\nBEGIN\n  SELECT up.id INTO v_actor FROM user_profiles up WHERE up.auth_user_id = auth.uid();\n  v_actor := COALESCE(v_actor, NEW.updated_by);\n\n  IF OLD.process_stage IS DISTINCT FROM NEW.process_stage THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'process_stage', OLD.process_stage, NEW.process_stage, v_actor);\n  END IF;\n  IF OLD.qualification_status IS DISTINCT FROM NEW.qualification_status THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'qualification_status', OLD.qualification_status, NEW.qualification_status, v_actor);\n  END IF;\n  IF OLD.operational_status IS DISTINCT FROM NEW.operational_status THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'operational_status', OLD.operational_status, NEW.operational_status, v_actor);\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "name": "vendor_remind_overdue_followups",
+        "config": [
+          "search_path=public, pg_temp"
+        ],
+        "source": "\nDECLARE v_count integer := 0; v_day date := (now() AT TIME ZONE 'Asia/Jakarta')::date; v_row record;\nBEGIN\n  IF NOT public.is_app_role(ARRAY['sourcing','hrd','super_admin']) THEN\n    RAISE EXCEPTION 'Akses reminder vendor ditolak' USING ERRCODE = '42501';\n  END IF;\n  FOR v_row IN\n    SELECT f.id, f.internal_pic_id, f.next_action, f.candidate_id, c.business_name\n    FROM public.vendor_followups f JOIN public.vendor_candidates c ON c.id = f.candidate_id\n    JOIN public.user_profiles up ON up.id = f.internal_pic_id AND up.account_status = 'ACTIVE'\n    WHERE f.task_status = 'OPEN' AND f.next_action_due < now()\n  LOOP\n    BEGIN\n      -- Jangan ON CONFLICT: itu memerlukan SELECT atas notifikasi PIC lain,\n      -- sedangkan policy existing hanya mengizinkan penerima membaca miliknya.\n      INSERT INTO public.notifications(id,user_id,notification_type,title,message,reference_type,reference_id,reference_url,notification_date)\n      VALUES (md5('vendor-followup:' || v_row.id::text || ':' || v_row.internal_pic_id::text)::uuid,\n        v_row.internal_pic_id, 'VENDOR_FOLLOWUP_OVERDUE', 'Follow-up vendor terlambat',\n        v_row.business_name || ': ' || v_row.next_action, 'vendor_followup', v_row.id,\n        '/vendor/followups?candidate=' || v_row.candidate_id::text || '&overdue=1', v_day);\n      v_count := v_count + 1;\n    EXCEPTION WHEN unique_violation THEN\n      NULL; -- ID deterministik; aman terhadap pemanggilan serentak.\n    END;\n  END LOOP;\n  RETURN v_count;\nEND;\n",
+        "definer": false,
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_remind_overdue_followups()\n RETURNS integer\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE v_count integer := 0; v_day date := (now() AT TIME ZONE 'Asia/Jakarta')::date; v_row record;\nBEGIN\n  IF NOT public.is_app_role(ARRAY['sourcing','hrd','super_admin']) THEN\n    RAISE EXCEPTION 'Akses reminder vendor ditolak' USING ERRCODE = '42501';\n  END IF;\n  FOR v_row IN\n    SELECT f.id, f.internal_pic_id, f.next_action, f.candidate_id, c.business_name\n    FROM public.vendor_followups f JOIN public.vendor_candidates c ON c.id = f.candidate_id\n    JOIN public.user_profiles up ON up.id = f.internal_pic_id AND up.account_status = 'ACTIVE'\n    WHERE f.task_status = 'OPEN' AND f.next_action_due < now()\n  LOOP\n    BEGIN\n      -- Jangan ON CONFLICT: itu memerlukan SELECT atas notifikasi PIC lain,\n      -- sedangkan policy existing hanya mengizinkan penerima membaca miliknya.\n      INSERT INTO public.notifications(id,user_id,notification_type,title,message,reference_type,reference_id,reference_url,notification_date)\n      VALUES (md5('vendor-followup:' || v_row.id::text || ':' || v_row.internal_pic_id::text)::uuid,\n        v_row.internal_pic_id, 'VENDOR_FOLLOWUP_OVERDUE', 'Follow-up vendor terlambat',\n        v_row.business_name || ': ' || v_row.next_action, 'vendor_followup', v_row.id,\n        '/vendor/followups?candidate=' || v_row.candidate_id::text || '&overdue=1', v_day);\n      v_count := v_count + 1;\n    EXCEPTION WHEN unique_violation THEN\n      NULL; -- ID deterministik; aman terhadap pemanggilan serentak.\n    END;\n  END LOOP;\n  RETURN v_count;\nEND;\n$function$\n",
+        "anon_execute": false,
+        "authenticated_execute": true
+      },
+      {
+        "name": "vendor_sourcing_dashboard",
+        "config": [
+          "search_path=public, pg_temp"
+        ],
+        "source": "\nDECLARE v_result jsonb;\nBEGIN\n  IF NOT public.is_app_role(ARRAY['sourcing','hrd','super_admin','direksi']) THEN\n    RAISE EXCEPTION 'Akses dashboard vendor ditolak' USING ERRCODE = '42501';\n  END IF;\n  WITH candidates AS (\n    SELECT c.*, cat.name AS category_name, up.full_name AS pic_name\n    FROM public.vendor_candidates c\n    LEFT JOIN public.vendor_categories cat ON cat.id = c.category_id\n    LEFT JOIN public.user_profiles up ON up.id = c.internal_pic_id\n    WHERE (p_category_id IS NULL OR c.category_id = p_category_id)\n      AND (p_pic_id IS NULL OR c.internal_pic_id = p_pic_id)\n  ), monitoring AS (\n    SELECT c.*, f.total_followups, f.successful_contacts, f.open_tasks, f.completed_tasks,\n      f.cancelled_tasks, f.overdue_tasks, f.next_due,\n      (c.process_stage NOT IN ('CLOSED','ABANDONED') AND\n        (f.total_followups = 0 OR f.open_tasks > 0)) AS needs_followup\n    FROM candidates c\n    CROSS JOIN LATERAL (\n      SELECT count(*) AS total_followups,\n        count(*) FILTER (WHERE contact_outcome = 'TERHUBUNG') AS successful_contacts,\n        count(*) FILTER (WHERE task_status = 'OPEN') AS open_tasks,\n        count(*) FILTER (WHERE task_status = 'SELESAI') AS completed_tasks,\n        count(*) FILTER (WHERE task_status = 'DIBATALKAN') AS cancelled_tasks,\n        count(*) FILTER (WHERE task_status = 'OPEN' AND next_action_due < now()) AS overdue_tasks,\n        min(next_action_due) FILTER (WHERE task_status = 'OPEN') AS next_due\n      FROM public.vendor_followups WHERE candidate_id = c.id\n    ) f\n  ), activities AS (\n    SELECT f.* FROM public.vendor_followups f JOIN candidates c ON c.id = f.candidate_id\n  ), recorded AS (\n    SELECT created_by AS pic_id, count(*) AS activities_recorded,\n      count(DISTINCT candidate_id) AS vendors_attempted,\n      count(DISTINCT candidate_id) FILTER (WHERE contact_outcome = 'TERHUBUNG') AS vendors_contacted\n    FROM activities GROUP BY created_by\n  ), assigned AS (\n    SELECT internal_pic_id AS pic_id,\n      count(*) FILTER (WHERE task_status = 'OPEN') AS open_tasks,\n      count(*) FILTER (WHERE task_status = 'OPEN' AND next_action_due < now()) AS overdue_tasks,\n      count(*) FILTER (WHERE task_status = 'SELESAI') AS completed_tasks,\n      count(*) FILTER (WHERE task_status = 'DIBATALKAN') AS cancelled_tasks\n    FROM activities GROUP BY internal_pic_id\n  ), productivity AS (\n    SELECT up.id AS pic_id, up.full_name AS pic_name, r.role_name,\n      coalesce(rec.activities_recorded,0) AS activities_recorded,\n      coalesce(rec.vendors_attempted,0) AS vendors_attempted,\n      coalesce(rec.vendors_contacted,0) AS vendors_contacted,\n      coalesce(a.open_tasks,0) AS open_tasks, coalesce(a.overdue_tasks,0) AS overdue_tasks,\n      coalesce(a.completed_tasks,0) AS completed_tasks, coalesce(a.cancelled_tasks,0) AS cancelled_tasks\n    FROM public.user_profiles up JOIN public.roles r ON r.id = up.role_id\n    LEFT JOIN recorded rec ON rec.pic_id = up.id LEFT JOIN assigned a ON a.pic_id = up.id\n    WHERE (r.role_name = 'sourcing' AND up.account_status = 'ACTIVE') OR rec.pic_id IS NOT NULL OR a.pic_id IS NOT NULL\n  )\n  SELECT jsonb_build_object(\n    'kpis', (SELECT jsonb_build_object(\n      'total', count(*), 'new_leads', count(*) FILTER (WHERE process_stage = 'LEAD'),\n      'vendors_attempted', count(*) FILTER (WHERE total_followups > 0),\n      'vendors_contacted', count(*) FILTER (WHERE successful_contacts > 0),\n      'followup_activities', coalesce(sum(total_followups),0),\n      'open_tasks', coalesce(sum(open_tasks),0),\n      'completed_tasks', coalesce(sum(completed_tasks),0),\n      'cancelled_tasks', coalesce(sum(cancelled_tasks),0),\n      'needs_followup', count(*) FILTER (WHERE needs_followup),\n      'overdue', coalesce(sum(overdue_tasks),0), 'location_incomplete', NULL,\n      'samples_running', count(*) FILTER (WHERE process_stage IN ('SAMPLE_ASSIGNED','SAMPLE_IN_PROGRESS','SAMPLE_REVISION')),\n      'awaiting_qc', count(*) FILTER (WHERE process_stage IN ('SAMPLE_RECEIVED','QC_REVIEW')),\n      'awaiting_approval', count(*) FILTER (WHERE process_stage = 'AWAITING_APPROVAL' OR qualification_status = 'PENDING_APPROVAL'),\n      'approved', count(*) FILTER (WHERE qualification_status = 'APPROVED')\n    ) FROM monitoring),\n    'priority', (SELECT coalesce(jsonb_agg(to_jsonb(p) ORDER BY p.overdue_tasks DESC, p.next_due NULLS LAST, p.created_at), '[]'::jsonb)\n      FROM (SELECT id,candidate_code,business_name,category_name,pic_name,process_stage,\n          total_followups,open_tasks,overdue_tasks,next_due,created_at\n        FROM monitoring WHERE needs_followup OR overdue_tasks > 0\n        ORDER BY overdue_tasks DESC, next_due NULLS LAST, created_at LIMIT 20) p),\n    'stages', (SELECT coalesce(jsonb_object_agg(process_stage, n), '{}'::jsonb)\n      FROM (SELECT process_stage,count(*) AS n FROM candidates GROUP BY process_stage) s),\n    'pic_productivity', (SELECT coalesce(jsonb_agg(to_jsonb(p) ORDER BY p.activities_recorded DESC,p.pic_name,p.pic_id), '[]'::jsonb) FROM productivity p)\n  ) INTO v_result;\n  RETURN v_result;\nEND;\n",
+        "definer": false,
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_sourcing_dashboard(p_category_id uuid DEFAULT NULL::uuid, p_pic_id uuid DEFAULT NULL::uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE v_result jsonb;\nBEGIN\n  IF NOT public.is_app_role(ARRAY['sourcing','hrd','super_admin','direksi']) THEN\n    RAISE EXCEPTION 'Akses dashboard vendor ditolak' USING ERRCODE = '42501';\n  END IF;\n  WITH candidates AS (\n    SELECT c.*, cat.name AS category_name, up.full_name AS pic_name\n    FROM public.vendor_candidates c\n    LEFT JOIN public.vendor_categories cat ON cat.id = c.category_id\n    LEFT JOIN public.user_profiles up ON up.id = c.internal_pic_id\n    WHERE (p_category_id IS NULL OR c.category_id = p_category_id)\n      AND (p_pic_id IS NULL OR c.internal_pic_id = p_pic_id)\n  ), monitoring AS (\n    SELECT c.*, f.total_followups, f.successful_contacts, f.open_tasks, f.completed_tasks,\n      f.cancelled_tasks, f.overdue_tasks, f.next_due,\n      (c.process_stage NOT IN ('CLOSED','ABANDONED') AND\n        (f.total_followups = 0 OR f.open_tasks > 0)) AS needs_followup\n    FROM candidates c\n    CROSS JOIN LATERAL (\n      SELECT count(*) AS total_followups,\n        count(*) FILTER (WHERE contact_outcome = 'TERHUBUNG') AS successful_contacts,\n        count(*) FILTER (WHERE task_status = 'OPEN') AS open_tasks,\n        count(*) FILTER (WHERE task_status = 'SELESAI') AS completed_tasks,\n        count(*) FILTER (WHERE task_status = 'DIBATALKAN') AS cancelled_tasks,\n        count(*) FILTER (WHERE task_status = 'OPEN' AND next_action_due < now()) AS overdue_tasks,\n        min(next_action_due) FILTER (WHERE task_status = 'OPEN') AS next_due\n      FROM public.vendor_followups WHERE candidate_id = c.id\n    ) f\n  ), activities AS (\n    SELECT f.* FROM public.vendor_followups f JOIN candidates c ON c.id = f.candidate_id\n  ), recorded AS (\n    SELECT created_by AS pic_id, count(*) AS activities_recorded,\n      count(DISTINCT candidate_id) AS vendors_attempted,\n      count(DISTINCT candidate_id) FILTER (WHERE contact_outcome = 'TERHUBUNG') AS vendors_contacted\n    FROM activities GROUP BY created_by\n  ), assigned AS (\n    SELECT internal_pic_id AS pic_id,\n      count(*) FILTER (WHERE task_status = 'OPEN') AS open_tasks,\n      count(*) FILTER (WHERE task_status = 'OPEN' AND next_action_due < now()) AS overdue_tasks,\n      count(*) FILTER (WHERE task_status = 'SELESAI') AS completed_tasks,\n      count(*) FILTER (WHERE task_status = 'DIBATALKAN') AS cancelled_tasks\n    FROM activities GROUP BY internal_pic_id\n  ), productivity AS (\n    SELECT up.id AS pic_id, up.full_name AS pic_name, r.role_name,\n      coalesce(rec.activities_recorded,0) AS activities_recorded,\n      coalesce(rec.vendors_attempted,0) AS vendors_attempted,\n      coalesce(rec.vendors_contacted,0) AS vendors_contacted,\n      coalesce(a.open_tasks,0) AS open_tasks, coalesce(a.overdue_tasks,0) AS overdue_tasks,\n      coalesce(a.completed_tasks,0) AS completed_tasks, coalesce(a.cancelled_tasks,0) AS cancelled_tasks\n    FROM public.user_profiles up JOIN public.roles r ON r.id = up.role_id\n    LEFT JOIN recorded rec ON rec.pic_id = up.id LEFT JOIN assigned a ON a.pic_id = up.id\n    WHERE (r.role_name = 'sourcing' AND up.account_status = 'ACTIVE') OR rec.pic_id IS NOT NULL OR a.pic_id IS NOT NULL\n  )\n  SELECT jsonb_build_object(\n    'kpis', (SELECT jsonb_build_object(\n      'total', count(*), 'new_leads', count(*) FILTER (WHERE process_stage = 'LEAD'),\n      'vendors_attempted', count(*) FILTER (WHERE total_followups > 0),\n      'vendors_contacted', count(*) FILTER (WHERE successful_contacts > 0),\n      'followup_activities', coalesce(sum(total_followups),0),\n      'open_tasks', coalesce(sum(open_tasks),0),\n      'completed_tasks', coalesce(sum(completed_tasks),0),\n      'cancelled_tasks', coalesce(sum(cancelled_tasks),0),\n      'needs_followup', count(*) FILTER (WHERE needs_followup),\n      'overdue', coalesce(sum(overdue_tasks),0), 'location_incomplete', NULL,\n      'samples_running', count(*) FILTER (WHERE process_stage IN ('SAMPLE_ASSIGNED','SAMPLE_IN_PROGRESS','SAMPLE_REVISION')),\n      'awaiting_qc', count(*) FILTER (WHERE process_stage IN ('SAMPLE_RECEIVED','QC_REVIEW')),\n      'awaiting_approval', count(*) FILTER (WHERE process_stage = 'AWAITING_APPROVAL' OR qualification_status = 'PENDING_APPROVAL'),\n      'approved', count(*) FILTER (WHERE qualification_status = 'APPROVED')\n    ) FROM monitoring),\n    'priority', (SELECT coalesce(jsonb_agg(to_jsonb(p) ORDER BY p.overdue_tasks DESC, p.next_due NULLS LAST, p.created_at), '[]'::jsonb)\n      FROM (SELECT id,candidate_code,business_name,category_name,pic_name,process_stage,\n          total_followups,open_tasks,overdue_tasks,next_due,created_at\n        FROM monitoring WHERE needs_followup OR overdue_tasks > 0\n        ORDER BY overdue_tasks DESC, next_due NULLS LAST, created_at LIMIT 20) p),\n    'stages', (SELECT coalesce(jsonb_object_agg(process_stage, n), '{}'::jsonb)\n      FROM (SELECT process_stage,count(*) AS n FROM candidates GROUP BY process_stage) s),\n    'pic_productivity', (SELECT coalesce(jsonb_agg(to_jsonb(p) ORDER BY p.activities_recorded DESC,p.pic_name,p.pic_id), '[]'::jsonb) FROM productivity p)\n  ) INTO v_result;\n  RETURN v_result;\nEND;\n$function$\n",
+        "anon_execute": false,
+        "authenticated_execute": true
+      }
+    ],
+    "profiles_by_role": [
+      {
+        "count": 2,
+        "role_name": "direksi",
+        "account_status": "ACTIVE"
+      },
+      {
+        "count": 1,
+        "role_name": "finance",
+        "account_status": "ACTIVE"
+      },
+      {
+        "count": 1,
+        "role_name": "hrd",
+        "account_status": "ACTIVE"
+      },
+      {
+        "count": 2,
+        "role_name": "super_admin",
+        "account_status": "ACTIVE"
+      }
+    ],
+    "asset_vendor_links": 16,
+    "asset_vendor_orphans": 0
+  },
+  "bundle": {
+    "path": "/assets/index-BwKPK6y3.js",
+    "sha256": "bb1818b53327b627a8ae08f63e07122fe7573c2ecbd0d9320f989d50eafbf2a4",
+    "service_key_present": false
+  },
+  "anonymous_browser": {
+    "pageerrors": [],
+    "blocked_write_requests": []
+  },
+  "after": {
+    "rls": {
+      "roles": true,
+      "notifications": true,
+      "user_profiles": true,
+      "vendor_followups": true,
+      "vendor_candidates": true
+    },
+    "baseline": {
+      "roles": {
+        "count": 6,
+        "checksum": "0d09bfb492494d737fcfa12f6bc0fd05"
+      },
+      "assets": {
+        "count": 55,
+        "checksum": "6fa73186fb684f5005c3b917b5953dad"
+      },
+      "vendors": {
+        "count": 10,
+        "checksum": "450f7ecfc371b3136c868c450528730a"
+      },
+      "contracts": {
+        "count": 28,
+        "checksum": "eec5aa2d254cae4a24ecc90c97cd045d"
+      },
+      "employees": {
+        "count": 45,
+        "checksum": "dd2dfa07f38795d82b7427cc6f1fe8e5"
+      },
+      "notifications": {
+        "count": 115,
+        "checksum": "ef96a820d98e1bfa196a63a8b310e3b7"
+      },
+      "user_profiles": {
+        "count": 6,
+        "checksum": "a8fdc0ba81b4617ce2c6a3f8b426fe12"
+      },
+      "role_permissions": {
+        "count": 152,
+        "checksum": "2ca26d84b5d110a4b3140642225821b4"
+      },
+      "vendor_followups": {
+        "count": 0,
+        "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "vendor_candidates": {
+        "count": 0,
+        "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+      }
+    },
+    "policies": [
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "notifications",
+        "permissive": "PERMISSIVE",
+        "policyname": "notifications insert authenticated",
+        "schemaname": "public",
+        "with_check": "true"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "(user_id = my_profile_id())",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "notifications",
+        "permissive": "PERMISSIVE",
+        "policyname": "notifications select own",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "(user_id = my_profile_id())",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "notifications",
+        "permissive": "PERMISSIVE",
+        "policyname": "notifications update own",
+        "schemaname": "public",
+        "with_check": "(user_id = my_profile_id())"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "true",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "roles",
+        "permissive": "PERMISSIVE",
+        "policyname": "roles select authenticated",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "ALL",
+        "qual": "is_app_role(ARRAY['super_admin'::text])",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "roles",
+        "permissive": "PERMISSIVE",
+        "policyname": "roles write super admin",
+        "schemaname": "public",
+        "with_check": "is_app_role(ARRAY['super_admin'::text])"
+      },
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "user_profiles",
+        "permissive": "PERMISSIVE",
+        "policyname": "profiles insert own or admin",
+        "schemaname": "public",
+        "with_check": "(((auth_user_id = auth.uid()) AND ((account_status IS NULL) OR ((account_status)::text = 'PENDING'::text)) AND ((role_id IS NULL) OR (EXISTS ( SELECT 1\n   FROM roles rr\n  WHERE ((rr.id = user_profiles.role_id) AND ((rr.role_name)::text = 'pelaksana'::text)))))) OR is_app_role(ARRAY['hrd'::text, 'super_admin'::text]))"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "true",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "user_profiles",
+        "permissive": "PERMISSIVE",
+        "policyname": "profiles select authenticated",
+        "schemaname": "public",
+        "with_check": null
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "((auth_user_id = auth.uid()) OR is_app_role(ARRAY['hrd'::text, 'super_admin'::text]))",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "user_profiles",
+        "permissive": "PERMISSIVE",
+        "policyname": "profiles update own or admin",
+        "schemaname": "public",
+        "with_check": "((auth_user_id = auth.uid()) OR is_app_role(ARRAY['hrd'::text, 'super_admin'::text]))"
+      },
+      {
+        "cmd": "UPDATE",
+        "qual": "is_app_role(ARRAY['sourcing'::text, 'hrd'::text, 'super_admin'::text])",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_followups",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor followups close task",
+        "schemaname": "public",
+        "with_check": "is_app_role(ARRAY['sourcing'::text, 'hrd'::text, 'super_admin'::text])"
+      },
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_followups",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor followups insert",
+        "schemaname": "public",
+        "with_check": "(is_app_role(ARRAY['sourcing'::text, 'hrd'::text, 'super_admin'::text]) AND (created_by = my_profile_id()))"
+      },
+      {
+        "cmd": "SELECT",
+        "qual": "true",
+        "roles": [
+          "authenticated"
+        ],
+        "tablename": "vendor_followups",
+        "permissive": "PERMISSIVE",
+        "policyname": "Vendor followups read",
+        "schemaname": "public",
+        "with_check": null
+      }
+    ],
+    "triggers": [
+      {
+        "name": "trg_profiles_guard_admin_fields",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_profiles_guard_admin_fields BEFORE UPDATE ON public.user_profiles FOR EACH ROW EXECUTE FUNCTION profiles_guard_admin_fields()"
+      },
+      {
+        "name": "trg_vendor_candidates_activity",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_candidates_activity AFTER INSERT OR UPDATE ON public.vendor_candidates FOR EACH ROW EXECUTE FUNCTION vendor_record_activity()"
+      },
+      {
+        "name": "trg_vendor_candidates_guard",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_candidates_guard BEFORE UPDATE ON public.vendor_candidates FOR EACH ROW EXECUTE FUNCTION vendor_guard_restricted_columns()"
+      },
+      {
+        "name": "trg_vendor_candidates_status_history",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_candidates_status_history AFTER UPDATE ON public.vendor_candidates FOR EACH ROW EXECUTE FUNCTION vendor_record_status_change()"
+      },
+      {
+        "name": "trg_vendor_candidates_updated_at",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_candidates_updated_at BEFORE UPDATE ON public.vendor_candidates FOR EACH ROW EXECUTE FUNCTION vendor_set_updated_at()"
+      },
+      {
+        "name": "trg_vendor_followups_audit",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_followups_audit AFTER INSERT OR UPDATE ON public.vendor_followups FOR EACH ROW EXECUTE FUNCTION vendor_followups_audit()"
+      },
+      {
+        "name": "trg_vendor_followups_guard",
+        "enabled": "O",
+        "definition": "CREATE TRIGGER trg_vendor_followups_guard BEFORE INSERT OR DELETE OR UPDATE ON public.vendor_followups FOR EACH ROW EXECUTE FUNCTION vendor_followups_guard()"
+      }
+    ],
+    "functions": [
+      {
+        "name": "exec_sql",
+        "config": null,
+        "source": "\r\nBEGIN\r\n  EXECUTE sql;\r\nEND;\r\n",
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.exec_sql(sql text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nBEGIN\r\n  EXECUTE sql;\r\nEND;\r\n$function$\n",
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "name": "is_app_role",
+        "config": [
+          "search_path=public, pg_temp"
+        ],
+        "source": "\n  SELECT EXISTS (\n    SELECT 1 FROM public.user_profiles up\n    JOIN public.roles r ON r.id = up.role_id\n    WHERE up.auth_user_id = auth.uid()\n      AND up.account_status = 'ACTIVE'\n      AND r.role_name = ANY(p_roles)\n  );\n",
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.is_app_role(p_roles text[])\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  SELECT EXISTS (\n    SELECT 1 FROM public.user_profiles up\n    JOIN public.roles r ON r.id = up.role_id\n    WHERE up.auth_user_id = auth.uid()\n      AND up.account_status = 'ACTIVE'\n      AND r.role_name = ANY(p_roles)\n  );\n$function$\n",
+        "anon_execute": false,
+        "authenticated_execute": true
+      },
+      {
+        "name": "my_profile_id",
+        "config": [
+          "search_path=public, pg_temp"
+        ],
+        "source": "\n  SELECT up.id FROM public.user_profiles up WHERE up.auth_user_id = auth.uid();\n",
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.my_profile_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  SELECT up.id FROM public.user_profiles up WHERE up.auth_user_id = auth.uid();\n$function$\n",
+        "anon_execute": false,
+        "authenticated_execute": true
+      },
+      {
+        "name": "profiles_guard_admin_fields",
+        "config": null,
+        "source": "\nDECLARE\n  v_service BOOLEAN;\n  v_admin BOOLEAN;\nBEGIN\n  IF NEW.role_id IS DISTINCT FROM OLD.role_id\n     OR NEW.account_status IS DISTINCT FROM OLD.account_status\n     OR NEW.approved_by IS DISTINCT FROM OLD.approved_by\n     OR NEW.approved_at IS DISTINCT FROM OLD.approved_at\n     OR NEW.auth_user_id IS DISTINCT FROM OLD.auth_user_id THEN\n\n    SELECT (auth.role() = 'service_role'\n            OR current_user IN ('postgres', 'supabase_admin'))\n    INTO v_service;\n    SELECT public.is_app_role(ARRAY['hrd', 'super_admin']) INTO v_admin;\n\n    IF NOT (v_service OR v_admin) THEN\n      RAISE EXCEPTION 'DITOLAK: kolom administratif profil (role/status) hanya boleh diubah admin';\n    END IF;\n  END IF;\n  RETURN NEW;\nEND;\n",
+        "definer": false,
+        "definition": "CREATE OR REPLACE FUNCTION public.profiles_guard_admin_fields()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n  v_service BOOLEAN;\n  v_admin BOOLEAN;\nBEGIN\n  IF NEW.role_id IS DISTINCT FROM OLD.role_id\n     OR NEW.account_status IS DISTINCT FROM OLD.account_status\n     OR NEW.approved_by IS DISTINCT FROM OLD.approved_by\n     OR NEW.approved_at IS DISTINCT FROM OLD.approved_at\n     OR NEW.auth_user_id IS DISTINCT FROM OLD.auth_user_id THEN\n\n    SELECT (auth.role() = 'service_role'\n            OR current_user IN ('postgres', 'supabase_admin'))\n    INTO v_service;\n    SELECT public.is_app_role(ARRAY['hrd', 'super_admin']) INTO v_admin;\n\n    IF NOT (v_service OR v_admin) THEN\n      RAISE EXCEPTION 'DITOLAK: kolom administratif profil (role/status) hanya boleh diubah admin';\n    END IF;\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "name": "vendor_followups_audit",
+        "config": [
+          "search_path=public, pg_temp"
+        ],
+        "source": "\nBEGIN\n  IF TG_OP = 'INSERT' OR NEW IS DISTINCT FROM OLD THEN\n    INSERT INTO public.vendor_activity_logs(candidate_id, entity_table, entity_id, action, old_values, new_values, actor_id)\n    VALUES (NEW.candidate_id, 'vendor_followups', NEW.id,\n      CASE WHEN TG_OP = 'INSERT' THEN 'followup_created' ELSE 'followup_task_closed' END,\n      CASE WHEN TG_OP = 'UPDATE' THEN to_jsonb(OLD) ELSE NULL END, to_jsonb(NEW),\n      coalesce(public.my_profile_id(), NEW.created_by));\n  END IF;\n  RETURN NEW;\nEND;\n",
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_followups_audit()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nBEGIN\n  IF TG_OP = 'INSERT' OR NEW IS DISTINCT FROM OLD THEN\n    INSERT INTO public.vendor_activity_logs(candidate_id, entity_table, entity_id, action, old_values, new_values, actor_id)\n    VALUES (NEW.candidate_id, 'vendor_followups', NEW.id,\n      CASE WHEN TG_OP = 'INSERT' THEN 'followup_created' ELSE 'followup_task_closed' END,\n      CASE WHEN TG_OP = 'UPDATE' THEN to_jsonb(OLD) ELSE NULL END, to_jsonb(NEW),\n      coalesce(public.my_profile_id(), NEW.created_by));\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "name": "vendor_followups_guard",
+        "config": [
+          "search_path=public, pg_temp"
+        ],
+        "source": "\nBEGIN\n  IF TG_OP = 'DELETE' THEN\n    RAISE EXCEPTION 'Follow-up permanen: DELETE tidak diizinkan' USING ERRCODE = '42501';\n  END IF;\n  IF TG_OP = 'UPDATE' THEN\n    IF (to_jsonb(NEW) - ARRAY['task_status','completed_at']) IS DISTINCT FROM\n       (to_jsonb(OLD) - ARRAY['task_status','completed_at']) THEN\n      RAISE EXCEPTION 'Follow-up permanen: hanya task_status/completed_at boleh diubah' USING ERRCODE = '42501';\n    END IF;\n    IF OLD.task_status <> 'OPEN' AND NEW IS DISTINCT FROM OLD THEN\n      RAISE EXCEPTION 'Tugas sudah ditutup; catat follow-up baru' USING ERRCODE = '42501';\n    END IF;\n  ELSE\n    -- JWT otoritatif, bukan identitas/timestamp kiriman browser.\n    IF auth.role() = 'authenticated' THEN\n      NEW.created_by := public.my_profile_id();\n    END IF;\n    NEW.created_at := now();\n  END IF;\n  NEW.completed_at := CASE WHEN NEW.task_status = 'SELESAI'\n    THEN CASE WHEN TG_OP = 'UPDATE' AND OLD.task_status = 'SELESAI' THEN OLD.completed_at ELSE now() END\n    ELSE NULL END;\n  RETURN NEW;\nEND;\n",
+        "definer": false,
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_followups_guard()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nBEGIN\n  IF TG_OP = 'DELETE' THEN\n    RAISE EXCEPTION 'Follow-up permanen: DELETE tidak diizinkan' USING ERRCODE = '42501';\n  END IF;\n  IF TG_OP = 'UPDATE' THEN\n    IF (to_jsonb(NEW) - ARRAY['task_status','completed_at']) IS DISTINCT FROM\n       (to_jsonb(OLD) - ARRAY['task_status','completed_at']) THEN\n      RAISE EXCEPTION 'Follow-up permanen: hanya task_status/completed_at boleh diubah' USING ERRCODE = '42501';\n    END IF;\n    IF OLD.task_status <> 'OPEN' AND NEW IS DISTINCT FROM OLD THEN\n      RAISE EXCEPTION 'Tugas sudah ditutup; catat follow-up baru' USING ERRCODE = '42501';\n    END IF;\n  ELSE\n    -- JWT otoritatif, bukan identitas/timestamp kiriman browser.\n    IF auth.role() = 'authenticated' THEN\n      NEW.created_by := public.my_profile_id();\n    END IF;\n    NEW.created_at := now();\n  END IF;\n  NEW.completed_at := CASE WHEN NEW.task_status = 'SELESAI'\n    THEN CASE WHEN TG_OP = 'UPDATE' AND OLD.task_status = 'SELESAI' THEN OLD.completed_at ELSE now() END\n    ELSE NULL END;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "name": "vendor_guard_restricted_columns",
+        "config": null,
+        "source": "\nDECLARE\n  v_service_context BOOLEAN;\nBEGIN\n  SELECT (\n    auth.role() = 'service_role'\n    OR current_user IN ('postgres', 'supabase_admin')\n  )\n  INTO v_service_context;\n\n  IF (NEW.qualification_status IS DISTINCT FROM OLD.qualification_status\n      AND (NEW.qualification_status IN ('APPROVED','RESERVE','REJECTED','FROZEN')\n           OR OLD.qualification_status IN ('APPROVED','RESERVE','REJECTED','FROZEN')))\n     OR NEW.operational_status IS DISTINCT FROM OLD.operational_status\n     OR NEW.vendor_id IS DISTINCT FROM OLD.vendor_id\n     OR NEW.activated_at IS DISTINCT FROM OLD.activated_at\n     OR NEW.activated_by IS DISTINCT FROM OLD.activated_by THEN\n\n    IF NOT v_service_context THEN\n      RAISE EXCEPTION 'DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung';\n    END IF;\n  END IF;\n  RETURN NEW;\nEND;\n",
+        "definer": false,
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_guard_restricted_columns()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n  v_service_context BOOLEAN;\nBEGIN\n  SELECT (\n    auth.role() = 'service_role'\n    OR current_user IN ('postgres', 'supabase_admin')\n  )\n  INTO v_service_context;\n\n  IF (NEW.qualification_status IS DISTINCT FROM OLD.qualification_status\n      AND (NEW.qualification_status IN ('APPROVED','RESERVE','REJECTED','FROZEN')\n           OR OLD.qualification_status IN ('APPROVED','RESERVE','REJECTED','FROZEN')))\n     OR NEW.operational_status IS DISTINCT FROM OLD.operational_status\n     OR NEW.vendor_id IS DISTINCT FROM OLD.vendor_id\n     OR NEW.activated_at IS DISTINCT FROM OLD.activated_at\n     OR NEW.activated_by IS DISTINCT FROM OLD.activated_by THEN\n\n    IF NOT v_service_context THEN\n      RAISE EXCEPTION 'DITOLAK: keputusan kelayakan & aktivasi vendor hanya melalui mekanisme persetujuan khusus (Fase 5) — bukan perubahan status langsung';\n    END IF;\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "name": "vendor_record_activity",
+        "config": null,
+        "source": "\nDECLARE\n  v_actor UUID;\nBEGIN\n  SELECT up.id INTO v_actor FROM user_profiles up WHERE up.auth_user_id = auth.uid();\n\n  IF TG_OP = 'INSERT' THEN\n    INSERT INTO vendor_activity_logs (candidate_id, entity_table, entity_id, action, new_values, actor_id)\n    VALUES (NEW.id, 'vendor_candidates', NEW.id, 'created',\n            jsonb_build_object('business_name', NEW.business_name, 'process_stage', NEW.process_stage),\n            COALESCE(v_actor, NEW.created_by));\n    RETURN NEW;\n  END IF;\n  -- UPDATE: log hanya jika ada kolom non-status/non-audit yang berubah\n  IF NEW.business_name IS DISTINCT FROM OLD.business_name\n     OR NEW.business_type IS DISTINCT FROM OLD.business_type\n     OR NEW.category_id IS DISTINCT FROM OLD.category_id\n     OR NEW.internal_pic_id IS DISTINCT FROM OLD.internal_pic_id\n     OR NEW.source IS DISTINCT FROM OLD.source\n     OR NEW.capacity_qty IS DISTINCT FROM OLD.capacity_qty\n     OR NEW.capacity_unit IS DISTINCT FROM OLD.capacity_unit\n     OR NEW.moq IS DISTINCT FROM OLD.moq\n     OR NEW.lead_time_days IS DISTINCT FROM OLD.lead_time_days\n     OR NEW.indicative_price IS DISTINCT FROM OLD.indicative_price\n     OR NEW.payment_term IS DISTINCT FROM OLD.payment_term\n     OR NEW.service_area IS DISTINCT FROM OLD.service_area\n     OR NEW.legal_status IS DISTINCT FROM OLD.legal_status\n     OR NEW.notes IS DISTINCT FROM OLD.notes THEN\n    INSERT INTO vendor_activity_logs (candidate_id, entity_table, entity_id, action, old_values, new_values, actor_id)\n    VALUES (NEW.id, 'vendor_candidates', NEW.id, 'profile_updated',\n            jsonb_build_object('business_name', OLD.business_name, 'category_id', OLD.category_id,\n                               'capacity_qty', OLD.capacity_qty, 'lead_time_days', OLD.lead_time_days,\n                               'legal_status', OLD.legal_status, 'notes', OLD.notes),\n            jsonb_build_object('business_name', NEW.business_name, 'category_id', NEW.category_id,\n                               'capacity_qty', NEW.capacity_qty, 'lead_time_days', NEW.lead_time_days,\n                               'legal_status', NEW.legal_status, 'notes', NEW.notes),\n            COALESCE(v_actor, NEW.updated_by));\n  END IF;\n  RETURN NEW;\nEND;\n",
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_record_activity()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\nDECLARE\n  v_actor UUID;\nBEGIN\n  SELECT up.id INTO v_actor FROM user_profiles up WHERE up.auth_user_id = auth.uid();\n\n  IF TG_OP = 'INSERT' THEN\n    INSERT INTO vendor_activity_logs (candidate_id, entity_table, entity_id, action, new_values, actor_id)\n    VALUES (NEW.id, 'vendor_candidates', NEW.id, 'created',\n            jsonb_build_object('business_name', NEW.business_name, 'process_stage', NEW.process_stage),\n            COALESCE(v_actor, NEW.created_by));\n    RETURN NEW;\n  END IF;\n  -- UPDATE: log hanya jika ada kolom non-status/non-audit yang berubah\n  IF NEW.business_name IS DISTINCT FROM OLD.business_name\n     OR NEW.business_type IS DISTINCT FROM OLD.business_type\n     OR NEW.category_id IS DISTINCT FROM OLD.category_id\n     OR NEW.internal_pic_id IS DISTINCT FROM OLD.internal_pic_id\n     OR NEW.source IS DISTINCT FROM OLD.source\n     OR NEW.capacity_qty IS DISTINCT FROM OLD.capacity_qty\n     OR NEW.capacity_unit IS DISTINCT FROM OLD.capacity_unit\n     OR NEW.moq IS DISTINCT FROM OLD.moq\n     OR NEW.lead_time_days IS DISTINCT FROM OLD.lead_time_days\n     OR NEW.indicative_price IS DISTINCT FROM OLD.indicative_price\n     OR NEW.payment_term IS DISTINCT FROM OLD.payment_term\n     OR NEW.service_area IS DISTINCT FROM OLD.service_area\n     OR NEW.legal_status IS DISTINCT FROM OLD.legal_status\n     OR NEW.notes IS DISTINCT FROM OLD.notes THEN\n    INSERT INTO vendor_activity_logs (candidate_id, entity_table, entity_id, action, old_values, new_values, actor_id)\n    VALUES (NEW.id, 'vendor_candidates', NEW.id, 'profile_updated',\n            jsonb_build_object('business_name', OLD.business_name, 'category_id', OLD.category_id,\n                               'capacity_qty', OLD.capacity_qty, 'lead_time_days', OLD.lead_time_days,\n                               'legal_status', OLD.legal_status, 'notes', OLD.notes),\n            jsonb_build_object('business_name', NEW.business_name, 'category_id', NEW.category_id,\n                               'capacity_qty', NEW.capacity_qty, 'lead_time_days', NEW.lead_time_days,\n                               'legal_status', NEW.legal_status, 'notes', NEW.notes),\n            COALESCE(v_actor, NEW.updated_by));\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "name": "vendor_record_status_change",
+        "config": null,
+        "source": "\nDECLARE\n  v_actor UUID;\nBEGIN\n  SELECT up.id INTO v_actor FROM user_profiles up WHERE up.auth_user_id = auth.uid();\n  v_actor := COALESCE(v_actor, NEW.updated_by);\n\n  IF OLD.process_stage IS DISTINCT FROM NEW.process_stage THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'process_stage', OLD.process_stage, NEW.process_stage, v_actor);\n  END IF;\n  IF OLD.qualification_status IS DISTINCT FROM NEW.qualification_status THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'qualification_status', OLD.qualification_status, NEW.qualification_status, v_actor);\n  END IF;\n  IF OLD.operational_status IS DISTINCT FROM NEW.operational_status THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'operational_status', OLD.operational_status, NEW.operational_status, v_actor);\n  END IF;\n  RETURN NEW;\nEND;\n",
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_record_status_change()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\nDECLARE\n  v_actor UUID;\nBEGIN\n  SELECT up.id INTO v_actor FROM user_profiles up WHERE up.auth_user_id = auth.uid();\n  v_actor := COALESCE(v_actor, NEW.updated_by);\n\n  IF OLD.process_stage IS DISTINCT FROM NEW.process_stage THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'process_stage', OLD.process_stage, NEW.process_stage, v_actor);\n  END IF;\n  IF OLD.qualification_status IS DISTINCT FROM NEW.qualification_status THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'qualification_status', OLD.qualification_status, NEW.qualification_status, v_actor);\n  END IF;\n  IF OLD.operational_status IS DISTINCT FROM NEW.operational_status THEN\n    INSERT INTO vendor_status_history (candidate_id, field_name, old_value, new_value, changed_by)\n    VALUES (NEW.id, 'operational_status', OLD.operational_status, NEW.operational_status, v_actor);\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "anon_execute": true,
+        "authenticated_execute": true
+      },
+      {
+        "name": "vendor_remind_overdue_followups",
+        "config": [
+          "search_path=public, pg_temp"
+        ],
+        "source": "\nDECLARE v_count integer := 0; v_day date := (now() AT TIME ZONE 'Asia/Jakarta')::date; v_row record;\nBEGIN\n  IF NOT public.is_app_role(ARRAY['sourcing','hrd','super_admin']) THEN\n    RAISE EXCEPTION 'Akses reminder vendor ditolak' USING ERRCODE = '42501';\n  END IF;\n  FOR v_row IN\n    SELECT f.id, f.internal_pic_id, f.next_action, f.candidate_id, c.business_name\n    FROM public.vendor_followups f JOIN public.vendor_candidates c ON c.id = f.candidate_id\n    JOIN public.user_profiles up ON up.id = f.internal_pic_id AND up.account_status = 'ACTIVE'\n    WHERE f.task_status = 'OPEN' AND f.next_action_due < now()\n  LOOP\n    BEGIN\n      -- Jangan ON CONFLICT: itu memerlukan SELECT atas notifikasi PIC lain,\n      -- sedangkan policy existing hanya mengizinkan penerima membaca miliknya.\n      INSERT INTO public.notifications(id,user_id,notification_type,title,message,reference_type,reference_id,reference_url,notification_date)\n      VALUES (md5('vendor-followup:' || v_row.id::text || ':' || v_row.internal_pic_id::text)::uuid,\n        v_row.internal_pic_id, 'VENDOR_FOLLOWUP_OVERDUE', 'Follow-up vendor terlambat',\n        v_row.business_name || ': ' || v_row.next_action, 'vendor_followup', v_row.id,\n        '/vendor/followups?candidate=' || v_row.candidate_id::text || '&overdue=1', v_day);\n      v_count := v_count + 1;\n    EXCEPTION WHEN unique_violation THEN\n      NULL; -- ID deterministik; aman terhadap pemanggilan serentak.\n    END;\n  END LOOP;\n  RETURN v_count;\nEND;\n",
+        "definer": false,
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_remind_overdue_followups()\n RETURNS integer\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE v_count integer := 0; v_day date := (now() AT TIME ZONE 'Asia/Jakarta')::date; v_row record;\nBEGIN\n  IF NOT public.is_app_role(ARRAY['sourcing','hrd','super_admin']) THEN\n    RAISE EXCEPTION 'Akses reminder vendor ditolak' USING ERRCODE = '42501';\n  END IF;\n  FOR v_row IN\n    SELECT f.id, f.internal_pic_id, f.next_action, f.candidate_id, c.business_name\n    FROM public.vendor_followups f JOIN public.vendor_candidates c ON c.id = f.candidate_id\n    JOIN public.user_profiles up ON up.id = f.internal_pic_id AND up.account_status = 'ACTIVE'\n    WHERE f.task_status = 'OPEN' AND f.next_action_due < now()\n  LOOP\n    BEGIN\n      -- Jangan ON CONFLICT: itu memerlukan SELECT atas notifikasi PIC lain,\n      -- sedangkan policy existing hanya mengizinkan penerima membaca miliknya.\n      INSERT INTO public.notifications(id,user_id,notification_type,title,message,reference_type,reference_id,reference_url,notification_date)\n      VALUES (md5('vendor-followup:' || v_row.id::text || ':' || v_row.internal_pic_id::text)::uuid,\n        v_row.internal_pic_id, 'VENDOR_FOLLOWUP_OVERDUE', 'Follow-up vendor terlambat',\n        v_row.business_name || ': ' || v_row.next_action, 'vendor_followup', v_row.id,\n        '/vendor/followups?candidate=' || v_row.candidate_id::text || '&overdue=1', v_day);\n      v_count := v_count + 1;\n    EXCEPTION WHEN unique_violation THEN\n      NULL; -- ID deterministik; aman terhadap pemanggilan serentak.\n    END;\n  END LOOP;\n  RETURN v_count;\nEND;\n$function$\n",
+        "anon_execute": false,
+        "authenticated_execute": true
+      },
+      {
+        "name": "vendor_sourcing_dashboard",
+        "config": [
+          "search_path=public, pg_temp"
+        ],
+        "source": "\nDECLARE v_result jsonb;\nBEGIN\n  IF NOT public.is_app_role(ARRAY['sourcing','hrd','super_admin','direksi']) THEN\n    RAISE EXCEPTION 'Akses dashboard vendor ditolak' USING ERRCODE = '42501';\n  END IF;\n  WITH candidates AS (\n    SELECT c.*, cat.name AS category_name, up.full_name AS pic_name\n    FROM public.vendor_candidates c\n    LEFT JOIN public.vendor_categories cat ON cat.id = c.category_id\n    LEFT JOIN public.user_profiles up ON up.id = c.internal_pic_id\n    WHERE (p_category_id IS NULL OR c.category_id = p_category_id)\n      AND (p_pic_id IS NULL OR c.internal_pic_id = p_pic_id)\n  ), monitoring AS (\n    SELECT c.*, f.total_followups, f.successful_contacts, f.open_tasks, f.completed_tasks,\n      f.cancelled_tasks, f.overdue_tasks, f.next_due,\n      (c.process_stage NOT IN ('CLOSED','ABANDONED') AND\n        (f.total_followups = 0 OR f.open_tasks > 0)) AS needs_followup\n    FROM candidates c\n    CROSS JOIN LATERAL (\n      SELECT count(*) AS total_followups,\n        count(*) FILTER (WHERE contact_outcome = 'TERHUBUNG') AS successful_contacts,\n        count(*) FILTER (WHERE task_status = 'OPEN') AS open_tasks,\n        count(*) FILTER (WHERE task_status = 'SELESAI') AS completed_tasks,\n        count(*) FILTER (WHERE task_status = 'DIBATALKAN') AS cancelled_tasks,\n        count(*) FILTER (WHERE task_status = 'OPEN' AND next_action_due < now()) AS overdue_tasks,\n        min(next_action_due) FILTER (WHERE task_status = 'OPEN') AS next_due\n      FROM public.vendor_followups WHERE candidate_id = c.id\n    ) f\n  ), activities AS (\n    SELECT f.* FROM public.vendor_followups f JOIN candidates c ON c.id = f.candidate_id\n  ), recorded AS (\n    SELECT created_by AS pic_id, count(*) AS activities_recorded,\n      count(DISTINCT candidate_id) AS vendors_attempted,\n      count(DISTINCT candidate_id) FILTER (WHERE contact_outcome = 'TERHUBUNG') AS vendors_contacted\n    FROM activities GROUP BY created_by\n  ), assigned AS (\n    SELECT internal_pic_id AS pic_id,\n      count(*) FILTER (WHERE task_status = 'OPEN') AS open_tasks,\n      count(*) FILTER (WHERE task_status = 'OPEN' AND next_action_due < now()) AS overdue_tasks,\n      count(*) FILTER (WHERE task_status = 'SELESAI') AS completed_tasks,\n      count(*) FILTER (WHERE task_status = 'DIBATALKAN') AS cancelled_tasks\n    FROM activities GROUP BY internal_pic_id\n  ), productivity AS (\n    SELECT up.id AS pic_id, up.full_name AS pic_name, r.role_name,\n      coalesce(rec.activities_recorded,0) AS activities_recorded,\n      coalesce(rec.vendors_attempted,0) AS vendors_attempted,\n      coalesce(rec.vendors_contacted,0) AS vendors_contacted,\n      coalesce(a.open_tasks,0) AS open_tasks, coalesce(a.overdue_tasks,0) AS overdue_tasks,\n      coalesce(a.completed_tasks,0) AS completed_tasks, coalesce(a.cancelled_tasks,0) AS cancelled_tasks\n    FROM public.user_profiles up JOIN public.roles r ON r.id = up.role_id\n    LEFT JOIN recorded rec ON rec.pic_id = up.id LEFT JOIN assigned a ON a.pic_id = up.id\n    WHERE (r.role_name = 'sourcing' AND up.account_status = 'ACTIVE') OR rec.pic_id IS NOT NULL OR a.pic_id IS NOT NULL\n  )\n  SELECT jsonb_build_object(\n    'kpis', (SELECT jsonb_build_object(\n      'total', count(*), 'new_leads', count(*) FILTER (WHERE process_stage = 'LEAD'),\n      'vendors_attempted', count(*) FILTER (WHERE total_followups > 0),\n      'vendors_contacted', count(*) FILTER (WHERE successful_contacts > 0),\n      'followup_activities', coalesce(sum(total_followups),0),\n      'open_tasks', coalesce(sum(open_tasks),0),\n      'completed_tasks', coalesce(sum(completed_tasks),0),\n      'cancelled_tasks', coalesce(sum(cancelled_tasks),0),\n      'needs_followup', count(*) FILTER (WHERE needs_followup),\n      'overdue', coalesce(sum(overdue_tasks),0), 'location_incomplete', NULL,\n      'samples_running', count(*) FILTER (WHERE process_stage IN ('SAMPLE_ASSIGNED','SAMPLE_IN_PROGRESS','SAMPLE_REVISION')),\n      'awaiting_qc', count(*) FILTER (WHERE process_stage IN ('SAMPLE_RECEIVED','QC_REVIEW')),\n      'awaiting_approval', count(*) FILTER (WHERE process_stage = 'AWAITING_APPROVAL' OR qualification_status = 'PENDING_APPROVAL'),\n      'approved', count(*) FILTER (WHERE qualification_status = 'APPROVED')\n    ) FROM monitoring),\n    'priority', (SELECT coalesce(jsonb_agg(to_jsonb(p) ORDER BY p.overdue_tasks DESC, p.next_due NULLS LAST, p.created_at), '[]'::jsonb)\n      FROM (SELECT id,candidate_code,business_name,category_name,pic_name,process_stage,\n          total_followups,open_tasks,overdue_tasks,next_due,created_at\n        FROM monitoring WHERE needs_followup OR overdue_tasks > 0\n        ORDER BY overdue_tasks DESC, next_due NULLS LAST, created_at LIMIT 20) p),\n    'stages', (SELECT coalesce(jsonb_object_agg(process_stage, n), '{}'::jsonb)\n      FROM (SELECT process_stage,count(*) AS n FROM candidates GROUP BY process_stage) s),\n    'pic_productivity', (SELECT coalesce(jsonb_agg(to_jsonb(p) ORDER BY p.activities_recorded DESC,p.pic_name,p.pic_id), '[]'::jsonb) FROM productivity p)\n  ) INTO v_result;\n  RETURN v_result;\nEND;\n",
+        "definer": false,
+        "definition": "CREATE OR REPLACE FUNCTION public.vendor_sourcing_dashboard(p_category_id uuid DEFAULT NULL::uuid, p_pic_id uuid DEFAULT NULL::uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE v_result jsonb;\nBEGIN\n  IF NOT public.is_app_role(ARRAY['sourcing','hrd','super_admin','direksi']) THEN\n    RAISE EXCEPTION 'Akses dashboard vendor ditolak' USING ERRCODE = '42501';\n  END IF;\n  WITH candidates AS (\n    SELECT c.*, cat.name AS category_name, up.full_name AS pic_name\n    FROM public.vendor_candidates c\n    LEFT JOIN public.vendor_categories cat ON cat.id = c.category_id\n    LEFT JOIN public.user_profiles up ON up.id = c.internal_pic_id\n    WHERE (p_category_id IS NULL OR c.category_id = p_category_id)\n      AND (p_pic_id IS NULL OR c.internal_pic_id = p_pic_id)\n  ), monitoring AS (\n    SELECT c.*, f.total_followups, f.successful_contacts, f.open_tasks, f.completed_tasks,\n      f.cancelled_tasks, f.overdue_tasks, f.next_due,\n      (c.process_stage NOT IN ('CLOSED','ABANDONED') AND\n        (f.total_followups = 0 OR f.open_tasks > 0)) AS needs_followup\n    FROM candidates c\n    CROSS JOIN LATERAL (\n      SELECT count(*) AS total_followups,\n        count(*) FILTER (WHERE contact_outcome = 'TERHUBUNG') AS successful_contacts,\n        count(*) FILTER (WHERE task_status = 'OPEN') AS open_tasks,\n        count(*) FILTER (WHERE task_status = 'SELESAI') AS completed_tasks,\n        count(*) FILTER (WHERE task_status = 'DIBATALKAN') AS cancelled_tasks,\n        count(*) FILTER (WHERE task_status = 'OPEN' AND next_action_due < now()) AS overdue_tasks,\n        min(next_action_due) FILTER (WHERE task_status = 'OPEN') AS next_due\n      FROM public.vendor_followups WHERE candidate_id = c.id\n    ) f\n  ), activities AS (\n    SELECT f.* FROM public.vendor_followups f JOIN candidates c ON c.id = f.candidate_id\n  ), recorded AS (\n    SELECT created_by AS pic_id, count(*) AS activities_recorded,\n      count(DISTINCT candidate_id) AS vendors_attempted,\n      count(DISTINCT candidate_id) FILTER (WHERE contact_outcome = 'TERHUBUNG') AS vendors_contacted\n    FROM activities GROUP BY created_by\n  ), assigned AS (\n    SELECT internal_pic_id AS pic_id,\n      count(*) FILTER (WHERE task_status = 'OPEN') AS open_tasks,\n      count(*) FILTER (WHERE task_status = 'OPEN' AND next_action_due < now()) AS overdue_tasks,\n      count(*) FILTER (WHERE task_status = 'SELESAI') AS completed_tasks,\n      count(*) FILTER (WHERE task_status = 'DIBATALKAN') AS cancelled_tasks\n    FROM activities GROUP BY internal_pic_id\n  ), productivity AS (\n    SELECT up.id AS pic_id, up.full_name AS pic_name, r.role_name,\n      coalesce(rec.activities_recorded,0) AS activities_recorded,\n      coalesce(rec.vendors_attempted,0) AS vendors_attempted,\n      coalesce(rec.vendors_contacted,0) AS vendors_contacted,\n      coalesce(a.open_tasks,0) AS open_tasks, coalesce(a.overdue_tasks,0) AS overdue_tasks,\n      coalesce(a.completed_tasks,0) AS completed_tasks, coalesce(a.cancelled_tasks,0) AS cancelled_tasks\n    FROM public.user_profiles up JOIN public.roles r ON r.id = up.role_id\n    LEFT JOIN recorded rec ON rec.pic_id = up.id LEFT JOIN assigned a ON a.pic_id = up.id\n    WHERE (r.role_name = 'sourcing' AND up.account_status = 'ACTIVE') OR rec.pic_id IS NOT NULL OR a.pic_id IS NOT NULL\n  )\n  SELECT jsonb_build_object(\n    'kpis', (SELECT jsonb_build_object(\n      'total', count(*), 'new_leads', count(*) FILTER (WHERE process_stage = 'LEAD'),\n      'vendors_attempted', count(*) FILTER (WHERE total_followups > 0),\n      'vendors_contacted', count(*) FILTER (WHERE successful_contacts > 0),\n      'followup_activities', coalesce(sum(total_followups),0),\n      'open_tasks', coalesce(sum(open_tasks),0),\n      'completed_tasks', coalesce(sum(completed_tasks),0),\n      'cancelled_tasks', coalesce(sum(cancelled_tasks),0),\n      'needs_followup', count(*) FILTER (WHERE needs_followup),\n      'overdue', coalesce(sum(overdue_tasks),0), 'location_incomplete', NULL,\n      'samples_running', count(*) FILTER (WHERE process_stage IN ('SAMPLE_ASSIGNED','SAMPLE_IN_PROGRESS','SAMPLE_REVISION')),\n      'awaiting_qc', count(*) FILTER (WHERE process_stage IN ('SAMPLE_RECEIVED','QC_REVIEW')),\n      'awaiting_approval', count(*) FILTER (WHERE process_stage = 'AWAITING_APPROVAL' OR qualification_status = 'PENDING_APPROVAL'),\n      'approved', count(*) FILTER (WHERE qualification_status = 'APPROVED')\n    ) FROM monitoring),\n    'priority', (SELECT coalesce(jsonb_agg(to_jsonb(p) ORDER BY p.overdue_tasks DESC, p.next_due NULLS LAST, p.created_at), '[]'::jsonb)\n      FROM (SELECT id,candidate_code,business_name,category_name,pic_name,process_stage,\n          total_followups,open_tasks,overdue_tasks,next_due,created_at\n        FROM monitoring WHERE needs_followup OR overdue_tasks > 0\n        ORDER BY overdue_tasks DESC, next_due NULLS LAST, created_at LIMIT 20) p),\n    'stages', (SELECT coalesce(jsonb_object_agg(process_stage, n), '{}'::jsonb)\n      FROM (SELECT process_stage,count(*) AS n FROM candidates GROUP BY process_stage) s),\n    'pic_productivity', (SELECT coalesce(jsonb_agg(to_jsonb(p) ORDER BY p.activities_recorded DESC,p.pic_name,p.pic_id), '[]'::jsonb) FROM productivity p)\n  ) INTO v_result;\n  RETURN v_result;\nEND;\n$function$\n",
+        "anon_execute": false,
+        "authenticated_execute": true
+      }
+    ],
+    "profiles_by_role": [
+      {
+        "count": 2,
+        "role_name": "direksi",
+        "account_status": "ACTIVE"
+      },
+      {
+        "count": 1,
+        "role_name": "finance",
+        "account_status": "ACTIVE"
+      },
+      {
+        "count": 1,
+        "role_name": "hrd",
+        "account_status": "ACTIVE"
+      },
+      {
+        "count": 2,
+        "role_name": "super_admin",
+        "account_status": "ACTIVE"
+      }
+    ],
+    "asset_vendor_links": 16,
+    "asset_vendor_orphans": 0
+  },
+  "authenticated_uat": {
+    "status": "PENDING",
+    "active_sourcing_profiles": 0,
+    "reason": "Belum ada akun Sourcing produksi; perlu penetapan akun atau izin eksplisit akun uji sementara"
+  }
+}

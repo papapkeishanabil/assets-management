@@ -1,0 +1,27 @@
+{
+    "checked_at":  "2026-11-09T02:43:29.1719781Z",
+    "backup":  "D:\\Backups\\harmas-pre-phase2-2026-11-06.dump",
+    "created_at":  "2026-11-06T06:54:08.336Z",
+    "bytes":  1178511,
+    "sha256":  "1fc0df1727b296f115b0860269984b3ea5e3d57351fb5f0529aaf0ae58ba8048",
+    "sha256_matches_manifest":  true,
+    "verification_mode":  "Review existing 6 November restore evidence + hash recomputed now; no fresh restore executed",
+    "pg_dump_exit":  0,
+    "archive_toc_verified":  true,
+    "application_restore_verified":  true,
+    "application_tables_verified":  90,
+    "foreign_keys_verified":  232,
+    "policies_verified":  205,
+    "triggers_verified":  56,
+    "helper_guard_acl_verified":  7,
+    "pg_restore_exit":  1,
+    "platform_restore_complete":  false,
+    "platform_error_count":  31,
+    "missing_extensions":  [
+                               "pg_cron",
+                               "pg_net",
+                               "supabase_vault"
+                           ],
+    "storage_files_included":  false,
+    "phase2_local_preflight":  true
+}

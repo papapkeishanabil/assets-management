@@ -1,0 +1,146 @@
+{
+  "started_at": "2026-11-09T02:48:07.830Z",
+  "run_id": "8fdf2439-65c2-4355-adcd-32d8bfdd19d7",
+  "scope": "two temporary privileged accounts; business data read-only; delete after UAT",
+  "accounts": [
+    {
+      "role": "super_admin",
+      "email": "vendor-uat-super-admin-8fdf2439-65c2-4355-adcd-32d8bfdd19d7@harmas-test.local",
+      "marker": "8fdf2439-65c2-4355-adcd-32d8bfdd19d7",
+      "created": true,
+      "deleted": true,
+      "auth_user_id": "8694bb66-8153-4055-8345-e98121e5dadb",
+      "profile_id": "7761950e-0234-4f08-a20b-5c4ddee619ea"
+    },
+    {
+      "role": "sourcing",
+      "email": "vendor-uat-sourcing-8fdf2439-65c2-4355-adcd-32d8bfdd19d7@harmas-test.local",
+      "marker": "8fdf2439-65c2-4355-adcd-32d8bfdd19d7",
+      "created": true,
+      "deleted": true,
+      "auth_user_id": "de55358d-f649-4fd5-86df-6fb0d12f419e",
+      "profile_id": "b756c0b7-88c4-47d6-a209-0473bc459590"
+    }
+  ],
+  "checks": [
+    {
+      "status": "PASS",
+      "label": "Akun/profil sementara super_admin dibuat; tidak mengubah akun existing"
+    },
+    {
+      "status": "PASS",
+      "label": "Akun/profil sementara sourcing dibuat; tidak mengubah akun existing"
+    },
+    {
+      "status": "PASS",
+      "label": "UAT baca kedua role selesai dan sesi UAT telah logout"
+    },
+    {
+      "status": "PASS",
+      "label": "Akun Auth dan profil sementara sourcing dipastikan sudah terhapus"
+    },
+    {
+      "status": "PASS",
+      "label": "Akun Auth dan profil sementara super_admin dipastikan sudah terhapus"
+    },
+    {
+      "status": "PASS",
+      "label": "Checksum sebelas tabel, termasuk auth.users/user_profiles, kembali identik dengan baseline sebelum UAT"
+    }
+  ],
+  "before": {
+    "roles": {
+      "count": 6,
+      "checksum": "0d09bfb492494d737fcfa12f6bc0fd05"
+    },
+    "assets": {
+      "count": 55,
+      "checksum": "6fa73186fb684f5005c3b917b5953dad"
+    },
+    "vendors": {
+      "count": 10,
+      "checksum": "450f7ecfc371b3136c868c450528730a"
+    },
+    "contracts": {
+      "count": 28,
+      "checksum": "eec5aa2d254cae4a24ecc90c97cd045d"
+    },
+    "employees": {
+      "count": 45,
+      "checksum": "dd2dfa07f38795d82b7427cc6f1fe8e5"
+    },
+    "auth_users": {
+      "count": 6,
+      "checksum": "11915cf9bf172654fc1620414651318d"
+    },
+    "notifications": {
+      "count": 115,
+      "checksum": "ef96a820d98e1bfa196a63a8b310e3b7"
+    },
+    "user_profiles": {
+      "count": 6,
+      "checksum": "a8fdc0ba81b4617ce2c6a3f8b426fe12"
+    },
+    "role_permissions": {
+      "count": 152,
+      "checksum": "2ca26d84b5d110a4b3140642225821b4"
+    },
+    "vendor_followups": {
+      "count": 0,
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "vendor_candidates": {
+      "count": 0,
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+  },
+  "browser_exit": 0,
+  "after": {
+    "roles": {
+      "count": 6,
+      "checksum": "0d09bfb492494d737fcfa12f6bc0fd05"
+    },
+    "assets": {
+      "count": 55,
+      "checksum": "6fa73186fb684f5005c3b917b5953dad"
+    },
+    "vendors": {
+      "count": 10,
+      "checksum": "450f7ecfc371b3136c868c450528730a"
+    },
+    "contracts": {
+      "count": 28,
+      "checksum": "eec5aa2d254cae4a24ecc90c97cd045d"
+    },
+    "employees": {
+      "count": 45,
+      "checksum": "dd2dfa07f38795d82b7427cc6f1fe8e5"
+    },
+    "auth_users": {
+      "count": 6,
+      "checksum": "11915cf9bf172654fc1620414651318d"
+    },
+    "notifications": {
+      "count": 115,
+      "checksum": "ef96a820d98e1bfa196a63a8b310e3b7"
+    },
+    "user_profiles": {
+      "count": 6,
+      "checksum": "a8fdc0ba81b4617ce2c6a3f8b426fe12"
+    },
+    "role_permissions": {
+      "count": 152,
+      "checksum": "2ca26d84b5d110a4b3140642225821b4"
+    },
+    "vendor_followups": {
+      "count": 0,
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "vendor_candidates": {
+      "count": 0,
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+  },
+  "finished_at": "2026-11-09T02:48:18.843Z",
+  "complete": true
+}

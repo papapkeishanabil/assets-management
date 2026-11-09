@@ -1,0 +1,50 @@
+{
+  "checked_at": "2026-11-09T02:48:18.038Z",
+  "mode": "business data read-only; actual Auth login/logout; reminder suppressed",
+  "results": [
+    {
+      "status": "PASS",
+      "label": "super_admin: login/profil/role nyata dan dashboard dari RPC produksi berhasil"
+    },
+    {
+      "status": "PASS",
+      "label": "super_admin: Database Calon Vendor, Follow-Up kosong dan modal dapat dibuka tanpa submit"
+    },
+    {
+      "status": "PASS",
+      "label": "super_admin: Master Data Vendor tetap dapat dibaca"
+    },
+    {
+      "status": "PASS",
+      "label": "super_admin: tidak ada pageerror, REST error, atau percobaan tulis bisnis"
+    },
+    {
+      "status": "NOTE",
+      "label": "super_admin: reminder otomatis dinonaktifkan oleh harness baca (2 request); CRUD/reminder nyata belum diuji"
+    },
+    {
+      "status": "PASS",
+      "label": "sourcing: login/profil/role nyata dan dashboard dari RPC produksi berhasil"
+    },
+    {
+      "status": "PASS",
+      "label": "sourcing: Database Calon Vendor, Follow-Up kosong dan modal dapat dibuka tanpa submit"
+    },
+    {
+      "status": "PASS",
+      "label": "sourcing: tidak ada pageerror, REST error, atau percobaan tulis bisnis"
+    },
+    {
+      "status": "NOTE",
+      "label": "sourcing: reminder otomatis dinonaktifkan oleh harness baca (2 request); CRUD/reminder nyata belum diuji"
+    },
+    {
+      "status": "PASS",
+      "label": "Logout sesi UAT sendiri: HTTP 204"
+    },
+    {
+      "status": "PASS",
+      "label": "Logout sesi UAT sendiri: HTTP 204"
+    }
+  ]
+}
