@@ -25,10 +25,12 @@ user; frontend produksi kemudian juga dirilis ketika user mengonfirmasi alamat u
 Database Fase 3 tetap belum dipasang. Hasil final dan batas pengujian:
 [Laporan Fase 3](PHASE3_IMPLEMENTATION_REPORT.md). Google Maps nyata belum diuji karena
 API key/Map ID belum tersedia; pengujian SDK tiruan tidak menggantikan UAT layanan Google.
-Preflight produksi/backup baru masih menunggu kredensial environment. Skrip dan langkah
-terminal siap di [kesiapan rilis Fase 3](PHASE3_RELEASE_READINESS.md); jangan mengklaim
-preflight atau backup sudah lulus. Pengambilan service key dari file legacy ditolak
-auto-review pada persiapan ini; gunakan environment yang disediakan user.
+Preflight/backup terbaru kini lulus setelah user mengisi password melalui terminal:
+9 kelompok preflight, restore logis 139 tabel dan salinan 95 blob terverifikasi.
+[Kesiapan aktivasi](PHASE3_ACTIVATION_READINESS_20261109.md) menjelaskan hasil dan batas
+restore platform; migration produksi masih menunggu izin eksplisit. Pengambilan
+service key dari file legacy pernah ditolak auto-review; gunakan environment yang
+disediakan user, sesuai pilihan koneksi PostgreSQL langsung.
 **Preview READY 9 Nov, 12.59 WIB:** [buka preview](https://harmas-asset-management-7qi0mttcc.vercel.app)
 dan [catatan verifikasi](PHASE3_PREVIEW_DEPLOYMENT_20261109.md). Commit frontend `d3beb8f5`.
 Login Vercel/HARMAS diperlukan; backend lokasi belum aktif, dashboard tetap dapat
@@ -39,6 +41,20 @@ persetujuan migration produksi.
 `dpl_AGnmtsEyyNuTFCP3EkmKCLsDFM8R`, source `d3beb8f5`. User menegaskan alamat utama
 setelah meminta deploy; frontend dirilis tanpa migration/push atau perubahan role.
 [Catatan rilis produksi frontend](PHASE3_PRODUCTION_FRONTEND_20261109.md).
+**Persiapan aktivasi selanjutnya:** user belum memiliki key/Map ID dan meminta panduan;
+lihat [setup Google Maps](GOOGLE_MAPS_SETUP.md). Helper interaktif
+`scripts/start-vendor-phase3-backup.ps1` dibuka agar user memasukkan PGPASSWORD sendiri
+di terminal tersembunyi, lalu menjalankan driver preflight/backup existing. Status
+runtime ada di `.vercel/phase3-activation-status.json` (diabaikan Git); cek state dan
+manifest terbaru, jangan menganggap backup selesai hanya karena terminal dibuka.
+Helper tidak menjalankan migration atau mengubah environment cloud.
+**Backup/preflight kini lulus:** user memasukkan password di terminal. Backup baru
+`D:\Backups\harmas-pre-phase3-20261109-162946-b0c15d41`; 9 preflight PASS, restore
+139 tabel COPY/1.905 baris cocok, 95 blob cocok ukuran/ETag/hash. Migration dua kali
+hanya di clone; produksi belum dimigration. Container restore dihentikan. Lihat
+[kesiapan aktivasi terbaru dan batas restore platform](PHASE3_ACTIVATION_READINESS_20261109.md).
+User belum memiliki Google Maps key/Map ID dan sedang dipandu setup. Langkah berikut:
+persetujuan eksplisit migration Fase 3, bukan mengulang backup tanpa alasan.
 
 ---
 
@@ -59,7 +75,8 @@ setelah meminta deploy; frontend dirilis tanpa migration/push atau perubahan rol
 | Migration Fase 1 di produksi | ✅ TEREKSEKUSI 5 Nov — 7 tabel `vendor_*`, role `sourcing`, 15 policy, guard, seed 9 kategori/27 spesialisasi, sequence `VR-####` |
 | Frontend Fase 1+2 | Bundle publik HTTP 200, akses anonim terlindungi; UAT baca Super Admin/Sourcing lulus, tanpa error browser/API |
 | Security hardening produksi | ✅ `exec_sql` di-revoke dari PUBLIC/anon/authenticated · RLS aktif di `user_profiles`/`roles`/`notifications` (8 policy v3 + trigger guard profil) |
-| Backup pra-Fase 2 | `D:\Backups\harmas-pre-phase2-2026-11-06.dump`, SHA-256 cocok. Restore aplikasi 90 tabel terverifikasi; platform Supabase tidak pulih penuh pada image postgres:17 |
+| Backup pra-Fase 2 | Historis: `D:\Backups\harmas-pre-phase2-2026-11-06.dump`; lihat catatan keterbatasan restore lama |
+| Backup pra-Fase 3 terbaru | `D:\Backups\harmas-pre-phase3-20261109-162946-b0c15d41`; restore logis 139 tabel/1.905 baris cocok, 95 blob cocok ETag/hash; full stack platform belum direstore |
 | Git | Fase 2 `c02a66d5`, origin lokal `12de0de4`; dokumentasi penerimaan Fase 1+2 `73b8680a`, implementasi Fase 3 pada commit lokal berikutnya (lihat git log). Tidak ada push baru |
 | Fase 2 | Schema dan frontend produksi; UAT baca 9 PASS + lifecycle 6 PASS, akun uji bersih; kandidat/follow-up masih 0 |
 | Fase 3 | Frontend alamat utama sudah READY, backend lokasi belum aktif; migration/rollback dan bukti uji di [laporan](PHASE3_IMPLEMENTATION_REPORT.md). Migration tetap menunggu backup/preflight/persetujuan, Maps belum dikonfigurasi |
@@ -148,13 +165,13 @@ Skrip produksi berguna (baca env, tidak hardcode): `check-prod-compat.js` (probe
 1. **Penetapan petugas Sourcing permanen** untuk penggunaan operasional: belum dilakukan. UAT baca dengan dua akun sementara yang disetujui sudah selesai, akun/sesi sudah dibersihkan; jangan menjalankan ulang lifecycle tanpa persetujuan baru.
 2. Tentukan scope pengujian tulis/reminder nyata bila diperlukan. Jangan membuat riwayat follow-up dummy permanen atau mengubah akun existing tanpa izin. Migration/push/deploy Fase 1+2 sudah teramati; jangan ulangi untuk UAT.
 3. Setup **Google Cloud Maps** (untuk Fase 3) — bisa diperlambat.
-4. Review hasil lokal Fase 3, lalu persetujuan eksplisit migration produksi dan persetujuan terpisah push/deploy. Lihat [urutan, backup dan checklist UAT](PHASE3_IMPLEMENTATION_REPORT.md). Jangan menjalankan harness lokal terhadap produksi.
+4. Persetujuan eksplisit migration Fase 3 setelah [backup/preflight terverifikasi](PHASE3_ACTIVATION_READINESS_20261109.md). Frontend utama sudah dirilis; Google Cloud masih dipandu. Push Git belum dilakukan. Jangan menjalankan harness lokal terhadap produksi.
 
 ## 10. Cara Memulai (untuk Codex)
 
 1. Baca dokumen ini + dokumen induk + spesifikasi user (folder ini).
 2. `git log --oneline -12` untuk riwayat; `npm run build` harus lolos.
-3. Untuk perubahan DB: tulis migration idempotent + rollback di `supabase/rollbacks/` → uji di stack lokal (§7, pola: base → semua migration berurutan → hardening) → laporan → tunggu persetujuan → eksekusi via `exec_sql` service key (pola `scripts/apply-phase1-migration.js`) → verifikasi pasca (pola `check-prod-compat.js`) → lapor.
+3. Untuk perubahan DB: migration idempotent + rollback terpisah → uji di fixture dan clone restore → laporan → persetujuan eksplisit → eksekusi melalui koneksi PostgreSQL langsung dengan password yang disediakan user → verifikasi schema/RLS/ACL/checksum → lapor. Jangan beralih ke service key legacy untuk menghindari pilihan koneksi user.
 4. Untuk frontend: ikuti idiom §3, guard 3 lapis, jangan sentuh fungsi existing.
 5. Laporkan dengan format yang biasa: tabel status, bukti verifikasi, kendala jujur, langkah berikut + apa yang butuh persetujuan.
 

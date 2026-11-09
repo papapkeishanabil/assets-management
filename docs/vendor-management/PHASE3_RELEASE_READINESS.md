@@ -1,5 +1,10 @@
 # Persiapan rilis Fase 3 — 9 November 2026
 
+**Pembaruan 16.41 WIB:** backup/preflight terbaru dan restore logis kini terverifikasi,
+95 blob tersalin serta cocok ukuran/ETag/hash. [Status aktivasi terbaru](PHASE3_ACTIVATION_READINESS_20261109.md)
+menggantikan status menunggu kredensial di catatan persiapan awal berikut. Migration
+produksi tetap belum dijalankan; pemulihan layanan platform penuh tidak diklaim.
+
 Status: **kode/test lokal difinalisasi dalam commit terpisah; produksi belum siap
 untuk migration sampai preflight dan backup terbaru terverifikasi**. Migration, push dan
 deployment produksi tidak dilakukan pada pekerjaan persiapan ini. Preview frontend

@@ -1,0 +1,28 @@
+{
+  "verified_at": "2026-11-09T09:41:50.452Z",
+  "backup_directory": "D:/Backups/harmas-pre-phase3-20261109-162946-b0c15d41",
+  "bytes": 1202620,
+  "sha256": "c0224faff889ff635a33167212a0d5190aa640b43fe19249d5b66a656cd9cebc",
+  "preflight_pass": true,
+  "logical_database_restore_verified": true,
+  "copy_tables_verified": 139,
+  "total_rows_verified": 1905,
+  "application_schema_counts": {
+    "public_tables": 89,
+    "public_policies": 208,
+    "public_triggers": 58,
+    "public_foreign_keys": 235,
+    "cron_launch_active_jobs": "off"
+  },
+  "baseline_tables_verified": 17,
+  "functions_and_acl_verified": 11,
+  "policies_canonicalized": 9,
+  "storage_objects_verified": 95,
+  "storage_bytes_verified": 29027178,
+  "storage_etags_verified": 95,
+  "restore_container_stopped": true,
+  "production_migration_executed": false,
+  "production_migration_approval_pending": true,
+  "supabase_platform_restore_complete": false,
+  "storage_restore_service_verified": false
+}
