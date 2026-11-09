@@ -70,6 +70,7 @@ export default function VendorDashboardPage() {
     </div>
     {error && <div role="alert" className="card p-4 text-rose-300">{error} <button className="underline" onClick={() => setVersion((n) => n + 1)}>Coba lagi</button></div>}
     {reminderError && <p role="alert" className="text-sm text-warning-300">{reminderError}</p>}
+    {!loading && !error && canMap && !locations && <p role="status" className="card p-4 text-sm text-ink-400">Lokasi dan foto vendor belum aktif. Data sourcing dan follow-up tetap dapat digunakan.</p>}
     {loading ? <div role="status" className="card p-8 text-ink-400">Memuat monitoring vendor…</div> : !error && data && <>
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">{METRICS.map(([key, label, hint]) => <div key={key} className="card p-4">
         <p className="text-sm text-ink-300">{label}</p><p className={`text-3xl font-semibold mt-2 ${key === 'overdue' && data.kpis[key] > 0 ? 'text-rose-300' : 'text-white'}`}>{data.kpis[key] == null ? '—' : data.kpis[key]}</p><p className="text-[11px] text-ink-500 mt-1">{hint}</p>

@@ -1,12 +1,16 @@
 import { supabase } from './supabase';
 import { coordinatePair, preparePhoto } from './vendor-location-utils';
 
+// Frontend dapat dirilis sebelum backend lokasi. Jangan menyamakan RLS/network
+// error dengan backend yang belum tersedia; hanya kode missing relation/RPC.
+const backendPending = (error) => ['PGRST202', 'PGRST205', '42P01', '42883'].includes(error?.code);
+
 export async function fetchLocations(candidateId) {
   const { data, error } = await supabase.from('vendor_locations').select(`*,
     verifier:user_profiles!vendor_locations_verified_by_fkey(id,full_name),
     photos:vendor_location_photos(*,uploader:user_profiles!vendor_location_photos_uploaded_by_fkey(id,full_name))`)
     .eq('candidate_id', candidateId).order('is_primary', { ascending: false }).order('created_at').order('id');
-  if (error) throw error;
+  if (error) { if (backendPending(error)) return null; throw error; }
   return data || [];
 }
 
@@ -61,14 +65,14 @@ export async function fetchMapPoints() {
   const rows = [];
   for (let from = 0; ; from += 500) {
     const { data, error } = await supabase.from('vendor_map_points').select('*').order('candidate_id').order('location_id', { nullsFirst: true }).range(from, from + 499);
-    if (error) throw error;
+    if (error) { if (backendPending(error)) return null; throw error; }
     rows.push(...data);
     if (data.length < 500) return rows;
   }
 }
 export async function fetchLocationMonitoring(category = '', pic = '') {
   const { data, error } = await supabase.rpc('vendor_location_monitoring', { p_category_id: category || null, p_pic_id: pic || null });
-  if (error) throw error;
+  if (error) { if (backendPending(error)) return null; throw error; }
   return data;
 }
 export async function fetchActiveMasterVendors() {

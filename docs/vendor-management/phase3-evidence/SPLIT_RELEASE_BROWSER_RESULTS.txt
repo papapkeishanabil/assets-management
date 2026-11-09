@@ -1,0 +1,5 @@
+PASS | Dashboard Fase 2 tetap tampil ketika RPC lokasi Fase 3 belum tersedia
+PASS | Peta/filter tetap tampil; jumlah tidak dipalsukan nol dan retrofit tidak dapat dijalankan
+PASS | Tab lokasi menjelaskan fitur belum aktif tanpa tombol simpan yang gagal
+PASS | Error RLS 42501 tetap dilaporkan, tidak disamarkan sebagai backend belum aktif
+PASS | Tidak ada pageerror atau write bisnis; checksum empat tabel Docker tetap identik

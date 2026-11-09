@@ -16,15 +16,17 @@ export default function VendorMapPage() {
   const { role } = useAuth();
   const { hasAccess, loading: permissionsLoading } = useRolePermissions();
   const [params] = useSearchParams(); const candidateId = params.get('candidate') || '';
-  const allowed = hasAccess('vendor_map') && LOCATION_READ_ROLES.includes(role?.role_name), canWrite = allowed && VENDOR_WRITE_ROLES.includes(role?.role_name);
+  const allowed = hasAccess('vendor_map') && LOCATION_READ_ROLES.includes(role?.role_name);
   const [rows, setRows] = useState([]), [options, setOptions] = useState({ users: [], categories: [], specialties: [] });
   const [filters, setFilters] = useState(EMPTY), [mode, setMode] = useState('all'), [page, setPage] = useState(0), [selectedKey, setSelectedKey] = useState('');
   const [loading, setLoading] = useState(true), [error, setError] = useState(''), [version, setVersion] = useState(0), [linking, setLinking] = useState(false);
+  const [backendPending, setBackendPending] = useState(false);
+  const canWrite = allowed && VENDOR_WRITE_ROLES.includes(role?.role_name) && !backendPending && !loading && !error;
   useEffect(() => {
     if (!allowed) return;
     let ignore = false; setLoading(true); setError('');
     Promise.all([fetchMapPoints(), fetchFollowupOptions(), fetchMapSpecialties()]).then(([points, opts, specialties]) => {
-      if (!ignore) { setRows(points); setOptions({ ...opts, specialties }); }
+      if (!ignore) { setRows(points || []); setBackendPending(points === null); setOptions({ ...opts, specialties }); }
     }).catch((err) => { if (!ignore) setError(err.message); }).finally(() => { if (!ignore) setLoading(false); });
     return () => { ignore = true; };
   }, [allowed, version]);
@@ -55,8 +57,9 @@ export default function VendorMapPage() {
       <div className="flex flex-wrap gap-4 items-center"><label className="flex items-center gap-2 text-sm text-ink-300"><input type="checkbox" checked={filters.primary} onChange={(e) => change('primary', e.target.checked)} /> Hanya lokasi utama</label><button className="text-sm text-primary-400 underline" onClick={() => { setFilters(EMPTY); setPage(0); setSelectedKey(''); }}>Reset filter</button></div>
     </div>
     {error && <div role="alert" className="card p-4 text-rose-300">Gagal memuat peta/lokasi: {error} <button className="underline" onClick={() => setVersion((n) => n + 1)}>Coba lagi</button></div>}
+    {!loading && !error && backendPending && <p role="status" className="card p-4 text-sm text-ink-400">Lokasi dan foto vendor belum aktif. Data sourcing dan follow-up tetap dapat digunakan.</p>}
     {loading ? <div className="card p-8 text-ink-400" role="status">Memuat seluruh lokasi vendor…</div> : !error && <>
-      <div className="flex flex-wrap gap-3 items-center"><button className={mode === 'all' ? 'btn-primary' : 'btn-secondary'} onClick={() => { setMode('all'); setPage(0); }}>Semua lokasi ({filtered.length})</button><button className={mode === 'unmapped' ? 'btn-primary' : 'btn-secondary'} onClick={() => { setMode('unmapped'); setPage(0); }}>Belum Dipetakan ({unmapped.length})</button><span className="text-sm text-ink-400">{mapped.length} titik berkoordinat</span></div>
+      <div className="flex flex-wrap gap-3 items-center"><button disabled={backendPending} className={mode === 'all' ? 'btn-primary' : 'btn-secondary'} onClick={() => { setMode('all'); setPage(0); }}>Semua lokasi ({backendPending ? '—' : filtered.length})</button><button disabled={backendPending} className={mode === 'unmapped' ? 'btn-primary' : 'btn-secondary'} onClick={() => { setMode('unmapped'); setPage(0); }}>Belum Dipetakan ({backendPending ? '—' : unmapped.length})</button><span className="text-sm text-ink-400">{backendPending ? 'Data lokasi belum tersedia' : `${mapped.length} titik berkoordinat`}</span></div>
       <VendorGoogleMap points={mapped} onSelect={select} height={420} />
       {selected && <div className="card p-5 grid sm:grid-cols-[180px_1fr] gap-4">
         {selected.cover_path ? <SignedVendorPhoto path={selected.cover_path} alt={`Foto ${selected.location_name}`} /> : <p className="text-ink-500">Foto belum tersedia</p>}
@@ -64,7 +67,7 @@ export default function VendorMapPage() {
           <div className="flex flex-wrap gap-3"><Link className="text-primary-400 underline" to={`/vendor/database/${selected.candidate_id}?tab=location`}>Detail Vendor</Link>{selected.latitude !== null && selected.longitude !== null && <a className="text-primary-400 underline" href={googleMapsUrl(selected.latitude, selected.longitude)} target="_blank" rel="noopener noreferrer">Buka Google Maps</a>}</div>
         </div>
       </div>}
-      {list.length === 0 ? <div className="card empty-state p-10">Tidak ada lokasi/vendor sesuai filter.</div> : <div className="card overflow-hidden"><div className="overflow-x-auto"><table className="table"><thead><tr><th>Vendor / kategori</th><th>Fasilitas / kota</th><th>Koordinat</th><th>Status lokasi</th><th>Aksi</th></tr></thead><tbody>{list.slice(page * 25, (page + 1) * 25).map((row) => <tr key={`${row.candidate_id}/${row.location_id || ''}`}>
+      {list.length === 0 ? <div className="card empty-state p-10">{backendPending ? 'Lokasi akan tampil setelah fitur diaktifkan.' : 'Tidak ada lokasi/vendor sesuai filter.'}</div> : <div className="card overflow-hidden"><div className="overflow-x-auto"><table className="table"><thead><tr><th>Vendor / kategori</th><th>Fasilitas / kota</th><th>Koordinat</th><th>Status lokasi</th><th>Aksi</th></tr></thead><tbody>{list.slice(page * 25, (page + 1) * 25).map((row) => <tr key={`${row.candidate_id}/${row.location_id || ''}`}>
         <td><Link className="text-primary-400" to={`/vendor/database/${row.candidate_id}?tab=location`}>{row.business_name}</Link><p className="text-xs text-ink-500">{row.candidate_code} · {row.category_name || 'Tanpa kategori'}</p></td>
         <td>{row.location_name || 'Belum ada lokasi'}<p className="text-xs text-ink-500">{row.city || 'Kota belum diisi'}{row.is_primary ? ' · Utama' : ''}</p></td>
         <td>{row.latitude !== null && row.longitude !== null ? `${row.latitude}, ${row.longitude}` : <span className="badge-orange">Belum dipetakan</span>}</td>
