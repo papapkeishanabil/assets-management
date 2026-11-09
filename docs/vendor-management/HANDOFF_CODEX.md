@@ -20,13 +20,19 @@ Halaman monitoring dapat menulis notifikasi; harness baca menonaktifkan request 
 **Fase 3 lokal (9 November 2026):** implementasi lokasi multi-fasilitas, GPS, foto privat,
 verifikasi, retrofit master aktif dan peta/fallback selesai dan difinalisasi dalam commit lokal. Migration baru
 `202611090001_vendor_management_phase3.sql` hanya diterapkan pada Docker sintetis;
-belum migration produksi, push atau deploy. Hasil final dan batas pengujian:
+belum migration produksi atau push. Preview frontend kemudian dideploy atas permintaan
+user; deployment produksi belum dilakukan. Hasil final dan batas pengujian:
 [Laporan Fase 3](PHASE3_IMPLEMENTATION_REPORT.md). Google Maps nyata belum diuji karena
 API key/Map ID belum tersedia; pengujian SDK tiruan tidak menggantikan UAT layanan Google.
 Preflight produksi/backup baru masih menunggu kredensial environment. Skrip dan langkah
 terminal siap di [kesiapan rilis Fase 3](PHASE3_RELEASE_READINESS.md); jangan mengklaim
 preflight atau backup sudah lulus. Pengambilan service key dari file legacy ditolak
 auto-review pada persiapan ini; gunakan environment yang disediakan user.
+**Preview READY 9 Nov, 12.59 WIB:** [buka preview](https://harmas-asset-management-7qi0mttcc.vercel.app)
+dan [catatan verifikasi](PHASE3_PREVIEW_DEPLOYMENT_20261109.md). Commit frontend `d3beb8f5`.
+Login Vercel/HARMAS diperlukan; backend lokasi belum aktif, dashboard tetap dapat
+dipakai. Domain produksi terbukti tidak berubah. Jangan menganggap preview sebagai
+persetujuan migration atau deployment produksi.
 
 ---
 

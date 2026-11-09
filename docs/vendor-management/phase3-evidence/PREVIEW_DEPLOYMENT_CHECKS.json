@@ -1,0 +1,20 @@
+{
+  "checked_at": "2026-11-09T06:01:52.474Z",
+  "deployment_id": "dpl_AJYvZ3SSMcWaHQqpg73S3doKD2ru",
+  "url": "https://harmas-asset-management-7qi0mttcc.vercel.app",
+  "environment": "preview",
+  "state": "READY",
+  "commit": "d3beb8f5",
+  "artifact_entry": "/assets/index-ktmUd8T6.js",
+  "artifact_sha256": "814243805cd9e183a4ea83ca904c2f38e763d57db11e2673560116995583a821",
+  "protected_http_status": 200,
+  "anonymous_routes_redirect_to_login": 3,
+  "pageerrors": [],
+  "business_write_requests": [],
+  "failed_assets": [],
+  "production_entry_unchanged": true,
+  "production_html_unchanged": true,
+  "production_migration_executed": false,
+  "git_push_executed": false,
+  "authenticated_uat": "NOT RUN; no production test account created"
+}

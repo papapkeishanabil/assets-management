@@ -2,7 +2,9 @@
 
 Status: **kode/test lokal difinalisasi dalam commit terpisah; produksi belum siap
 untuk migration sampai preflight dan backup terbaru terverifikasi**. Migration, push dan
-deployment tidak dilakukan pada pekerjaan persiapan ini. Hash commit dilaporkan setelah
+deployment produksi tidak dilakukan pada pekerjaan persiapan ini. Preview frontend
+kemudian sudah [READY](PHASE3_PREVIEW_DEPLOYMENT_20261109.md) atas permintaan user;
+backend produksi tetap belum dipasang. Hash commit dilaporkan setelah
 commit berhasil; isi commit dapat dilihat dengan `git show --stat HEAD`.
 
 ## Yang selesai
