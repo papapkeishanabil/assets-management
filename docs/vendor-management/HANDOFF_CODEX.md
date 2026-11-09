@@ -21,7 +21,8 @@ Halaman monitoring dapat menulis notifikasi; harness baca menonaktifkan request 
 verifikasi, retrofit master aktif dan peta/fallback selesai dan difinalisasi dalam commit lokal. Migration baru
 `202611090001_vendor_management_phase3.sql` hanya diterapkan pada Docker sintetis;
 belum migration produksi atau push. Preview frontend kemudian dideploy atas permintaan
-user; deployment produksi belum dilakukan. Hasil final dan batas pengujian:
+user; frontend produksi kemudian juga dirilis ketika user mengonfirmasi alamat utama.
+Database Fase 3 tetap belum dipasang. Hasil final dan batas pengujian:
 [Laporan Fase 3](PHASE3_IMPLEMENTATION_REPORT.md). Google Maps nyata belum diuji karena
 API key/Map ID belum tersedia; pengujian SDK tiruan tidak menggantikan UAT layanan Google.
 Preflight produksi/backup baru masih menunggu kredensial environment. Skrip dan langkah
@@ -32,7 +33,12 @@ auto-review pada persiapan ini; gunakan environment yang disediakan user.
 dan [catatan verifikasi](PHASE3_PREVIEW_DEPLOYMENT_20261109.md). Commit frontend `d3beb8f5`.
 Login Vercel/HARMAS diperlukan; backend lokasi belum aktif, dashboard tetap dapat
 dipakai. Domain produksi terbukti tidak berubah. Jangan menganggap preview sebagai
-persetujuan migration atau deployment produksi.
+persetujuan migration produksi.
+**Frontend alamat utama READY sekitar 15.41 WIB, 9 Nov:**
+[Peta Vendor](https://harmas-asset-management.vercel.app/vendor/map), deployment
+`dpl_AGnmtsEyyNuTFCP3EkmKCLsDFM8R`, source `d3beb8f5`. User menegaskan alamat utama
+setelah meminta deploy; frontend dirilis tanpa migration/push atau perubahan role.
+[Catatan rilis produksi frontend](PHASE3_PRODUCTION_FRONTEND_20261109.md).
 
 ---
 
@@ -56,7 +62,7 @@ persetujuan migration atau deployment produksi.
 | Backup pra-Fase 2 | `D:\Backups\harmas-pre-phase2-2026-11-06.dump`, SHA-256 cocok. Restore aplikasi 90 tabel terverifikasi; platform Supabase tidak pulih penuh pada image postgres:17 |
 | Git | Fase 2 `c02a66d5`, origin lokal `12de0de4`; dokumentasi penerimaan Fase 1+2 `73b8680a`, implementasi Fase 3 pada commit lokal berikutnya (lihat git log). Tidak ada push baru |
 | Fase 2 | Schema dan frontend produksi; UAT baca 9 PASS + lifecycle 6 PASS, akun uji bersih; kandidat/follow-up masih 0 |
-| Fase 3 | Implementasi lokal selesai, migration/rollback dan bukti uji di [laporan](PHASE3_IMPLEMENTATION_REPORT.md); menunggu persetujuan rilis terpisah dan konfigurasi Google Maps |
+| Fase 3 | Frontend alamat utama sudah READY, backend lokasi belum aktif; migration/rollback dan bukti uji di [laporan](PHASE3_IMPLEMENTATION_REPORT.md). Migration tetap menunggu backup/preflight/persetujuan, Maps belum dikonfigurasi |
 | Fase 4–5 | Belum dimulai. Rancangan lengkap di dokumen induk §D–G |
 
 ## 3. Stack & Konvensi Kode

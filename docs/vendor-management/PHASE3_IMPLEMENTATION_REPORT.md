@@ -4,7 +4,9 @@ Tanggal: 9 November 2026. Status: **implementasi dan pengujian lokal selesai; be
 Fase 1+2 yang sudah produksi tidak dijalankan ulang. Fase 3 difinalisasi sebagai commit
 lokal terpisah; belum di-push dan migration Fase 3 belum dijalankan ke produksi.
 Frontend kemudian tersedia pada [Preview terpisah](PHASE3_PREVIEW_DEPLOYMENT_20261109.md)
-atas permintaan user, tanpa deployment produksi. Perkembangan preflight/backup:
+atas permintaan user, kemudian [dirilis ke alamat utama](PHASE3_PRODUCTION_FRONTEND_20261109.md)
+agar menu tampil pada aplikasi yang digunakan user. Backend Fase 3 tetap belum aktif.
+Perkembangan preflight/backup:
 [kesiapan rilis](PHASE3_RELEASE_READINESS.md).
 
 ## Perilaku yang tersedia

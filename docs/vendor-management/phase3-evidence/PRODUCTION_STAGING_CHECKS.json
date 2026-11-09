@@ -1,0 +1,15 @@
+{
+  "checked_at": "2026-11-09T08:41:12.138Z",
+  "deployment_id": "dpl_AGnmtsEyyNuTFCP3EkmKCLsDFM8R",
+  "url": "https://harmas-asset-management-pnudvowo3.vercel.app",
+  "target": "production",
+  "state": "READY",
+  "domains_promoted": false,
+  "artifact_entry": "/assets/index-ktmUd8T6.js",
+  "artifact_sha256": "814243805cd9e183a4ea83ca904c2f38e763d57db11e2673560116995583a821",
+  "identical_to_tested_preview": true,
+  "protected_html_http_status": 200,
+  "protected_bundle_http_status": 200,
+  "access_method": "official vercel curl; protection retained",
+  "production_migration_executed": false
+}
