@@ -1,0 +1,99 @@
+{
+  "checked_at": "2026-11-10T06:56:28.362Z",
+  "target": "Docker synthetic + browser through native Deno Edge entrypoint",
+  "deno_runtime_executed": true,
+  "production_accessed": false,
+  "new_accounts_cleaned": 9,
+  "browser_errors": [],
+  "checks": [
+    {
+      "check": "Missing/forged identity rejected by Auth before any mutation",
+      "pass": true
+    },
+    {
+      "check": "HRD, Direksi, Sourcing, Pelaksana, Finance and inactive Super Admin denied",
+      "pass": true
+    },
+    {
+      "check": "Live database role checked even when the same session previously belonged to Super Admin",
+      "pass": true
+    },
+    {
+      "check": "Unknown fields, caller-supplied Auth ID and missing target rejected",
+      "pass": true
+    },
+    {
+      "check": "Short or whitespace-only password rejected without changing credentials",
+      "pass": true
+    },
+    {
+      "check": "Identity allowlist and department/subdepartment relationship enforced server-side",
+      "pass": true
+    },
+    {
+      "check": "Super Admin updates identity and organization; role/status/approval/Auth link unchanged",
+      "pass": true
+    },
+    {
+      "check": "Stale edit rejected with optimistic concurrency check",
+      "pass": true
+    },
+    {
+      "check": "Edited email synchronized with Auth; new address logs in and old address fails",
+      "pass": true
+    },
+    {
+      "check": "Duplicate login email rejected without changing public profile",
+      "pass": true
+    },
+    {
+      "check": "Injected public-profile write failure compensates real Auth email mutation",
+      "pass": true
+    },
+    {
+      "check": "Concurrent Auth change is preserved; partial synchronization returns explicit review error",
+      "pass": true
+    },
+    {
+      "check": "Concurrent public-profile edit prevents unsafe restoration of an older Auth identity",
+      "pass": true
+    },
+    {
+      "check": "Admin password reset changes only target Auth credentials; profile and other user unchanged",
+      "pass": true
+    },
+    {
+      "check": "Browser → function handler → real Auth/PostgREST → refreshed user row succeeds",
+      "pass": true
+    },
+    {
+      "check": "Missing backend gives clear error, preserves edits, and retry succeeds when available",
+      "pass": true
+    },
+    {
+      "check": "Cancel/Escape discards identity changes",
+      "pass": true
+    },
+    {
+      "check": "Password confirmation mismatch never sends an update request",
+      "pass": true
+    },
+    {
+      "check": "Browser password reset works on mobile; new login verified and former password rejected",
+      "pass": true
+    },
+    {
+      "check": "Existing /users route guard still rejects HRD",
+      "pass": true
+    },
+    {
+      "check": "Audit identifies actor/action/target without passwords; no browser exceptions or production requests",
+      "pass": true
+    },
+    {
+      "check": "Cleanup restores 14 table checksums including original Auth users/identities",
+      "pass": true
+    }
+  ],
+  "audit_events": 24
+}

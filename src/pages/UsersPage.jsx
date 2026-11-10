@@ -3,10 +3,14 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { ROLE_LABELS, ROLE_OPTIONS, ACCOUNT_STATUS_LABELS, ACCOUNT_STATUS, formatDateTime } from '../lib/constants';
 import toast from 'react-hot-toast';
-import { Search, Filter, Check, X, Ban, RotateCcw, Shield, RefreshCw, UserPlus, Eye, EyeOff, ChevronDown } from 'lucide-react';
+import { Search, Filter, Check, X, Ban, RotateCcw, Shield, RefreshCw, UserPlus, Eye, EyeOff, ChevronDown, Edit3, KeyRound } from 'lucide-react';
+import AdminUserEditModal from '../components/AdminUserEditModal';
 
 export default function UsersPage() {
-  const { refreshProfile } = useAuth();
+  const { refreshProfile, role } = useAuth();
+  const canAdminister = role?.role_name === 'super_admin';
+  const [editUser, setEditUser] = useState(null);
+  const closeEditUser = useCallback(() => setEditUser(null), []);
   const [users, setUsers] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [subDepartments, setSubDepartments] = useState([]);
@@ -289,6 +293,8 @@ export default function UsersPage() {
     return departmentName || subDepartment?.sub_department_name || '-';
   };
 
+  if (!canAdminister) return <p className="text-ink-400">Hanya Super Admin yang dapat mengelola pengguna.</p>;
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -403,6 +409,8 @@ export default function UsersPage() {
                     </td>
                     <td className="text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <button type="button" onClick={() => setEditUser({ user, mode: 'profile' })} className="p-1.5 text-primary-400 hover:bg-primary-500/10 rounded-md transition-all" aria-label={`Edit identitas ${user.full_name}`} title="Edit Identitas"><Edit3 size={14} /></button>
+                        <button type="button" disabled={!user.auth_user_id} onClick={() => setEditUser({ user, mode: 'password' })} className="p-1.5 text-amber-400 hover:bg-amber-500/10 rounded-md transition-all disabled:opacity-40" aria-label={`Ubah password ${user.full_name}`} title={user.auth_user_id ? 'Ubah Password' : 'Pengguna belum terhubung ke akun login'}><KeyRound size={14} /></button>
                         {/* PENDING actions */}
                         {user.account_status === 'PENDING' && (
                           <>
@@ -467,6 +475,10 @@ export default function UsersPage() {
           </div>
         )}
       </div>
+
+      {editUser && <AdminUserEditModal key={`${editUser.user.id}/${editUser.mode}`} user={editUser.user} mode={editUser.mode} departments={departments} subDepartments={subDepartments} onClose={closeEditUser} onSaved={(message) => {
+        closeEditUser(); toast.success(message); fetchUsers(); refreshProfile();
+      }} />}
 
       {/* Confirm Dialog */}
       {showCreateModal && (
