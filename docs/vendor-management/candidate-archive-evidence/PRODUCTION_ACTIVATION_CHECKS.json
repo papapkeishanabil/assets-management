@@ -1,0 +1,23 @@
+{
+  "checked_at": "2026-11-10T09:50:00.003Z",
+  "target": "https://uwlxkwyauxwewoexfgwi.supabase.co",
+  "migration_sha256": "f2ed4b42d2fb77ab8c9e986ff5fd6bead177d28b72d562bb2671ab8d06aeb1c5",
+  "backup_directory": "D:\\Backups\\harmas-pre-candidate-archive-20261110-094551-7cf2f2a6",
+  "database_dump_sha256": "b8c382313178e2a5c9b8e7b54cc37559b4293d1d50345da6babc04f16f55dcff",
+  "database_dump_bytes": 1244528,
+  "logical_restore_tables": 141,
+  "logical_restore_rows": 1830,
+  "baseline_tables_verified": 18,
+  "security_helpers_guards_policies_unchanged": true,
+  "archive_clone_migration_twice": true,
+  "archive_clone_rollback_twice": true,
+  "clone_stale_transaction_rejected": true,
+  "production_migration_executed": true,
+  "production_commit_confirmed": true,
+  "application_restore_verified": true,
+  "supabase_platform_restore_complete": false,
+  "storage_blob_backup_created": false,
+  "existing_business_rows_changed": false,
+  "accounts_created": false,
+  "git_push": false
+}

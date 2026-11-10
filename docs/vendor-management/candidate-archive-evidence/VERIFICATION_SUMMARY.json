@@ -26,10 +26,13 @@
     "scripts/test-vendor-candidate-archive.mjs": "26902df0507ebd2ca4e31f5f5a2369091d75ef19b0d7c30f21959182850d6728"
   },
   "production_accessed": false,
-  "production_migration_executed": false,
+  "production_migration_executed": true,
   "git_push": false,
-  "deployed": false,
+  "deployed": true,
   "migration_applied_twice_locally": true,
   "rollback_applied_twice_locally": true,
-  "local_accounts_cleaned": 7
+  "local_accounts_cleaned": 7,
+  "frontend_deployment_id": "dpl_8HZD3SCrS2ZuwGWRonkkYPRPUKEu",
+  "production_activation_evidence": "PRODUCTION_ACTIVATION_CHECKS.json",
+  "production_ui_evidence": "PRODUCTION_CHECKS.json"
 }

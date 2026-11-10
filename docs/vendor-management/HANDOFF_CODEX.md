@@ -1,5 +1,17 @@
 # HANDOFF — Modul Manajemen Vendor HARMAS Asset Management
 
+**Arsip kandidat sudah LIVE 10 November sekitar 16.51 WIB.** User menyetujui frontend
+“ok deploy” dan migration “ya setuju”. Migration baru `202611100001` COMMIT dan
+verifikasi lulus; jangan ulangi. Frontend `a32d3c49`, deployment
+`dpl_8HZD3SCrS2ZuwGWRonkkYPRPUKEu`. Backup terbaru terverifikasi 141 tabel/1.830
+baris, 18 checksum existing dan helper/guard/RLS utuh. Tidak ada archive/delete
+bisnis, akun baru atau push Git. Sembilan hash publik dan enam guard anonim PASS,
+0 error browser/runtime pada probe rilis; UAT akun produksi menunggu pengguna.
+Izin sekali-eksekusi di `.vercel/candidate-archive-migration-approval.json` sudah
+dikonsumsi; status MIGRATION_COMMITTED_VERIFIED. Jangan mengulang driver rilis.
+[Laporan rilis final](CANDIDATE_ARCHIVE_PRODUCTION_RELEASE_20261110.md).
+Catatan kesiapan/pending migration di bawah merupakan riwayat sebelum aktivasi.
+
 **Staging arsip kandidat, 10 November sekitar 16.27 WIB:** user menyetujui deploy
 frontend. Source `a32d3c49` telah distage sebagai production tanpa alias utama,
 deployment `dpl_8HZD3SCrS2ZuwGWRonkkYPRPUKEu`. Sembilan hash file PASS. Domain

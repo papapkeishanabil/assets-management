@@ -1,5 +1,9 @@
 # Hapus dari daftar dan pulihkan calon vendor
 
+**Status terbaru: sudah aktif di produksi sekitar 16.51 WIB.** Migration COMMIT dan
+frontend terverifikasi; lihat [laporan rilis final](CANDIDATE_ARCHIVE_PRODUCTION_RELEASE_20261110.md).
+Catatan pending/preflight di bawah adalah riwayat sebelum aktivasi.
+
 Status: **implementasi lokal selesai; belum migration produksi, push atau deploy**.
 User meminta fitur hapus dan penjelasan prosedur kelayakan. Penghapusan menggunakan
 arsip yang dapat dipulihkan untuk mempertahankan riwayat permanen existing.
