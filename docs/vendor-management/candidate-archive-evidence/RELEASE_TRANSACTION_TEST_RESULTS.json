@@ -1,0 +1,39 @@
+{
+  "checked_at": "2026-11-10T09:37:06.182Z",
+  "target": "Synthetic Docker only",
+  "production_accessed": false,
+  "checks": [
+    {
+      "check": "Read-only snapshot covers 18 tables, DDL permissions, baseline function bodies and active security guards",
+      "pass": true
+    },
+    {
+      "check": "Stale baseline aborts before DDL",
+      "pass": true
+    },
+    {
+      "check": "Wrong database aborts before DDL",
+      "pass": true
+    },
+    {
+      "check": "Wrong executor aborts before DDL",
+      "pass": true
+    },
+    {
+      "check": "Deliberate RLS weakening inside migration rolls back the entire transaction",
+      "pass": true
+    },
+    {
+      "check": "Guarded migration commits only with preserved data/security and valid archive ACL/objects",
+      "pass": true
+    },
+    {
+      "check": "Second idempotent migration preserves baseline and validated archive state",
+      "pass": true
+    },
+    {
+      "check": "Rollback twice restores the exact snapshot of 18 tables, functions, views, triggers and RLS",
+      "pass": true
+    }
+  ]
+}
