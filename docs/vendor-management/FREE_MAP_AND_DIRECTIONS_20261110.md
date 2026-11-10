@@ -7,6 +7,11 @@ menjadi peta utama, tanpa API key atau billing Google. Database/migration Fase 3
 diubah atau dijalankan ke produksi. Frontend `5ae0c673` sudah dirilis setelah user
 menyetujui deployment frontend terpisah; lihat [bukti rilis](FREE_MAP_PRODUCTION_RELEASE_20261110.md).
 
+**Pembaruan 09.29 WIB:** migration Fase 3 kemudian dijalankan setelah persetujuan
+eksplisit user; backend lokasi/foto sudah aktif dan terverifikasi.
+[Bukti aktivasi](PHASE3_PRODUCTION_ACTIVATION_20261110.md). Pernyataan tidak menjalankan
+migration pada uraian implementasi peta merujuk tahap frontend sebelumnya.
+
 ## Perilaku akhir
 
 Halaman peta dan pemilih koordinat kini memakai Leaflet stable yang dimuat dinamis.
@@ -98,12 +103,11 @@ audit fix atau perubahan dependency di luar penambahan Leaflet.
 ## Rilis dan aktivasi
 
 Frontend versi gratis sudah di-deploy dan diverifikasi; **belum push Git**.
-Persetujuan migration produksi belum diterima. Backend lokasi
-dan GPS nyata harus aktif dan diisi sebelum ada pin/rute vendor produksi. Peta dasar
+Migration produksi kemudian disetujui dan sudah aktif. Lokasi
+dan GPS nyata harus diisi sebelum ada pin/rute vendor produksi. Peta dasar
 tetap dapat tampil tanpa konfigurasi Google Cloud.
 
 Backup/preflight kini sudah diperbarui dan terverifikasi pada
-[10 November](PHASE3_ACTIVATION_READINESS_20261110.md); migration tetap memerlukan
-persetujuan eksplisit. Periksa baseline terakhir sebelum eksekusi; jangan menganggap
-snapshot backup identik selamanya dengan kondisi live. Jangan menulis data dummy
-atau mengubah tabel master untuk mengisi peta.
+[10 November](PHASE3_ACTIVATION_READINESS_20261110.md), diikuti persetujuan dan
+[migration terverifikasi](PHASE3_PRODUCTION_ACTIVATION_20261110.md). Jangan mengulang
+migration, menulis data dummy atau mengubah tabel master untuk mengisi peta.

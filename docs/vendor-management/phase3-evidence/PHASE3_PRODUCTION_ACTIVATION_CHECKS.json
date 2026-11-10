@@ -1,0 +1,135 @@
+{
+  "checked_at": "2026-11-10T02:29:39.021Z",
+  "target": "https://uwlxkwyauxwewoexfgwi.supabase.co",
+  "migration_sha256": "7f38d171690ceaf1afb2d0b8df4eb3462d48c41a49caf63bca7c2dd3bc945e2f",
+  "migration_executed": true,
+  "migration_commit_confirmed": true,
+  "executor": "postgres",
+  "checks": [
+    {
+      "check": "existing_baseline",
+      "pass": true
+    },
+    {
+      "check": "existing_functions",
+      "pass": true
+    },
+    {
+      "check": "existing_rls",
+      "pass": true
+    },
+    {
+      "check": "existing_triggers",
+      "pass": true
+    },
+    {
+      "check": "existing_columns",
+      "pass": true
+    },
+    {
+      "check": "existing_roles",
+      "pass": true
+    },
+    {
+      "check": "existing_permissions",
+      "pass": true
+    },
+    {
+      "check": "existing_storage_service_acl",
+      "pass": true
+    },
+    {
+      "check": "existing_asset_vendor_links",
+      "pass": true
+    },
+    {
+      "check": "existing_asset_vendor_orphans",
+      "pass": true
+    },
+    {
+      "check": "existing_policies",
+      "pass": true
+    },
+    {
+      "check": "existing_buckets",
+      "pass": true
+    },
+    {
+      "check": "indexes",
+      "pass": true
+    },
+    {
+      "check": "triggers",
+      "pass": true
+    },
+    {
+      "check": "table_acl",
+      "pass": true
+    },
+    {
+      "check": "views_acl",
+      "pass": true
+    },
+    {
+      "check": "tables_rls",
+      "pass": true
+    },
+    {
+      "check": "storage_gates",
+      "pass": true
+    },
+    {
+      "check": "views_invoker",
+      "pass": true
+    },
+    {
+      "check": "private_bucket",
+      "pass": true
+    },
+    {
+      "check": "table_policies",
+      "pass": true
+    },
+    {
+      "check": "storage_policies",
+      "pass": true
+    },
+    {
+      "check": "no_automatic_seed",
+      "pass": true
+    },
+    {
+      "check": "function_sources_acl",
+      "pass": true
+    },
+    {
+      "check": "anonymous_reader_denied",
+      "pass": true
+    }
+  ],
+  "baseline_tables_verified": 17,
+  "existing_functions_and_acl_verified": 11,
+  "baseline_counts": {
+    "roles": 6,
+    "assets": 55,
+    "vendors": 10,
+    "contracts": 28,
+    "employees": 45,
+    "auth.users": 6,
+    "notifications": 115,
+    "user_profiles": 6,
+    "vendor_contacts": 0,
+    "role_permissions": 152,
+    "vendor_followups": 0,
+    "vendor_candidates": 0,
+    "vendor_categories": 9,
+    "vendor_specialties": 27,
+    "vendor_activity_logs": 0,
+    "vendor_status_history": 0,
+    "vendor_candidate_specialties": 0
+  },
+  "asset_vendor_links": 16,
+  "asset_vendor_orphans": 0,
+  "production_fixture_created": false,
+  "status": "PASS"
+}

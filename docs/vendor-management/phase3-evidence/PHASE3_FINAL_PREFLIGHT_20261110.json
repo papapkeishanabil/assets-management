@@ -1,0 +1,123 @@
+{
+  "checked_at": "2026-11-10T02:29:34.615Z",
+  "target": "https://uwlxkwyauxwewoexfgwi.supabase.co",
+  "migration_sha256": "7f38d171690ceaf1afb2d0b8df4eb3462d48c41a49caf63bca7c2dd3bc945e2f",
+  "checks": [
+    {
+      "status": "PASS",
+      "label": "Belum ada tabel/view/fungsi/policy/bucket Fase 3 yang bertabrakan"
+    },
+    {
+      "status": "PASS",
+      "label": "Sebelas definisi fungsi, SECURITY DEFINER/search_path dan ACL anon/authenticated identik dengan snapshot tervalidasi"
+    },
+    {
+      "status": "PASS",
+      "label": "Policy hardening dan follow-up identik; RLS tabel relevan dan seluruh trigger terpilih aktif"
+    },
+    {
+      "status": "PASS",
+      "label": "exec_sql tetap service-only; helper anti-recursion tidak dibuka ke anon"
+    },
+    {
+      "status": "PASS",
+      "label": "Kolom master K3 dan metadata Storage kompatibel dengan migration Fase 3"
+    },
+    {
+      "status": "PASS",
+      "label": "Storage belum memiliki restrictive gate yang berkonflik; service role memiliki ACL/bypass untuk backup dan lifecycle Storage"
+    },
+    {
+      "status": "PASS",
+      "label": "Sourcing dan Direksi memiliki module key vendor_map; tidak ada role QC"
+    },
+    {
+      "status": "PASS",
+      "label": "Master vendor/aset sama dengan snapshot penerimaan; tidak ada relasi aset-vendor yatim"
+    },
+    {
+      "status": "PASS",
+      "label": "Metadata, Storage dan checksum 17 tabel identik sebelum/sesudah preflight"
+    }
+  ],
+  "privileges": {
+    "database": "postgres",
+    "executor": "postgres",
+    "source_references": true,
+    "public_schema_create": true,
+    "storage_bucket_insert": true,
+    "storage_policy_management": true
+  },
+  "baseline": {
+    "roles": {
+      "count": 6,
+      "checksum": "0d09bfb492494d737fcfa12f6bc0fd05"
+    },
+    "assets": {
+      "count": 55,
+      "checksum": "6fa73186fb684f5005c3b917b5953dad"
+    },
+    "vendors": {
+      "count": 10,
+      "checksum": "450f7ecfc371b3136c868c450528730a"
+    },
+    "contracts": {
+      "count": 28,
+      "checksum": "eec5aa2d254cae4a24ecc90c97cd045d"
+    },
+    "employees": {
+      "count": 45,
+      "checksum": "dd2dfa07f38795d82b7427cc6f1fe8e5"
+    },
+    "auth.users": {
+      "count": 6,
+      "checksum": "dcf8e34670bd1bd0f254b147359d3041"
+    },
+    "notifications": {
+      "count": 115,
+      "checksum": "ef96a820d98e1bfa196a63a8b310e3b7"
+    },
+    "user_profiles": {
+      "count": 6,
+      "checksum": "a8fdc0ba81b4617ce2c6a3f8b426fe12"
+    },
+    "vendor_contacts": {
+      "count": 0,
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "role_permissions": {
+      "count": 152,
+      "checksum": "2ca26d84b5d110a4b3140642225821b4"
+    },
+    "vendor_followups": {
+      "count": 0,
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "vendor_candidates": {
+      "count": 0,
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "vendor_categories": {
+      "count": 9,
+      "checksum": "ee9fcec089dbabe221a23be6cde7d9ea"
+    },
+    "vendor_specialties": {
+      "count": 27,
+      "checksum": "c4759e2b1121f284f8099bd508ad31ff"
+    },
+    "vendor_activity_logs": {
+      "count": 0,
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "vendor_status_history": {
+      "count": 0,
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "vendor_candidate_specialties": {
+      "count": 0,
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+  },
+  "backup_metadata_matches": true,
+  "storage_policy_ownership_alone_required": false
+}

@@ -1,5 +1,9 @@
 # Kesiapan migration Fase 3 — 10 November 2026
 
+**Pembaruan 09.29 WIB:** user kemudian menyetujui migration; COMMIT dan verifikasi
+produksi lulus. [Laporan aktivasi](PHASE3_PRODUCTION_ACTIVATION_20261110.md).
+Isi di bawah adalah snapshot kesiapan sebelum persetujuan, bukan status saat ini.
+
 Status: **backup baru dan pemeriksaan teknis lulus; menunggu persetujuan eksplisit
 migration produksi**. User meminta melanjutkan pembaruan backup/preflight dan mengisi
 password PostgreSQL di terminal interaktif. Tidak menjalankan migration produksi,

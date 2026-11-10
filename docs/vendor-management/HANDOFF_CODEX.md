@@ -3,6 +3,15 @@
 **Dokumen serah terima untuk agent penerus (Codex).** Disusun 6 November 2026.
 Dokumen induk: [AUDIT_DAN_RENCANA_IMPLEMENTASI.md](AUDIT_DAN_RENCANA_IMPLEMENTASI.md) · Spesifikasi user: [HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md](HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md)
 
+**FASE 3 SUDAH AKTIF DI PRODUKSI, 10 November 2026 09.29 WIB.** User menyetujui
+migration dengan “ya setuju”. Hanya `202611090001_vendor_management_phase3.sql`
+dijalankan; 9 preflight, 25 SQL pasca-commit dan 11 HTTP lulus; 17 checksum tabel dan
+11 fungsi/ACL/policy existing utuh. Tidak ada push/deploy tambahan, akun/fixture,
+perubahan owner/role atau penulisan master. [Laporan aktivasi](PHASE3_PRODUCTION_ACTIVATION_20261110.md).
+Lokasi/foto masih kosong; pin membutuhkan input GPS nyata dari pengguna. Langkah
+berikut adalah UAT operasional, bukan mengulang migration. Catatan 9 Nov dan kesiapan
+pra-migration di bawah bersifat historis.
+
 **Keputusan terbaru 10 November 2026:** user memilih layanan GRATIS dan meminta rute
 menuju fasilitas. Rancangan Google Maps JavaScript API diganti **Leaflet 1.9.4 +
 OpenStreetMap tanpa key/billing**; Google Maps dipakai hanya sebagai tautan navigasi
@@ -10,20 +19,21 @@ yang dibuka pengguna. Implementasi lokal dan 64 pemeriksaan lulus, build lulus.
 [Laporan perubahan peta gratis/rute](FREE_MAP_AND_DIRECTIONS_20261110.md).
 Versi gratis `5ae0c673` **sudah production READY sekitar 09.06 WIB, 10 Nov**, deployment
 `dpl_F3UijNeKStcKMe8nTQfUdvLVo7BC`; [bukti rilis](FREE_MAP_PRODUCTION_RELEASE_20261110.md).
-User menyetujui deployment frontend; tidak ada push/migration/write bisnis. Migration Fase 3
-belum mendapat persetujuan eksekusi. Panduan Google Cloud lama menjadi opsional,
+User menyetujui deployment frontend; pada langkah frontend tidak ada push/migration/write bisnis.
+Migration kemudian disetujui dan terpasang seperti catatan aktivasi di atas. Panduan Google Cloud lama menjadi opsional,
 bukan prasyarat versi gratis. Jangan membuka billing atau meminta key Maps lagi.
 
 **Backup/preflight terbaru 10 November, 09.09–09.16 WIB:** user mengisi password
 PostgreSQL di terminal. `D:\Backups\harmas-pre-phase3-20261110-090939-f4bf7fbd`;
 9 preflight PASS, restore logis **140 tabel/1.908 baris**, 95 blob/29.027.178 byte
 terverifikasi. Migration dua kali hanya di clone lokal, executor `supabase_admin`;
-17 baseline/helper/policy existing utuh. Container dihentikan; tidak ada migration,
+17 baseline/helper/policy existing utuh. Container dihentikan; pada langkah backup tidak ada migration,
 push atau deploy tambahan. Full platform/role global/restore layanan Storage belum
 teruji. [Kesiapan terbaru dan kendala bootstrap](PHASE3_ACTIVATION_READINESS_20261110.md).
-**Langkah berikut: minta persetujuan eksplisit migration Fase 3**, lalu periksa
-baseline terakhir dan hak role SQL produksi sebelum mengeksekusi. Izin backup bukan
-izin migration; password helper sudah dibersihkan.
+Persetujuan eksplisit migration kemudian diterima dan dieksekusi 09.29 WIB.
+Pemeriksaan owner saja terlalu ketat: Supabase mengizinkan policy Storage melalui
+`supautils.policy_grants`. Driver memeriksa grant platform tanpa mengubah owner atau
+membership. Password helper sudah dibersihkan; jangan menjalankan migration ulang.
 
 **Pembaruan 9 November 2026:** Fase 2 **sudah terpasang di produksi**; isi empat fungsi cocok
 dengan migration dan frontend publik memuat Fase 1+2. Commit Fase 2 `c02a66d5`, HEAD lokal
@@ -44,7 +54,7 @@ verifikasi, retrofit master aktif dan peta/fallback selesai dan difinalisasi dal
 `202611090001_vendor_management_phase3.sql` hanya diterapkan pada Docker sintetis;
 belum migration produksi atau push. Preview frontend kemudian dideploy atas permintaan
 user; frontend produksi kemudian juga dirilis ketika user mengonfirmasi alamat utama.
-Database Fase 3 tetap belum dipasang. Hasil final dan batas pengujian:
+Pada tahap lokal/preview 9 Nov, database Fase 3 belum dipasang. Hasil final dan batas pengujian:
 [Laporan Fase 3](PHASE3_IMPLEMENTATION_REPORT.md). Google Maps nyata belum diuji karena
 API key/Map ID belum tersedia; pengujian SDK tiruan tidak menggantikan UAT layanan Google.
 Preflight/backup historis 9 November lulus setelah user mengisi password melalui terminal:
@@ -77,8 +87,8 @@ hanya di clone; produksi belum dimigration. Container restore dihentikan. Lihat
 [kesiapan aktivasi terbaru dan batas restore platform](PHASE3_ACTIVATION_READINESS_20261109.md).
 Pilihan key/Map ID kemudian diganti peta gratis pada 10 November; frontend gratis sudah
 dirilis dengan persetujuan user. Backup/preflight sudah diperbarui 10 November, lihat
-catatan terbaru di atas. Langkah berikut: persetujuan eksplisit migration Fase 3;
-baseline dan izin eksekutor harus diperiksa kembali saat akan migration.
+catatan terbaru di atas. Persetujuan dan migration Fase 3 sudah selesai 09.29 WIB;
+tidak perlu mengulang migration atau deployment untuk penggunaan lokasi sekarang.
 
 ---
 
@@ -103,7 +113,7 @@ baseline dan izin eksekutor harus diperiksa kembali saat akan migration.
 | Backup pra-Fase 3 terbaru | `D:\Backups\harmas-pre-phase3-20261110-090939-f4bf7fbd`; restore logis 140 tabel/1.908 baris cocok, 95 blob cocok ETag/hash; full stack platform belum direstore |
 | Git | Fase 2 `c02a66d5`, origin lokal `12de0de4`; dokumentasi penerimaan Fase 1+2 `73b8680a`, implementasi Fase 3 pada commit lokal berikutnya (lihat git log). Tidak ada push baru |
 | Fase 2 | Schema dan frontend produksi; UAT baca 9 PASS + lifecycle 6 PASS, akun uji bersih; kandidat/follow-up masih 0 |
-| Fase 3 | Peta GRATIS Leaflet/OSM + rute production READY `5ae0c673`, 64 pemeriksaan/build lokal lulus, artifact/anon browser produksi lulus. Backend lokasi masih menunggu persetujuan migration |
+| Fase 3 | Backend lokasi/foto SUDAH AKTIF 10 Nov 09.29 WIB; 25 SQL + 11 HTTP lulus, baseline/keamanan existing utuh. Frontend gratis `5ae0c673`; pin menunggu input lokasi asli dan UAT operasional |
 | Fase 4–5 | Belum dimulai. Rancangan lengkap di dokumen induk §D–G |
 
 ## 3. Stack & Konvensi Kode
@@ -200,7 +210,7 @@ atau memalsukan rute jalan berupa garis lurus. Data/guard migration tetap sama.
 1. **Penetapan petugas Sourcing permanen** untuk penggunaan operasional: belum dilakukan. UAT baca dengan dua akun sementara yang disetujui sudah selesai, akun/sesi sudah dibersihkan; jangan menjalankan ulang lifecycle tanpa persetujuan baru.
 2. Tentukan scope pengujian tulis/reminder nyata bila diperlukan. Jangan membuat riwayat follow-up dummy permanen atau mengubah akun existing tanpa izin. Migration/push/deploy Fase 1+2 sudah teramati; jangan ulangi untuk UAT.
 3. Peta gratis Leaflet/OSM menggantikan kebutuhan Google Cloud. Deploy versi baru setelah disetujui; jangan menganggap tile publik layanan tanpa batas/SLA.
-4. Persetujuan eksplisit migration Fase 3 setelah [backup/preflight terverifikasi](PHASE3_ACTIVATION_READINESS_20261109.md). Frontend utama sudah dirilis; Google Cloud masih dipandu. Push Git belum dilakukan. Jangan menjalankan harness lokal terhadap produksi.
+4. UAT operasional Fase 3 setelah [aktivasi terverifikasi](PHASE3_PRODUCTION_ACTIVATION_20261110.md). Backend dan frontend gratis sudah aktif; tidak perlu Google Cloud. Push Git belum dilakukan. Jangan menjalankan harness lokal terhadap produksi atau membuat data dummy/akun tanpa scope yang diizinkan.
 
 ## 10. Cara Memulai (untuk Codex)
 

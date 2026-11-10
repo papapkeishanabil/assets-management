@@ -1,0 +1,36 @@
+// Hanya clone restore yang berlabel, tanpa jaringan/port; tidak memiliki target produksi.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {spawnSync} from 'node:child_process';
+import {isDeepStrictEqual} from 'node:util';
+import {instrumentMigration,snapshotSql,phase3ChecksSql,privilegeSql} from './vendor-phase3-release-checks.mjs';
+const info=JSON.parse(fs.readFileSync('.vercel/phase3-restore-container.json','utf8'));
+assert.match(info.name,/^harmas-vendor-restore-phase3-\d{8}-[a-f0-9]{8}$/);
+const inspected=spawnSync('docker',['inspect',info.name],{encoding:'utf8'});assert.equal(inspected.status,0);
+const config=JSON.parse(inspected.stdout)[0];
+assert.equal(config.HostConfig.NetworkMode,'none');
+assert.equal(config.Config.Labels['harmas.task'],'vendor-phase3-backup-restore');
+assert.equal(Object.keys(config.HostConfig.PortBindings||{}).length,0);
+const sql=input=>spawnSync('docker',['exec','-i',info.name,'psql','-X','-q','-A','-t','-U','supabase_admin','-d','phase3_restore','-v','ON_ERROR_STOP=1'],{input:`SET search_path=public,pg_temp;\n${input}`,encoding:'utf8',maxBuffer:16e6});
+const snapshot=()=>{const r=sql(`BEGIN READ ONLY;${snapshotSql};ROLLBACK;`);assert.equal(r.status,0,r.stderr.slice(0,600));return JSON.parse(r.stdout);};
+const before=snapshot();assert.equal(before.collisions.relations.length,0,'Clone harus fresh dari archive sebelum Fase 3');
+const results=[];
+const options={executor:'supabase_admin',database:'phase3_restore'};
+function denied(label,command,pattern){const run=sql(command);assert.notEqual(run.status,0,label);assert.match(run.stderr,pattern,label);assert.ok(isDeepStrictEqual(snapshot(),before),'Transaksi gagal harus tidak meninggalkan objek/data');results.push({check:label,pass:true});console.log(`PASS | ${label}`);}
+const stale=structuredClone(before);stale.baseline.vendors.checksum='intentionally-stale-test-only';
+denied('Baseline stale ditolak sebelum DDL',instrumentMigration(stale,options),/Baseline berubah/);
+denied('Database executor yang salah ditolak',instrumentMigration(before,{executor:'supabase_admin',database:'postgres'}),/Hak executor/);
+const guarded=instrumentMigration(before,options);
+denied('RLS yang sengaja dimatikan di clone memicu rollback seluruh migration',guarded.replace('DO $phase3_post$', 'ALTER TABLE public.vendor_locations DISABLE ROW LEVEL SECURITY;\nDO $phase3_post$'),/tables_rls/);
+const valid=sql(guarded+"\nSELECT 'LOCAL_COMMIT_CONFIRMED';");assert.equal(valid.status,0,valid.stderr.slice(0,1000));assert.match(valid.stdout,/LOCAL_COMMIT_CONFIRMED/);
+const checks=sql(phase3ChecksSql+';');assert.equal(checks.status,0,checks.stderr.slice(0,600));assert.ok(Object.values(JSON.parse(checks.stdout)).every(v=>v===true));
+results.push({check:'Migration valid COMMIT dan seluruh check struktur/RLS lulus',pass:true});console.log('PASS | Migration valid COMMIT dan seluruh check struktur/RLS lulus');
+const platform=sql(`LOAD 'supautils'; BEGIN; SET LOCAL ROLE postgres;
+ SELECT jsonb_build_object('management',(${privilegeSql})->'storage_policy_management','owner',pg_has_role(current_user,(SELECT relowner FROM pg_class WHERE oid='storage.objects'::regclass),'USAGE'));
+ CREATE POLICY __phase3_supautils_probe ON storage.objects AS RESTRICTIVE FOR SELECT USING(true);
+ DROP POLICY __phase3_supautils_probe ON storage.objects; ROLLBACK;`);
+assert.equal(platform.status,0,platform.stderr.slice(0,600));
+assert.deepEqual(JSON.parse(platform.stdout),{management:true,owner:false});
+results.push({check:'Supautils mengizinkan policy Storage untuk postgres non-pemilik; probe rollback',pass:true});console.log('PASS | Policy Storage melalui supautils untuk postgres non-pemilik; probe rollback');
+const report={checked_at:new Date().toISOString(),container:info.name,network:'none',production_migration_executed:false,results};
+fs.writeFileSync('docs/vendor-management/phase3-evidence/RELEASE_TRANSACTION_TEST_RESULTS.json',JSON.stringify(report,null,2)+'\n');

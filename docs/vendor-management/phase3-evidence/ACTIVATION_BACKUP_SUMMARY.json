@@ -14,12 +14,15 @@
   "storage_bytes_verified": 29027178,
   "all_blob_hashes_rechecked_after_copy": true,
   "technical_checks_passed": true,
-  "migration_approval_pending": true,
+  "migration_approval_pending": false,
   "ready_for_production_migration": false,
-  "production_migration_executed": false,
+  "production_migration_executed": true,
   "application_restore_verified": true,
   "supabase_platform_restore_complete": false,
   "storage_restore_service_verified": false,
   "restore_container_stopped": true,
-  "production_migration_sha256": "7f38d171690ceaf1afb2d0b8df4eb3462d48c41a49caf63bca7c2dd3bc945e2f"
+  "production_migration_sha256": "7f38d171690ceaf1afb2d0b8df4eb3462d48c41a49caf63bca7c2dd3bc945e2f",
+  "production_migration_verified": true,
+  "production_migration_verified_at": "2026-11-10T02:29:39.021Z",
+  "production_migration_executor": "postgres"
 }

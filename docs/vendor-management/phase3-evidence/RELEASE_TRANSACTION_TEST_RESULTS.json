@@ -1,0 +1,28 @@
+{
+  "checked_at": "2026-11-10T02:29:05.842Z",
+  "container": "harmas-vendor-restore-phase3-20261110-b010c3b7",
+  "network": "none",
+  "production_migration_executed": false,
+  "results": [
+    {
+      "check": "Baseline stale ditolak sebelum DDL",
+      "pass": true
+    },
+    {
+      "check": "Database executor yang salah ditolak",
+      "pass": true
+    },
+    {
+      "check": "RLS yang sengaja dimatikan di clone memicu rollback seluruh migration",
+      "pass": true
+    },
+    {
+      "check": "Migration valid COMMIT dan seluruh check struktur/RLS lulus",
+      "pass": true
+    },
+    {
+      "check": "Supautils mengizinkan policy Storage untuk postgres non-pemilik; probe rollback",
+      "pass": true
+    }
+  ]
+}

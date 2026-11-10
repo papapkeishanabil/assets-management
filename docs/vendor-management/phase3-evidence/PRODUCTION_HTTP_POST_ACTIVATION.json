@@ -1,0 +1,74 @@
+{
+  "checked_at": "2026-11-10T02:30:45.954Z",
+  "mode": "Anonymous read-only HTTP GET",
+  "checks": [
+    {
+      "check": "anonymous_vendor_locations_denied",
+      "http_status": 401,
+      "pass": true
+    },
+    {
+      "check": "anonymous_vendor_location_photos_denied",
+      "http_status": 401,
+      "pass": true
+    },
+    {
+      "check": "anonymous_vendor_map_points_denied",
+      "http_status": 401,
+      "pass": true
+    },
+    {
+      "check": "anonymous_photo_reader_false",
+      "http_status": 200,
+      "pass": true
+    },
+    {
+      "check": "public_auth_configuration",
+      "http_status": 200,
+      "pass": true
+    },
+    {
+      "check": "existing_public_storage_sample",
+      "bucket": "assets",
+      "http_status": 200,
+      "backup_hash_matches": true,
+      "pass": true
+    },
+    {
+      "check": "existing_public_storage_sample",
+      "bucket": "employee-photos",
+      "http_status": 200,
+      "backup_hash_matches": true,
+      "pass": true
+    },
+    {
+      "check": "existing_public_storage_sample",
+      "bucket": "maintenance-photos",
+      "http_status": 200,
+      "backup_hash_matches": true,
+      "pass": true
+    },
+    {
+      "check": "existing_public_storage_sample",
+      "bucket": "ppm-documents",
+      "http_status": 200,
+      "backup_hash_matches": true,
+      "pass": true
+    },
+    {
+      "check": "frontend_map_route",
+      "http_status": 200,
+      "pass": true
+    },
+    {
+      "check": "frontend_release_unchanged",
+      "http_status": 200,
+      "pass": true
+    }
+  ],
+  "write_requests": 0,
+  "new_accounts": 0,
+  "authenticated_production_business_uat": false,
+  "real_osm_tiles_tested": false,
+  "status": "PASS"
+}
