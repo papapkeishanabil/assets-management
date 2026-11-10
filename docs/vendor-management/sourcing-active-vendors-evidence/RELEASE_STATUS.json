@@ -1,0 +1,23 @@
+{
+  "released_at": "2026-11-10T08:53:53.758Z",
+  "source_commit": "5ef09fdcc5e5249b4708d72d9059d2073af69813",
+  "project_id": "prj_2MBxDEiNjz80jfB2L0dQ55hUbG0P",
+  "team_id": "team_gulGpJeEXpB77MplKv8w4Ilo",
+  "deployment_id": "dpl_8SDAoYq6yauaAa6X7wQvoLPNkzp4",
+  "deployment": "https://harmas-asset-management-l6a58dmzy.vercel.app",
+  "production_domain": "https://harmas-asset-management.vercel.app",
+  "primary_alias_verified_by_cli_inspect": true,
+  "staged_and_public_artifacts_verified": 9,
+  "anonymous_login_guards_verified": 6,
+  "release_runtime_error_entries": 0,
+  "runtime_error_query_window": "10m at release time; not authenticated business UAT",
+  "rollback_deployment_id": "dpl_3P4JiPZE2QwZE1EsQVDBHZgsTX2Q",
+  "rollback_url": "https://harmas-asset-management-a7qfp4wli.vercel.app",
+  "production_database_migrations": false,
+  "production_business_data_written": false,
+  "production_accounts_created": false,
+  "rls_changed": false,
+  "git_push": false,
+  "authenticated_sourcing_production_uat": false,
+  "remaining_risk": "Cloud Vercel public Supabase variables still placeholders; this release uses locally validated prebuilt config."
+}

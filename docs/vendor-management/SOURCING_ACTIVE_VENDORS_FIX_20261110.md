@@ -1,6 +1,6 @@
 # Akses lihat Vendor Aktif untuk Sourcing
 
-Status 10 November 2026: **implementasi dan uji lokal selesai; belum dideploy**.
+Status 10 November 2026: **sudah aktif di produksi, 10 November 2026 sekitar 15.54 WIB**.
 Pengguna menyetujui perbaikan setelah ditemukan izin `vendors` aktif di pengaturan,
 tetapi sidebar dan route `/vendors` masih dibatasi Super Admin/HRD.
 
@@ -72,11 +72,26 @@ Hash build dan sumber: [VERIFICATION_SUMMARY.json](sourcing-active-vendors-evide
 
 ## Rilis
 
-Tidak ada akses/penulisan DB produksi, perubahan RLS produksi, migration, push Git,
-atau deployment untuk perbaikan ini. Data bisnis existing tidak disentuh.
-Perubahan dapat dirilis sebagai frontend saja setelah persetujuan deployment.
-Rilis harus memakai prosedur prebuilt dengan validasi public config Supabase,
-karena environment cloud Vercel masih memiliki placeholder sebagaimana laporan rilis sebelumnya.
+Pengguna menyetujui rilis dengan “ok deploy”. Frontend **5ef09fdc** sudah aktif di
+https://harmas-asset-management.vercel.app/vendors . Deployment
+**dpl_8SDAoYq6yauaAa6X7wQvoLPNkzp4**, URL unik
+https://harmas-asset-management-l6a58dmzy.vercel.app . Sembilan hash artifact cocok
+di staging dan domain utama; enam guard anonim PASS, nol error browser/asset gagal/
+request tulis. Query runtime error pada jendela rilis mengembalikan nol entri.
+
+Tidak ada penulisan DB produksi, migration, perubahan RLS, akun baru atau push Git.
+GET public Auth settings memvalidasi konfigurasi; tidak mengambil data bisnis.
+Konfigurasi cloud Vercel masih placeholder; cache build publik lokal divalidasi dan
+dikoreksi untuk rilis prebuilt, tanpa perubahan environment cloud.
+
+Bukti: [preflight](sourcing-active-vendors-evidence/RELEASE_PREFLIGHT.json),
+[staging](sourcing-active-vendors-evidence/STAGING_CHECKS.json),
+[produksi](sourcing-active-vendors-evidence/PRODUCTION_CHECKS.json),
+[status dan rollback](sourcing-active-vendors-evidence/RELEASE_STATUS.json).
+Rollback frontend: dpl_3P4JiPZE2QwZE1EsQVDBHZgsTX2Q,
+https://harmas-asset-management-a7qfp4wli.vercel.app .
+UAT dengan akun Sourcing produksi belum dilakukan oleh agent; verifikasi role yang
+lengkap dilakukan di Docker. Pengguna dapat menjalankan UAT menggunakan akun sendiri.
 
 Sesudah rilis: login Sourcing dengan vendors ON, buka Vendor Aktif dari sidebar
 dan URL, periksa profil hanya lihat dan lokasi sesuai vendor_map. Uji vendors OFF

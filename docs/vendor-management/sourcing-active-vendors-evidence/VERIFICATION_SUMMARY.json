@@ -22,5 +22,7 @@
   "rls_changed": false,
   "migrations_required": false,
   "git_push": false,
-  "deployed": false
+  "deployed": true,
+  "deployment_id": "dpl_8SDAoYq6yauaAa6X7wQvoLPNkzp4",
+  "production_verification": "PRODUCTION_CHECKS.json (read-only anonymous checks; separate from local test results)"
 }

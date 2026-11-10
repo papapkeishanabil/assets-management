@@ -1,0 +1,102 @@
+{
+  "checked_at": "2026-11-10T08:53:53.758Z",
+  "origin": "https://harmas-asset-management.vercel.app",
+  "deployment_id": "dpl_8SDAoYq6yauaAa6X7wQvoLPNkzp4",
+  "commit": "5ef09fdc",
+  "checks": [
+    {
+      "path": "/index.html",
+      "http_status": 200,
+      "sha256": "d6dbbe1f780cb413fca1ac67136333500f58459bc8fb072ba554d8ea0ecdd2de",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/index-CqjY3wg6.js",
+      "http_status": 200,
+      "sha256": "bbcfc823249e89d9a9e902f3c6d27eb1dc140d5ee69939a55b6562e4d3527721",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/index-CZ6N_Mna.css",
+      "http_status": 200,
+      "sha256": "32d13705d44217becf3c064c3f9c13a240421ea81e271ce493e2898a6c5efa71",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/leaflet-Dgihpmma.css",
+      "http_status": 200,
+      "sha256": "7e14f0f44c4713eb7519182d93575f59139200ca781397a493a11f1dff0ce5e1",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/leaflet-src-BZkwvO7r.js",
+      "http_status": 200,
+      "sha256": "ead0a392333a83a451698648a136a94bafbd989132b1d0c59d68644c83caf688",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/MasterVendorLocationsPanel-CTycJ2kS.js",
+      "http_status": 200,
+      "sha256": "9f9e165260df8c5ed4fa9ddc553b866d15e16499386fbc7a6989ea57a37c5bb0",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorMapPage-Dt3cAaSO.js",
+      "http_status": 200,
+      "sha256": "5995018b056e1ba65657bf3c174089fdb13cc686d2887765124886056577bfbd",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorSourcingPanel-oY7gaXhL.js",
+      "http_status": 200,
+      "sha256": "b991c39e1d9d4cdc91afc5a6aada63ee0b78d92877213c790b94b56f3bfe26ae",
+      "artifact_matches": true
+    },
+    {
+      "path": "/sw.js",
+      "http_status": 200,
+      "sha256": "0c84dc537ab959d9078f721adb4358b7df9665ce9186b15b1eaa250a668c9c14",
+      "artifact_matches": true
+    }
+  ],
+  "routes": [
+    {
+      "path": "/users",
+      "http_status": 200,
+      "login_guard": true
+    },
+    {
+      "path": "/vendors",
+      "http_status": 200,
+      "login_guard": true
+    },
+    {
+      "path": "/vendor",
+      "http_status": 200,
+      "login_guard": true
+    },
+    {
+      "path": "/vendor/database",
+      "http_status": 200,
+      "login_guard": true
+    },
+    {
+      "path": "/vendor/followups",
+      "http_status": 200,
+      "login_guard": true
+    },
+    {
+      "path": "/vendor/map",
+      "http_status": 200,
+      "login_guard": true
+    }
+  ],
+  "browser_errors": 0,
+  "failed_assets": 0,
+  "write_requests": 0,
+  "status": "PASS",
+  "production_authenticated_business_uat": false,
+  "new_accounts_created": false,
+  "additional_migration_executed": false,
+  "git_push_executed": false
+}

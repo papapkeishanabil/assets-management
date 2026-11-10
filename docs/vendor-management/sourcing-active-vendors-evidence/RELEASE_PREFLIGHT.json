@@ -1,0 +1,40 @@
+{
+  "checked_at": "2026-11-10T08:52:34.187Z",
+  "commit": "5ef09fdcc5e5249b4708d72d9059d2073af69813",
+  "scanned_files": 81,
+  "checks": {
+    "sourcing_read_only": true,
+    "edit_identity": true,
+    "password_reset": true,
+    "backend_function": true,
+    "operational_tab": true,
+    "active_vendor_cards": true,
+    "colored_card_badge": true,
+    "sourcing_panel": true,
+    "production_project": true,
+    "vendor_active_menu": true,
+    "candidate_menu": true,
+    "coordinate_tab": true,
+    "create_then_coordinates": true,
+    "master_panel_chunk": true,
+    "free_osm": true,
+    "directions": true,
+    "no_private_patterns": true,
+    "no_environment_or_dump": true
+  },
+  "entry": "/assets/index-CqjY3wg6.js",
+  "entry_sha256": "bbcfc823249e89d9a9e902f3c6d27eb1dc140d5ee69939a55b6562e4d3527721",
+  "tested_source_matches": true,
+  "tested_artifact_matches": true,
+  "public_config": {
+    "checked_at": "2026-11-10T08:52:07.553Z",
+    "project_matches": true,
+    "public_key_validated": true,
+    "auth_settings_readonly_http": 200,
+    "local_build_cache_corrected": true,
+    "cloud_environment_changed": false,
+    "database_writes": false
+  },
+  "rollback_deployment_id": "dpl_3P4JiPZE2QwZE1EsQVDBHZgsTX2Q",
+  "rollback_url": "https://harmas-asset-management-a7qfp4wli.vercel.app"
+}
