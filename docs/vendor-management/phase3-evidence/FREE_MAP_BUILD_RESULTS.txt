@@ -1,0 +1,13 @@
+10 November 2026 — npm.cmd run build — exit 0
+vite v5.4.21
+1579 modules transformed
+dist/assets/leaflet-Dgihpmma.css       15.04 kB | gzip 6.38 kB
+dist/assets/index-IAC4795b.css         82.09 kB | gzip 14.20 kB
+dist/assets/VendorMapPage-Bc8re0uz.js  11.22 kB | gzip 3.91 kB
+dist/assets/leaflet-src-BejwVK5Z.js   149.98 kB | gzip 43.55 kB
+dist/assets/index-Bv4kaRUk.js       1254.13 kB | gzip 306.06 kB
+Frontend built in 5.25s
+Service worker built in 123ms (18.40 kB | gzip 6.13 kB)
+PWA precache: 8 local code/assets entries, 1556.01 KiB
+Warning: Some chunks are larger than 500 kB after minification.
+No deployment or production database operation performed.

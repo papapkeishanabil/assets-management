@@ -4,10 +4,11 @@ import { MapPin, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRolePermissions } from '../../hooks/useRolePermissions';
 import { PROCESS_STAGE_LABELS, QUALIFICATION_LABELS, OPERATIONAL_LABELS, VENDOR_WRITE_ROLES } from '../../lib/vendor-constants';
-import { LOCATION_READ_ROLES, LOCATION_TYPES, VERIFICATION_LABELS, filterMapPoints, googleMapsUrl } from '../../lib/vendor-location-utils';
+import { LOCATION_READ_ROLES, LOCATION_TYPES, VERIFICATION_LABELS, filterMapPoints } from '../../lib/vendor-location-utils';
 import { fetchMapPoints, fetchMapSpecialties } from '../../lib/vendor-location-helpers';
 import { fetchFollowupOptions } from '../../lib/vendor-followup-helpers';
-import VendorGoogleMap from '../../components/vendor/VendorGoogleMap';
+import VendorMap from '../../components/vendor/VendorMap';
+import VendorLocationNavigation from '../../components/vendor/VendorLocationNavigation';
 import SignedVendorPhoto from '../../components/vendor/SignedVendorPhoto';
 import LinkActiveVendorModal from '../../components/vendor/LinkActiveVendorModal';
 
@@ -60,19 +61,20 @@ export default function VendorMapPage() {
     {!loading && !error && backendPending && <p role="status" className="card p-4 text-sm text-ink-400">Lokasi dan foto vendor belum aktif. Data sourcing dan follow-up tetap dapat digunakan.</p>}
     {loading ? <div className="card p-8 text-ink-400" role="status">Memuat seluruh lokasi vendor…</div> : !error && <>
       <div className="flex flex-wrap gap-3 items-center"><button disabled={backendPending} className={mode === 'all' ? 'btn-primary' : 'btn-secondary'} onClick={() => { setMode('all'); setPage(0); }}>Semua lokasi ({backendPending ? '—' : filtered.length})</button><button disabled={backendPending} className={mode === 'unmapped' ? 'btn-primary' : 'btn-secondary'} onClick={() => { setMode('unmapped'); setPage(0); }}>Belum Dipetakan ({backendPending ? '—' : unmapped.length})</button><span className="text-sm text-ink-400">{backendPending ? 'Data lokasi belum tersedia' : `${mapped.length} titik berkoordinat`}</span></div>
-      <VendorGoogleMap points={mapped} onSelect={select} height={420} />
-      {selected && <div className="card p-5 grid sm:grid-cols-[180px_1fr] gap-4">
+      <VendorMap points={mapped} onSelect={select} height={420} />
+      {selected && <section aria-label="Detail lokasi pilihan" className="card p-5 grid sm:grid-cols-[180px_1fr] gap-4">
         {selected.cover_path ? <SignedVendorPhoto path={selected.cover_path} alt={`Foto ${selected.location_name}`} /> : <p className="text-ink-500">Foto belum tersedia</p>}
         <div className="space-y-2"><h2 className="text-lg font-semibold text-white">{selected.business_name}</h2><p className="text-sm text-ink-300">{selected.category_name || 'Tanpa kategori'} · {LOCATION_TYPES[selected.location_type] || 'Belum ada lokasi'} · {selected.location_name}</p><p className="text-sm text-ink-400">{[selected.address_line, selected.city, selected.province].filter(Boolean).join(', ') || 'Alamat belum lengkap'}</p><p className="text-xs text-ink-500">{QUALIFICATION_LABELS[selected.qualification_status]} · PIC {selected.pic_name || 'Belum ditugaskan'} · {VERIFICATION_LABELS[selected.verification_status] || 'Belum ada lokasi'}</p>{(selected.whatsapp || selected.phone) && <p className="text-sm text-ink-300">Kontak: {selected.whatsapp || selected.phone}</p>}
-          <div className="flex flex-wrap gap-3"><Link className="text-primary-400 underline" to={`/vendor/database/${selected.candidate_id}?tab=location`}>Detail Vendor</Link>{selected.latitude !== null && selected.longitude !== null && <a className="text-primary-400 underline" href={googleMapsUrl(selected.latitude, selected.longitude)} target="_blank" rel="noopener noreferrer">Buka Google Maps</a>}</div>
+          <div className="flex flex-wrap gap-3"><Link className="text-primary-400 underline" to={`/vendor/database/${selected.candidate_id}?tab=location`}>Detail Vendor</Link><VendorLocationNavigation latitude={selected.latitude} longitude={selected.longitude} /></div>
+          {selected.latitude !== null && selected.longitude !== null && <p className="text-xs text-ink-500">Rute dibuka di Google Maps. Pilih titik awal dan kendaraan di sana.</p>}
         </div>
-      </div>}
+      </section>}
       {list.length === 0 ? <div className="card empty-state p-10">{backendPending ? 'Lokasi akan tampil setelah fitur diaktifkan.' : 'Tidak ada lokasi/vendor sesuai filter.'}</div> : <div className="card overflow-hidden"><div className="overflow-x-auto"><table className="table"><thead><tr><th>Vendor / kategori</th><th>Fasilitas / kota</th><th>Koordinat</th><th>Status lokasi</th><th>Aksi</th></tr></thead><tbody>{list.slice(page * 25, (page + 1) * 25).map((row) => <tr key={`${row.candidate_id}/${row.location_id || ''}`}>
         <td><Link className="text-primary-400" to={`/vendor/database/${row.candidate_id}?tab=location`}>{row.business_name}</Link><p className="text-xs text-ink-500">{row.candidate_code} · {row.category_name || 'Tanpa kategori'}</p></td>
         <td>{row.location_name || 'Belum ada lokasi'}<p className="text-xs text-ink-500">{row.city || 'Kota belum diisi'}{row.is_primary ? ' · Utama' : ''}</p></td>
         <td>{row.latitude !== null && row.longitude !== null ? `${row.latitude}, ${row.longitude}` : <span className="badge-orange">Belum dipetakan</span>}</td>
         <td><span className={row.is_verified ? 'badge-green' : row.is_complete ? 'badge-yellow' : 'badge-orange'}>{row.is_verified ? 'Terverifikasi' : row.is_complete ? 'Perlu verifikasi' : 'Belum lengkap'}</span></td>
-        <td><button className="text-primary-400 underline" onClick={() => select(row)}>Lihat panel</button></td>
+        <td><div className="flex flex-wrap items-center gap-3"><button className="text-primary-400 underline" onClick={() => select(row)}>Lihat panel</button><VendorLocationNavigation latitude={row.latitude} longitude={row.longitude} showView={false} /></div></td>
       </tr>)}</tbody></table></div>
         <div className="flex flex-wrap justify-between gap-3 items-center p-4 text-sm text-ink-400"><span>{list.length} baris · Halaman {page + 1} / {Math.max(1, Math.ceil(list.length / 25))}</span><div className="flex gap-2"><button className="btn-secondary" disabled={page === 0} onClick={() => setPage((n) => n - 1)}>Sebelumnya</button><button className="btn-secondary" disabled={(page + 1) * 25 >= list.length} onClick={() => setPage((n) => n + 1)}>Berikutnya</button></div></div>
       </div>}

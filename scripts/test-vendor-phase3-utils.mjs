@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { writeFileSync } from 'node:fs';
-import { coordinatePair,parseMapCoordinates,googleMapsUrl,clusterMapPoints,filterMapPoints,validatePhotoFile } from '../src/lib/vendor-location-utils.js';
+import { coordinatePair,parseMapCoordinates,googleMapsUrl,vendorDirectionsUrl,clusterMapPoints,filterMapPoints,validatePhotoFile } from '../src/lib/vendor-location-utils.js';
 const results=[];const check=(label,fn)=>{fn();results.push(`PASS | ${label}`);};
 check('Kosong tidak menjadi 0,0',()=>assert.equal(coordinatePair('',''),null));
 check('Nol eksplisit sah',()=>assert.deepEqual(coordinatePair('0','0'),{latitude:0,longitude:0}));
@@ -16,6 +16,11 @@ check('Host palsu/protokol/script ditolak',()=>{for(const s of ['https://google.
 check('URL tanpa koordinat ditolak',()=>assert.throws(()=>parseMapCoordinates('https://www.google.com/maps/place/Bandung')));
 check('Navigasi mengarah pada koordinat sebenarnya',()=>assert.equal(new URL(googleMapsUrl(-6.9,107.6)).searchParams.get('query'),'-6.9,107.6'));
 check('Navigasi kosong tidak membuat URL palsu',()=>assert.equal(googleMapsUrl(null,null),null));
+check('Rute menuju koordinat fasilitas yang dipilih tanpa API key',()=>{const url=new URL(vendorDirectionsUrl(-6.9,107.6));assert.equal(url.origin,'https://www.google.com');assert.equal(url.pathname,'/maps/dir/');assert.equal(url.searchParams.get('api'),'1');assert.equal(url.searchParams.get('destination'),'-6.9,107.6');assert.equal(url.searchParams.get('dir_action'),'navigate');assert.equal(url.searchParams.get('travelmode'),'driving');assert.ok(!url.searchParams.has('key'));});
+check('Rute membiarkan pengguna menentukan titik awal',()=>assert.ok(!new URL(vendorDirectionsUrl(-6.9,107.6)).searchParams.has('origin')));
+check('Rute tanpa GPS tidak dibuat',()=>assert.equal(vendorDirectionsUrl(null,null),null));
+check('Rute menolak koordinat parsial/tidak valid',()=>{assert.throws(()=>vendorDirectionsUrl('-6',''));assert.throws(()=>vendorDirectionsUrl(91,200));});
+check('Nol eksplisit tetap rute yang sah',()=>assert.equal(new URL(vendorDirectionsUrl(0,0)).searchParams.get('destination'),'0,0'));
 const points=Array.from({length:1005},(_,i)=>({latitude:-6.9+i/100000,longitude:107.6+i/100000,category_id:'a',specialty_ids:['s'],process_stage:'LEAD',qualification_status:'PROSPECT',operational_status:'NOT_ACTIVE',internal_pic_id:'u',city:'Bandung',verification_status:'UNVERIFIED',is_primary:i===0,business_name:'Jahit Uji',candidate_code:'VR-X'}));
 check('Cluster mewakili seluruh 1005 titik',()=>assert.equal(clusterMapPoints(points,6).reduce((n,g)=>n+g.items.length,0),1005));
 check('Filter sembilan dimensi dan pencarian',()=>assert.equal(filterMapPoints(points,{category:'a',specialty:'s',stage:'LEAD',qualification:'PROSPECT',operational:'NOT_ACTIVE',pic:'u',city:'Bandung',verification:'UNVERIFIED',primary:true,search:'jahit',scope:'candidate'}).length,1));

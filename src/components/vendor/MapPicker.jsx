@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { parseMapCoordinates } from '../../lib/vendor-location-utils';
-import VendorGoogleMap from './VendorGoogleMap';
+import VendorMap from './VendorMap';
 
 export default function MapPicker({ latitude, longitude, onChange }) {
   const [input, setInput] = useState(''), [draft, setDraft] = useState(null), [gps, setGps] = useState(null), [error, setError] = useState(''), [busy, setBusy] = useState(false);
@@ -20,7 +20,7 @@ export default function MapPicker({ latitude, longitude, onChange }) {
     {draft && <div className="text-sm text-ink-300 p-3 rounded-lg bg-white/5">Titik terbaca: {draft.latitude}, {draft.longitude}. Periksa sebelum dipakai. <button type="button" className="text-primary-400 underline" onClick={() => { onChange(draft); setDraft(null); }}>Gunakan koordinat ini</button></div>}
     {gps && <div role="status" className="text-sm text-ink-300 p-3 rounded-lg bg-white/5">GPS perangkat: {gps.latitude.toFixed(6)}, {gps.longitude.toFixed(6)} · perkiraan ±{Math.round(gps.accuracy)} m. Belum menjadi titik vendor. <button type="button" className="text-primary-400 underline" onClick={() => { onChange({ latitude: gps.latitude, longitude: gps.longitude, coordinate_source: 'DEVICE_GPS' }); setGps(null); }}>Gunakan lokasi perangkat ini</button></div>}
     {error && <p role="alert" className="text-sm text-rose-300">{error}</p>}
-    <VendorGoogleMap points={points} editable onPick={onChange} height={260} />
+    <VendorMap points={points} editable onPick={onChange} height={260} />
     <p className="text-[11px] text-ink-500">Klik atau geser pin dalam mode edit. Koordinat baru tersimpan setelah Simpan Lokasi; GPS/foto tidak otomatis memverifikasi lokasi.</p>
   </div>;
 }

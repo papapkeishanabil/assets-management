@@ -3,6 +3,15 @@
 **Dokumen serah terima untuk agent penerus (Codex).** Disusun 6 November 2026.
 Dokumen induk: [AUDIT_DAN_RENCANA_IMPLEMENTASI.md](AUDIT_DAN_RENCANA_IMPLEMENTASI.md) · Spesifikasi user: [HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md](HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md)
 
+**Keputusan terbaru 10 November 2026:** user memilih layanan GRATIS dan meminta rute
+menuju fasilitas. Rancangan Google Maps JavaScript API diganti **Leaflet 1.9.4 +
+OpenStreetMap tanpa key/billing**; Google Maps dipakai hanya sebagai tautan navigasi
+yang dibuka pengguna. Implementasi lokal dan 64 pemeriksaan lulus, build lulus.
+[Laporan perubahan peta gratis/rute](FREE_MAP_AND_DIRECTIONS_20261110.md).
+Versi gratis ini belum di-deploy; frontend utama masih `d3beb8f5`. Migration Fase 3
+juga belum mendapat persetujuan eksekusi. Panduan Google Cloud lama menjadi opsional,
+bukan prasyarat versi gratis. Jangan membuka billing atau meminta key Maps lagi.
+
 **Pembaruan 9 November 2026:** Fase 2 **sudah terpasang di produksi**; isi empat fungsi cocok
 dengan migration dan frontend publik memuat Fase 1+2. Commit Fase 2 `c02a66d5`, HEAD lokal
 `12de0de4`; reflog mencatat push 6 November pukul 14.39 WIB. Jangan ulangi migration/deploy.
@@ -53,8 +62,9 @@ Helper tidak menjalankan migration atau mengubah environment cloud.
 139 tabel COPY/1.905 baris cocok, 95 blob cocok ukuran/ETag/hash. Migration dua kali
 hanya di clone; produksi belum dimigration. Container restore dihentikan. Lihat
 [kesiapan aktivasi terbaru dan batas restore platform](PHASE3_ACTIVATION_READINESS_20261109.md).
-User belum memiliki Google Maps key/Map ID dan sedang dipandu setup. Langkah berikut:
-persetujuan eksplisit migration Fase 3, bukan mengulang backup tanpa alasan.
+Pilihan key/Map ID kemudian diganti peta gratis pada 10 November. Langkah berikut:
+persetujuan deploy frontend gratis dan persetujuan eksplisit migration Fase 3. Perbarui
+preflight/baseline saat akan migration karena snapshot backup berasal dari 9 November.
 
 ---
 
@@ -79,7 +89,7 @@ persetujuan eksplisit migration Fase 3, bukan mengulang backup tanpa alasan.
 | Backup pra-Fase 3 terbaru | `D:\Backups\harmas-pre-phase3-20261109-162946-b0c15d41`; restore logis 139 tabel/1.905 baris cocok, 95 blob cocok ETag/hash; full stack platform belum direstore |
 | Git | Fase 2 `c02a66d5`, origin lokal `12de0de4`; dokumentasi penerimaan Fase 1+2 `73b8680a`, implementasi Fase 3 pada commit lokal berikutnya (lihat git log). Tidak ada push baru |
 | Fase 2 | Schema dan frontend produksi; UAT baca 9 PASS + lifecycle 6 PASS, akun uji bersih; kandidat/follow-up masih 0 |
-| Fase 3 | Frontend alamat utama sudah READY, backend lokasi belum aktif; migration/rollback dan bukti uji di [laporan](PHASE3_IMPLEMENTATION_REPORT.md). Migration tetap menunggu backup/preflight/persetujuan, Maps belum dikonfigurasi |
+| Fase 3 | Frontend utama rilis lama; peta GRATIS Leaflet/OSM + rute selesai lokal, 64 pemeriksaan/build lulus, menunggu persetujuan deploy. Backend lokasi masih menunggu persetujuan migration |
 | Fase 4–5 | Belum dimulai. Rancangan lengkap di dokumen induk §D–G |
 
 ## 3. Stack & Konvensi Kode
@@ -150,7 +160,18 @@ Skrip produksi berguna (baca env, tidak hardcode): `check-prod-compat.js` (probe
 - Reminder overdue → tabel `notifications` existing (`user_id = user_profiles.id`, insert by authenticated — policy sudah ada).
 - Module key: `vendor_followups`; tulis = sourcing/hrd/super_admin (RLS mengikuti pola fase 1).
 
-**Fase 3 — Lokasi & Peta Google Maps**: `vendor_locations` (multi-fasilitas; `location_type`, `is_primary` + **partial unique index** per kandidat, alamat terstruktur `address_line/village/district/city/province/postal_code`, `latitude DECIMAL(9,6)/longitude DECIMAL(10,6)` + CHECK pasangan-lengkap & rentang, `coordinate_source`, `verification_status UNVERIFIED/NEEDS_REVISIT/VERIFIED`, `verified_by/at/notes`) + `vendor_location_photos` (`photo_type EXTERIOR/ENTRANCE/PRODUCTION_AREA/MACHINES/WAREHOUSE/OTHER`, `is_cover`, file mime/size) + **bucket PRIVATE `vendor-photos`** + signed URL (pola upload publik lama TIDAK dipakai untuk foto lokasi — rumah pribadi) + halaman `/vendor/map` (Google Maps JS API, AdvancedMarkerElement + `mapId`, lazy-load `VITE_GOOGLE_MAPS_API_KEY`/`VITE_GOOGLE_MAPS_MAP_ID` — **API key belum ada, user harus setup Google Cloud**; wajib fallback daftar+tombol navigasi `google.com/maps/search/?api=1&query=lat,lng`) + MapPicker (paste koordinat/URL Maps parser pola `@lat,lng` & `?q=`, GPS perangkat `navigator.geolocation` — baru dipakai setelah konfirmasi petugas) + retrofit lokasi vendor aktif via kandidat ter-link. View `vendor_map_points` untuk pin gabungan.
+**Fase 3 — Lokasi & Peta Gratis (keputusan user 10 Nov menggantikan penyedia Google awal):**
+`vendor_locations` multi-fasilitas + partial unique primary, alamat terstruktur, koordinat
+DECIMAL nullable berpasangan/rentang, sumber dan verifikasi lokasi; `vendor_location_photos`
+multi-jenis/cover/mime/size; bucket PRIVATE `vendor-photos` dan signed URL. Halaman
+`/vendor/map` serta MapPicker memakai **Leaflet 1.9.4 + OpenStreetMap**, lazy-load tanpa
+API key/billing, cluster/viewport/resize dan fallback ketika tile gagal. Atribusi OSM,
+referrer origin, cache HTTP serta larangan bulk/offline tile harus dipertahankan.
+Input manual/URL Maps/GPS tetap didukung; GPS hanya dipakai setelah konfirmasi.
+Retrofit master aktif tetap via kandidat ter-link dan view `vendor_map_points`.
+Tombol **Rute ke Lokasi** membuka Google Maps memakai Maps URLs tanpa API key, tujuan
+GPS fasilitas, origin ditentukan oleh Google Maps/pengguna. Tidak memanggil Directions API
+atau memalsukan rute jalan berupa garis lurus. Data/guard migration tetap sama.
 
 **Fase 4 — Sampling & QC**: `vendor_samples` (`sample_code S-####`, `sample_type`, `product_code`, brief/techpack_path, `material_source HARMAS/VENDOR/GABUNGAN/TIDAK_RELEVAN`, qty/unit/cost, assigned/target/received, `status`, `related_sample_id` self-FK) + `vendor_qc_parameters` (master rubrik per kategori; seed 6 dari Excel: Kesesuaian Spek, Ukuran/Gramasi, Hasil Pengerjaan, Bahan/Warna, Finishing, Fungsi/Ketahanan — skor 1–5) + `vendor_sample_qc_runs` (1 baris=1 putaran; `UNIQUE(sample_id, run_no)`; **`inspector_name` NOT NULL + `inspector_employee_id→employees` NULL + `inspected_at`** = data petugas QC; `parameter_scores JSONB`, avg, decision LULUS/REVISI/TIDAK_LULUS, findings, required_fixes, revision_due, photos, `document_path`, `input_by/input_at` = Sourcing penginput) + `vendor_qc_run_revisions` (koreksi hasil wajib `edit_reason`, trigger ON UPDATE mencatat old/new + siapa/kapan; DELETE hasil QC dilarang; revisi sampel = putaran QC baru). Hasil QC ≠ approval.
 
@@ -164,7 +185,7 @@ Skrip produksi berguna (baca env, tidak hardcode): `check-prod-compat.js` (probe
 
 1. **Penetapan petugas Sourcing permanen** untuk penggunaan operasional: belum dilakukan. UAT baca dengan dua akun sementara yang disetujui sudah selesai, akun/sesi sudah dibersihkan; jangan menjalankan ulang lifecycle tanpa persetujuan baru.
 2. Tentukan scope pengujian tulis/reminder nyata bila diperlukan. Jangan membuat riwayat follow-up dummy permanen atau mengubah akun existing tanpa izin. Migration/push/deploy Fase 1+2 sudah teramati; jangan ulangi untuk UAT.
-3. Setup **Google Cloud Maps** (untuk Fase 3) — bisa diperlambat.
+3. Peta gratis Leaflet/OSM menggantikan kebutuhan Google Cloud. Deploy versi baru setelah disetujui; jangan menganggap tile publik layanan tanpa batas/SLA.
 4. Persetujuan eksplisit migration Fase 3 setelah [backup/preflight terverifikasi](PHASE3_ACTIVATION_READINESS_20261109.md). Frontend utama sudah dirilis; Google Cloud masih dipandu. Push Git belum dilakukan. Jangan menjalankan harness lokal terhadap produksi.
 
 ## 10. Cara Memulai (untuk Codex)

@@ -22,12 +22,13 @@ try {
   const login = await fetch(`${api}/auth/v1/token?grant_type=password`, { method:'POST', headers:{apikey:anon,'Content-Type':'application/json'}, body:JSON.stringify({email:'sourcing.test@harmas.local',password}) });
   assert.equal(login.status,200); const auth = await login.json();
   const { createServer } = await import('vite');
-  server = await createServer({ envFile:false, define:{'import.meta.env.VITE_SUPABASE_URL':JSON.stringify(api),'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY':JSON.stringify(anon),'import.meta.env.VITE_GOOGLE_MAPS_API_KEY':'""','import.meta.env.VITE_GOOGLE_MAPS_MAP_ID':'""'}, server:{host:'127.0.0.1',port:7015,strictPort:true}, clearScreen:false }); await server.listen();
+  server = await createServer({ envFile:false, define:{'import.meta.env.VITE_SUPABASE_URL':JSON.stringify(api),'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY':JSON.stringify(anon),'import.meta.env.VITE_VENDOR_MAP_TILE_URL':'""','import.meta.env.VITE_VENDOR_MAP_TILE_CREDIT':'""'}, server:{host:'127.0.0.1',port:7015,strictPort:true}, clearScreen:false }); await server.listen();
   const { chromium } = await import(pathToFileURL(process.env.PLAYWRIGHT_PACKAGE_PATH).href);
   browser = await chromium.launch({headless:true}); const context = await browser.newContext();
   await context.addInitScript(a => localStorage.setItem('sb-127-auth-token',JSON.stringify(a)),auth);
   await context.route('**/*', route => {
     const request = route.request(), url = new URL(request.url());
+    if(url.hostname==='tile.openstreetmap.org') return route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#e2e8f0"/></svg>'});
     if (!['127.0.0.1','localhost'].includes(url.hostname)) return route.abort();
     if (/\/rest\/v1\/(?:vendor_map_points|vendor_locations|rpc\/vendor_location_monitoring)$/.test(url.pathname)) {
       const code = mode === 'denied' ? '42501' : url.pathname.includes('/rpc/') ? 'PGRST202' : 'PGRST205';

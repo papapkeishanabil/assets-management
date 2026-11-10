@@ -1,5 +1,10 @@
 # Setup Google Maps untuk HARMAS
 
+**Catatan 10 November 2026:** user memilih peta gratis Leaflet/OpenStreetMap dan
+navigasi melalui Maps URLs. Google Cloud/API key/Map ID pada panduan ini **tidak
+diperlukan** untuk pilihan terbaru. Dokumen disimpan sebagai referensi rancangan
+Google yang lama. Lihat [implementasi peta gratis](FREE_MAP_AND_DIRECTIONS_20261110.md).
+
 Tujuan: menampilkan Google Maps pada `/vendor/map` dan pemilih pin lokasi.
 Frontend sudah tersedia di produksi; konfigurasi Google Cloud belum dibuat.
 Panduan diperiksa dengan dokumentasi resmi pada 9 November 2026.

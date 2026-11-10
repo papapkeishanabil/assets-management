@@ -1,8 +1,9 @@
 // Harness lokal, tidak diimpor aplikasi produksi dan tidak memakai database.
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import VendorGoogleMap from '../../src/components/vendor/VendorGoogleMap';
+import VendorMap from '../../src/components/vendor/VendorMap';
 import MapPicker from '../../src/components/vendor/MapPicker';
+import VendorLocationNavigation from '../../src/components/vendor/VendorLocationNavigation';
 
 const points = [
   { location_id: 'a', business_name: 'Vendor A', location_name: 'Workshop', latitude: -6.9, longitude: 107.6 },
@@ -16,10 +17,13 @@ function Harness() {
     <button onClick={() => setMode('read')}>Dua titik</button>
     <button onClick={() => setMode('many')}>Banyak titik</button>
     <button onClick={() => setMode('edit')}>Edit titik</button>
+    <button onClick={() => setMode('same')}>Titik berimpit</button>
+    <button onClick={() => setMode('invalid')}>Titik tidak valid</button>
     <output aria-label="Pilihan vendor">{selected}</output>
     <output aria-label="Koordinat dipilih">{JSON.stringify(picked)}</output>
+    <VendorLocationNavigation latitude={picked.latitude} longitude={picked.longitude} />
     {mode === 'edit' ? <MapPicker {...picked} onChange={setPicked} />
-      : <VendorGoogleMap points={mode === 'many' ? many : points} onSelect={(p) => setSelected(p.location_id)} />}
+      : <VendorMap points={mode === 'many' ? many : mode === 'same' ? points.map((p) => ({ ...p, latitude: -6.9, longitude: 107.6 })) : mode === 'invalid' ? [{ latitude: 91, longitude: 200 }] : points} onSelect={(p) => setSelected(p.location_id)} />}
   </main>;
 }
 createRoot(document.getElementById('root')).render(<Harness />);

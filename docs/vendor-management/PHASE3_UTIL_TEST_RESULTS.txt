@@ -12,6 +12,11 @@ PASS | Host palsu/protokol/script ditolak
 PASS | URL tanpa koordinat ditolak
 PASS | Navigasi mengarah pada koordinat sebenarnya
 PASS | Navigasi kosong tidak membuat URL palsu
+PASS | Rute menuju koordinat fasilitas yang dipilih tanpa API key
+PASS | Rute membiarkan pengguna menentukan titik awal
+PASS | Rute tanpa GPS tidak dibuat
+PASS | Rute menolak koordinat parsial/tidak valid
+PASS | Nol eksplisit tetap rute yang sah
 PASS | Cluster mewakili seluruh 1005 titik
 PASS | Filter sembilan dimensi dan pencarian
 PASS | Filter aktif tidak mencampur calon
@@ -19,4 +24,4 @@ PASS | Signature PNG valid
 PASS | Signature palsu ditolak
 PASS | Ekstensi/MIME berbeda ditolak
 PASS | File >5 MB ditolak
-TOTAL: 21 PASS
+TOTAL: 26 PASS

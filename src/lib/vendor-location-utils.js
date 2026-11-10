@@ -34,6 +34,15 @@ export function googleMapsUrl(latitude, longitude) {
   return point ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${point.latitude},${point.longitude}`)}` : null;
 }
 
+export function vendorDirectionsUrl(latitude, longitude) {
+  const point = coordinatePair(latitude, longitude);
+  if (!point) return null;
+  // Origin sengaja tidak dikirim: Google Maps memakai posisi pengguna bila
+  // tersedia, atau meminta titik awal. Tidak meminta GPS aplikasi secara diam-diam.
+  const params = new URLSearchParams({ api: '1', destination: `${point.latitude},${point.longitude}`, travelmode: 'driving', dir_action: 'navigate' });
+  return `https://www.google.com/maps/dir/?${params}`;
+}
+
 export function locationReadiness(location) {
   const point = coordinatePair(location.latitude, location.longitude);
   const complete = Boolean(point && location.address_line?.trim() && location.city?.trim() && location.province?.trim()

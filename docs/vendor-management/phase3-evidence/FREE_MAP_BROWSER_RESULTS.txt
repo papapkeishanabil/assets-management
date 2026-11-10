@@ -1,0 +1,11 @@
+PASS | Leaflet nyata menampilkan tile dan dua pin tanpa API key; atribusi terlihat
+PASS | Klik pin memilih fasilitas yang tepat
+PASS | Seluruh 1005 fasilitas terwakili dalam cluster tanpa 1005 marker DOM
+PASS | Klik cluster memperbesar viewport
+PASS | Fasilitas dengan GPS berimpit tetap dapat dipilih pada zoom maksimum
+PASS | Klik peta mengubah draf GPS dengan sumber PICK_ON_MAP
+PASS | Drag marker nyata mengubah koordinat draf
+PASS | Tautan rute mengikuti titik terbaru; tanpa origin palsu atau API key
+PASS | GPS di luar rentang tidak membuat pin atau merusak peta
+PASS | Kegagalan tile memberi pesan/retry dan tidak menghilangkan rute
+PASS | Permintaan tile hanya z/x/y dengan referrer origin; 0 Google SDK/geocoder/API produksi atau pageerror

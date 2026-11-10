@@ -10,6 +10,7 @@ import { fetchLocations, setPrimaryLocation } from '../../lib/vendor-location-he
 import { formatFollowupTime } from '../../lib/vendor-followup-helpers';
 import LocationFormModal from './LocationFormModal';
 import LocationPhotos from './LocationPhotos';
+import VendorLocationNavigation from './VendorLocationNavigation';
 
 export default function VendorLocationsPanel({ candidateId, onChanged }) {
   const { role } = useAuth();
@@ -43,7 +44,7 @@ export default function VendorLocationsPanel({ candidateId, onChanged }) {
           {canWrite && <div className="flex flex-wrap gap-2">{!location.is_primary && <button className="btn-secondary" disabled={busy} onClick={() => makePrimary(location.id)}>Jadikan lokasi utama</button>}<button className="btn-secondary" onClick={() => setEditing(location)}>Edit lokasi</button></div>}
         </div>
         <p className="text-sm text-ink-200 whitespace-pre-wrap break-words">{[location.address_line, location.village, location.district, location.city, location.province, location.postal_code].filter(Boolean).join(', ') || 'Alamat belum dilengkapi'}</p>
-        <div className="flex flex-wrap gap-3 text-sm text-ink-400"><span>Koordinat: {navigation ? `${location.latitude}, ${location.longitude}` : 'Belum diisi'}</span>{navigation && <a className="text-primary-400 underline" href={navigation} target="_blank" rel="noopener noreferrer">Buka Google Maps</a>}<span>Sumber: {location.coordinate_source || 'Belum ada'}</span></div>
+        <div className="flex flex-wrap gap-3 text-sm text-ink-400"><span>Koordinat: {navigation ? `${location.latitude}, ${location.longitude}` : 'Belum diisi'}</span><VendorLocationNavigation latitude={location.latitude} longitude={location.longitude} /><span>Sumber: {location.coordinate_source || 'Belum ada'}</span></div>
         <p className="text-xs text-ink-500">{VERIFICATION_LABELS[location.verification_status]}{location.verified_at && ` · ${location.verifier?.full_name || 'Petugas'} · ${formatFollowupTime(location.verified_at)}`}{location.verification_notes && ` · ${location.verification_notes}`}</p>
         <LocationPhotos location={location} canWrite={canWrite} canArchive={role?.role_name === 'super_admin'} onChanged={refresh} />
       </article>;
