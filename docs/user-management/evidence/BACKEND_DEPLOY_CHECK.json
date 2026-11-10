@@ -1,0 +1,53 @@
+{
+  "checked_at": "2026-11-10T08:27:31.535Z",
+  "project_ref": "uwlxkwyauxwewoexfgwi",
+  "function_slug": "smooth-task",
+  "source_directory": "supabase/functions/admin-update-user",
+  "business_writes_attempted": false,
+  "authenticated_production_mutations_tested": false,
+  "source_downloaded_or_compared": false,
+  "checks": [
+    {
+      "method": "OPTIONS",
+      "invalid_token": false,
+      "status": 200,
+      "body": {
+        "message": "ok"
+      },
+      "cache_control": "no-store",
+      "cors_origin": "*"
+    },
+    {
+      "method": "GET",
+      "invalid_token": false,
+      "status": 405,
+      "body": {
+        "error": "Metode tidak diizinkan"
+      },
+      "cache_control": "no-store",
+      "cors_origin": "*"
+    },
+    {
+      "method": "POST",
+      "invalid_token": false,
+      "status": 401,
+      "body": {
+        "error": "Silakan masuk kembali.",
+        "request_id": "b832408d-1d60-4de1-8b8a-e28f366b230b"
+      },
+      "cache_control": "no-store",
+      "cors_origin": "*"
+    },
+    {
+      "method": "POST",
+      "invalid_token": true,
+      "status": 401,
+      "body": {
+        "code": "UNAUTHORIZED_INVALID_JWT_FORMAT",
+        "message": "Invalid JWT"
+      },
+      "cache_control": null,
+      "cors_origin": "*"
+    }
+  ]
+}

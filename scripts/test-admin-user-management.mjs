@@ -171,7 +171,7 @@ try {
     await ctx.route('**/*', async (route) => {
       const req = route.request(), url = new URL(req.url());
       if (!['127.0.0.1', 'localhost'].includes(url.hostname)) { blocked.push(url.hostname); return route.abort(); }
-      if (url.pathname === '/functions/v1/admin-update-user') {
+      if (url.pathname === '/functions/v1/smooth-task') {
         writes.push({ path: url.pathname, keys: Object.keys(req.postDataJSON()) });
         const response = await route.fetch({ url: `${backend}/admin-update-user` }); return route.fulfill({ response });
       }
@@ -192,10 +192,10 @@ try {
   pass('Browser → function handler → real Auth/PostgREST → refreshed user row succeeds');
   await page.getByRole('button', { name: `Edit identitas ${updated.full_name}`, exact: true }).click(); modal = page.getByRole('dialog');
   await modal.getByLabel('Nomor WhatsApp / telepon', { exact: true }).fill('081234560088');
-  await page.route('**/functions/v1/admin-update-user', (route) => route.fulfill({ status: 404, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ code: 'NOT_FOUND' }) }));
+  await page.route('**/functions/v1/smooth-task', (route) => route.fulfill({ status: 404, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ code: 'NOT_FOUND' }) }));
   await modal.getByRole('button', { name: 'Simpan Identitas', exact: true }).click(); await modal.getByText(/Layanan perubahan pengguna belum aktif/).waitFor();
   assert.equal(await modal.getByLabel('Nomor WhatsApp / telepon', { exact: true }).inputValue(), '081234560088'); assert.equal((await current(target.id)).phone, '081234560099');
-  await page.unroute('**/functions/v1/admin-update-user');
+  await page.unroute('**/functions/v1/smooth-task');
   await modal.getByRole('button', { name: 'Simpan Identitas', exact: true }).click(); await modal.waitFor({ state: 'detached' }); updated = await current(target.id); assert.equal(updated.phone, '081234560088');
   pass('Missing backend gives clear error, preserves edits, and retry succeeds when available');
   await page.getByRole('button', { name: `Edit identitas ${updated.full_name}`, exact: true }).click(); modal = page.getByRole('dialog');

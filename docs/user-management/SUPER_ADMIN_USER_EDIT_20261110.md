@@ -1,10 +1,10 @@
 # Super Admin: edit identitas dan password pengguna
 
-Status 10 November 2026: **implementasi lokal selesai; belum deploy backend/frontend**.
+Status 10 November 2026: **backend dideploy pengguna sebagai smooth-task; frontend disiapkan untuk rilis sesuai persetujuan**.
 Ruang lingkup dikoreksi user menjadi pengelolaan pengguna lain oleh Super Admin,
 bukan penambahan self-service pada Profil Saya. Perubahan awal self-service yang
 belum di-commit sudah dibatalkan; halaman Profil Saya dan AuthContext tidak berubah.
-Tidak ada akses atau penulisan produksi, push Git, migration atau perubahan RLS.
+Pemeriksaan endpoint produksi hanya tanpa sesi/token palsu. Tidak ada penulisan akun produksi, push Git, migration atau perubahan RLS.
 
 ## Cara menggunakan
 
@@ -34,7 +34,7 @@ autocomplete new-password, tombol tampil/sembunyi, validasi konfirmasi dan batas
 | `supabase/functions/admin-update-user/handler.js` | Otorisasi server, validasi input/target, perubahan Auth/profil dan log audit |
 | `scripts/test-admin-user-management.mjs` | Integrasi Auth/PostgREST, role, kegagalan sinkronisasi dan browser lokal |
 
-Alur: browser mengirim access token pengguna ke **Edge Function admin-update-user**.
+Alur: browser mengirim access token pengguna ke **Edge Function smooth-task** (source folder admin-update-user).
 Backend memvalidasi token dengan Auth getUser, lalu membaca **role dan status akun
 terkini dari database**. Hanya profile ACTIVE dengan role super_admin diterima.
 Metadata user, role dari body dan Auth user ID dari browser tidak dipercaya.
@@ -105,7 +105,7 @@ dengan Supabase Auth/PostgREST nyata Docker. Uji browser final meneruskan path f
 lokal ke **entrypoint Deno asli**, SDK 2.110.8 yang dipin, dengan koneksi runtime
 dibatasi ke Docker loopback. **Deno 2.9.6 check entrypoint exit 0**, dan penyimpanan
 identitas/password melalui browser → Deno → Docker berhasil. Runtime lokal kemudian
-dihentikan. Gateway/hosting Edge Supabase cloud belum di-deploy; belum ada UAT produksi.
+dihentikan. Fungsi cloud dideploy pengguna sebagai smooth-task dan penolakan request tanpa otorisasi sudah diperiksa; belum ada UAT mutasi akun produksi.
 
 `npm run build` exit 0; warning bundle utama existing >500 kB tetap ada. Scan bundle
 frontend menemukan **0 kredensial privat/service-role JWT**. Hash sumber/artifact:
@@ -113,10 +113,10 @@ frontend menemukan **0 kredensial privat/service-role JWT**. Hash sumber/artifac
 Screenshot data sintetis: [edit identitas](evidence/admin-identity-desktop.png),
 [ubah password mobile](evidence/admin-password-mobile.png).
 
-## Rilis yang menunggu persetujuan
+## Catatan rilis
 
 Tidak perlu migration baru; kolom profil/organisasi sudah menjadi schema aplikasi
-existing. Rilis harus mencakup **fungsi Supabase admin-update-user dan frontend**:
+existing. Rilis harus mencakup **fungsi Supabase smooth-task (source admin-update-user) dan frontend**:
 
 1. Verifikasi project Supabase HARMAS dan kredensial deployment yang sudah tersedia;
    jangan mengambil service key produksi dari file legacy atau meminta password di chat.
@@ -126,10 +126,9 @@ existing. Rilis harus mencakup **fungsi Supabase admin-update-user dan frontend*
    produksi memerlukan akun target dan izin yang sesuai; jangan mengganti password
    akun bisnis hanya untuk melakukan pengujian.
 4. Build/stage/deploy frontend sesuai prosedur rilis Vercel existing, dengan validasi
-   konfigurasi publik Supabase. Domain masih memakai dashboard rilis 539932d1.
+   konfigurasi publik Supabase. Hash dan deployment final dicatat dalam laporan rilis.
 5. Super Admin membuka Pengguna dan mencoba fungsi pada akun yang disetujui.
 
-Push Git juga belum dijalankan. Deployment baru memerlukan persetujuan user sesuai
-batasan rilis sesi ini. Rollback frontend dapat kembali ke deployment sebelumnya;
+Push Git juga belum dijalankan. User sudah menyetujui deployment fitur ini. Rollback frontend dapat kembali ke deployment sebelumnya;
 penghapusan/penonaktifan fungsi baru dan perubahan produksi lain tetap melalui
 persetujuan. Jangan menjalankan ulang migration vendor untuk fitur pengguna ini.

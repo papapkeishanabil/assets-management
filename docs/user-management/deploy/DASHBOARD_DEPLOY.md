@@ -1,14 +1,19 @@
 # Deploy backend melalui Dashboard Supabase
 
-Paket untuk project **uwlxkwyauxwewoexfgwi**, fungsi **admin-update-user**.
+**Status aktual:** pengguna sudah men-deploy paket ini dengan slug **smooth-task**.
+Frontend memakai smooth-task. Source/ZIP tetap bernama admin-update-user; tidak
+perlu membuat fungsi duplikat. Instruksi berikut untuk pemeliharaan paket.
+
+
+Paket untuk project **uwlxkwyauxwewoexfgwi**, fungsi **smooth-task**.
 Source commit **b5d07ba5**; paket berisi dua file yang sama dengan source teruji.
 Tidak mengandung .env atau kredensial. Persetujuan deployment sudah diberikan user.
 
 1. Buka https://supabase.com/dashboard/project/uwlxkwyauxwewoexfgwi/functions .
-2. Pilih **Deploy a new function → Via Editor**.
+2. Pilih fungsi **smooth-task** yang sudah ada dan buka editor.
 3. Seret file **admin-update-user.zip** di folder ini ke editor. Pastikan muncul
    `index.ts` dan `handler.js` di tingkat yang sama. Entry point: `index.ts`.
-4. Nama fungsi harus persis **admin-update-user**. Biarkan **Verify JWT** aktif.
+4. Gunakan nama fungsi yang sudah terpasang: **smooth-task**. Biarkan **Verify JWT** aktif.
 5. Klik **Deploy function**, lalu tunggu status aktif/berhasil.
 6. Beri tahu Codex **“Sudah dideploy di Supabase”** agar endpoint dapat diperiksa
    dan frontend staging dipromosikan ke domain utama.

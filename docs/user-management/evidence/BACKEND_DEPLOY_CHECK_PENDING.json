@@ -1,0 +1,59 @@
+{
+  "checked_at": "2026-11-10T08:20:25.106Z",
+  "function_slug": "admin-update-user",
+  "checks": [
+    {
+      "method": "OPTIONS",
+      "invalid_token": false,
+      "http_status": 404,
+      "code": "NOT_FOUND",
+      "message": "Requested function was not found",
+      "request_id": null,
+      "cache_control": null,
+      "cors_origin": "*"
+    },
+    {
+      "method": "GET",
+      "invalid_token": false,
+      "http_status": 404,
+      "code": "NOT_FOUND",
+      "message": "Requested function was not found",
+      "request_id": null,
+      "cache_control": null,
+      "cors_origin": "*"
+    },
+    {
+      "method": "POST",
+      "invalid_token": false,
+      "http_status": 404,
+      "code": "NOT_FOUND",
+      "message": "Requested function was not found",
+      "request_id": null,
+      "cache_control": null,
+      "cors_origin": "*"
+    },
+    {
+      "method": "POST",
+      "invalid_token": true,
+      "http_status": 404,
+      "code": "NOT_FOUND",
+      "message": "Requested function was not found",
+      "request_id": null,
+      "cache_control": null,
+      "cors_origin": "*"
+    }
+  ],
+  "business_writes": false,
+  "known_function_comparison": [
+    {
+      "slug": "admin-create-user",
+      "http_status": 200
+    },
+    {
+      "slug": "admin-update-user",
+      "http_status": 404
+    }
+  ],
+  "frontend_promoted": false,
+  "pending": "User-provided deployed function URL/name"
+}

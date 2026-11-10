@@ -1,7 +1,7 @@
 {
   "prepared_at": "2026-11-10T08:03:17.871Z",
   "project_ref": "uwlxkwyauxwewoexfgwi",
-  "function_slug": "admin-update-user",
+  "function_slug": "smooth-task",
   "commit": "b5d07ba5",
   "files": [
     {
@@ -18,5 +18,10 @@
   "zip_sha256": "e2a9af3c032518fc6c407cc51c3b9f90878d1a12b73528ada62861fcb4aae7e0",
   "verify_jwt_required": true,
   "credentials_included": false,
-  "backend_deployed": false
+  "backend_deployed": true,
+  "source_directory": "supabase/functions/admin-update-user",
+  "original_planned_slug": "admin-update-user",
+  "deployment_performed_by": "User via Supabase Dashboard",
+  "endpoint_checks": "evidence/BACKEND_DEPLOY_CHECK.json",
+  "deployed_source_hash_verified": false
 }

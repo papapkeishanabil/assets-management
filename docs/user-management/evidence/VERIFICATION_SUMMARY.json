@@ -1,29 +1,32 @@
 {
-  "checked_at": "2026-11-10T06:57:21.894Z",
+  "checked_at": "2026-11-10T08:27:31.536Z",
   "pass": 22,
   "fail": 0,
   "build": {
     "command": "npm run build",
     "exit_code": 0,
-    "entry": "/assets/index-MELo0Wop.js",
-    "sha256": "c8db264fbf4a9515a69df235fd797bd096152607da82fbe4439e98f575a33b6a",
+    "entry": "/assets/index-BppnBezW.js",
+    "sha256": "9ed1de9d45e3c6723438401a78cfe4ccd89b947429e9a7fe0cdab8aa4d29cf69",
     "warning": "Existing main bundle >500 kB"
   },
   "private_credentials_in_frontend": 0,
   "source_sha256": {
     "src/pages/UsersPage.jsx": "f882ca45d8ba83fd670b5aed3503cff164daa74aa5d416225a9e3d65916ed07c",
     "src/components/AdminUserEditModal.jsx": "f327b7dc934b514a2b995b4429b86884ceb4fd7e9a0ba8f290d421cd1f51a69f",
-    "src/lib/admin-user-helpers.js": "2322c0904a8783e229100cfdcab9766cd2a4bf51d310112da32464e4715e9c85",
+    "src/lib/admin-user-helpers.js": "03bdf0ae35ae40ded1a13d6d8919c3c34f3a5490330860b80a091aa017822cfe",
     "supabase/functions/admin-update-user/index.ts": "ded9211f6b62838d97080c6840c89ad71dfa3c31c1831df7117e179a63f27a84",
     "supabase/functions/admin-update-user/handler.js": "409ecdbb47f27ca0aa9ea77d1c1751e89f02d9479e245efcd4a63e744407c32f"
   },
-  "production_accessed": false,
-  "backend_deployed": false,
+  "production_accessed": true,
+  "backend_deployed": true,
   "frontend_deployed": false,
   "deno": {
     "version": "2.9.6",
     "entrypoint_typecheck_exit_code": 0,
     "native_browser_backend_verified": true,
-    "cloud_edge_gateway_deployed": false
-  }
+    "cloud_edge_gateway_deployed": true
+  },
+  "local_test_checked_at": "2026-11-10T08:24:29.569Z",
+  "production_access_mode": "Anonymous/invalid-token endpoint probes only; no account writes",
+  "deployed_function_slug": "smooth-task"
 }

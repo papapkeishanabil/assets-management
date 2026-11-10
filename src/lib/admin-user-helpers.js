@@ -1,7 +1,10 @@
 import { supabase } from './supabase';
 
+// Actual slug selected in the Supabase Dashboard for the deployed admin handler.
+export const ADMIN_USER_FUNCTION = 'smooth-task';
+
 export async function submitAdminUserChange(payload) {
-  const { data, error } = await supabase.functions.invoke('admin-update-user', { body: payload });
+  const { data, error } = await supabase.functions.invoke(ADMIN_USER_FUNCTION, { body: payload });
   if (error) {
     let response;
     try { response = await error.context?.json(); } catch { /* Network or non-JSON error. */ }
