@@ -1,5 +1,10 @@
 # Kesiapan aktivasi database Fase 3 — 9 November 2026
 
+**Catatan historis:** backup/preflight sudah diperbarui
+[10 November](PHASE3_ACTIVATION_READINESS_20261110.md). File evidence bersama pada
+tautan di bawah kini memuat pemeriksaan terbaru; versi bukti 9 November ada pada
+riwayat Git. Migration produksi tetap belum dijalankan.
+
 **Pembaruan pilihan peta 10 November:** kebutuhan Google Cloud pada catatan historis
 ini diganti Leaflet/OpenStreetMap gratis dan Maps URLs untuk rute. Tidak perlu API
 key/Map ID untuk pilihan terbaru. [Laporan perubahan](FREE_MAP_AND_DIRECTIONS_20261110.md).

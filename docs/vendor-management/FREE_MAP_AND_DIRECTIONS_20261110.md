@@ -102,8 +102,8 @@ Persetujuan migration produksi belum diterima. Backend lokasi
 dan GPS nyata harus aktif dan diisi sebelum ada pin/rute vendor produksi. Peta dasar
 tetap dapat tampil tanpa konfigurasi Google Cloud.
 
-Backup/preflight 9 November tetap tercatat dalam
-[laporan aktivasi](PHASE3_ACTIVATION_READINESS_20261109.md). Karena hari telah berganti,
-preflight/baseline produksi harus diperbarui saat migration disetujui; jangan menganggap
-snapshot kemarin sebagai kondisi live sekarang. Jangan menulis data dummy atau
-mengubah tabel master untuk mengisi peta.
+Backup/preflight kini sudah diperbarui dan terverifikasi pada
+[10 November](PHASE3_ACTIVATION_READINESS_20261110.md); migration tetap memerlukan
+persetujuan eksplisit. Periksa baseline terakhir sebelum eksekusi; jangan menganggap
+snapshot backup identik selamanya dengan kondisi live. Jangan menulis data dummy
+atau mengubah tabel master untuk mengisi peta.

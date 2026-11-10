@@ -1,8 +1,8 @@
 {
-  "checked_at": "2026-11-09T09:29:49.866Z",
+  "checked_at": "2026-11-10T02:09:42.734Z",
   "target": "https://uwlxkwyauxwewoexfgwi.supabase.co",
   "mode": "Review file snapshot psql READ ONLY; no network in this process",
-  "source_checked_at": "2026-11-09T09:29:49.6545742Z",
+  "source_checked_at": "2026-11-10T02:09:42.6017384Z",
   "checks": [
     {
       "status": "PASS",
@@ -934,7 +934,7 @@
       },
       "auth.users": {
         "count": 6,
-        "checksum": "6421f89a8be6c068fa4c6e65a6ca6b46"
+        "checksum": "dcf8e34670bd1bd0f254b147359d3041"
       },
       "notifications": {
         "count": 115,
@@ -2834,7 +2834,7 @@
       },
       "auth.users": {
         "count": 6,
-        "checksum": "6421f89a8be6c068fa4c6e65a6ca6b46"
+        "checksum": "dcf8e34670bd1bd0f254b147359d3041"
       },
       "notifications": {
         "count": 115,

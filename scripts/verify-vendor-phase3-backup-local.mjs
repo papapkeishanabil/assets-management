@@ -1,14 +1,15 @@
 // Verifikasi restore lokal saja. Tidak mempunyai koneksi produksi atau kredensialnya.
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, realpathSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 
 const info = JSON.parse(readFileSync('.vercel/phase3-restore-container.json','utf8'));
-assert.match(info.name,/^harmas-vendor-restore-phase3-20261109-[a-f0-9]{8}$/);
-const backup = info.backup.replaceAll('\\','/');
-assert.match(backup,/^D:\/Backups\/harmas-pre-phase3-20261109-162946-b0c15d41$/);
+assert.match(info.name,/^harmas-vendor-restore-phase3-\d{8}-[a-f0-9]{8}$/);
+const backup = realpathSync(info.backup).replaceAll('\\','/');
+assert.match(backup,/^D:\/Backups\/harmas-pre-phase3-\d{8}-\d{6}-[a-f0-9]{8}$/);
+assert.equal(info.name.split('-').at(-2),backup.split('-').at(-3),'Tanggal clone/backup berbeda');
 function docker(args,input) {
   const r = spawnSync('docker',args,{input,encoding:'utf8',maxBuffer:32e6});
   assert.equal(r.status,0,`Docker restore command gagal: ${r.stderr?.slice(0,1200)}`); return r.stdout;
@@ -17,11 +18,13 @@ const config = JSON.parse(docker(['inspect',info.name]))[0];
 assert.equal(config.HostConfig.NetworkMode,'none');
 assert.equal(config.Config.Labels['harmas.task'],'vendor-phase3-backup-restore');
 assert.ok(!config.HostConfig.PortBindings || Object.keys(config.HostConfig.PortBindings).length===0);
+assert.ok(config.Mounts.some(m=>m.Destination==='/backup'&&!m.RW&&m.Source.replaceAll('\\','/')===backup),'Mount backup harus read-only dan sesuai target');
 function sql(input,user='supabase_admin') {
   return docker(['exec','-i',info.name,'psql','-X','-q','-A','-t','-U',user,'-d','phase3_restore','-v','ON_ERROR_STOP=1'],`SET search_path=public,pg_temp;\n${input}`);
 }
 const hash = (v) => createHash('sha256').update(v).digest('hex');
 const manifest = JSON.parse(readFileSync(`${backup}/manifest.json`,'utf8'));
+assert.equal(manifest.target,'https://uwlxkwyauxwewoexfgwi.supabase.co');
 const source = JSON.parse(readFileSync(`${backup}/production-preflight.json`,'utf8'));
 assert.equal(hash(readFileSync(`${backup}/database.dump`)),manifest.sha256);
 const same=(a,b,label)=>assert.ok(isDeepStrictEqual(a,b),label);
@@ -86,7 +89,9 @@ assert.equal(counts.cron_launch_active_jobs,'off');
 console.log(`PASS | Seluruh ${copies.length} COPY tabel dan jumlah objek aplikasi cocok dengan archive`);
 
 const migration=readFileSync('supabase/migrations/202611090001_vendor_management_phase3.sql','utf8');
-sql(migration,'postgres'); sql(migration,'postgres');
+// Image bootstrap tidak memulihkan membership role global produksi. Gunakan
+// administrator clone yang tersedia, tanpa menaikkan privilege role postgres.
+sql(migration); sql(migration);
 const after=JSON.parse(sql(`BEGIN READ ONLY; ${query}; ROLLBACK;`));
 same(after.baseline,restored.baseline,'Migration lokal mengubah 17 tabel existing');
 same(after.functions,restored.functions,'Migration lokal mengubah helper existing');
@@ -96,7 +101,7 @@ same(after.buckets.filter(b=>b.id!=='vendor-photos'),restored.buckets,'Bucket ex
 console.log('PASS | Migration Fase 3 dua kali pada hasil restore; data/helper/policy existing utuh');
 const report={checked_at:new Date().toISOString(),container:info.name,network:'none',published_ports:[],backup_sha256:manifest.sha256,
  pg_restore_exit:0,logical_database_restore_verified:true,copy_tables_verified:copies.length,total_rows_verified:dataChecks.reduce((n,t)=>n+t.rows,0),counts,
- baseline_tables_verified:17,existing_functions_and_acl_verified:11,policies_canonicalized_for_minor_pg_version:canonicalizedPolicies,migration_phase3_local_applied_twice:true,existing_data_and_security_unchanged:true,
+ baseline_tables_verified:17,existing_functions_and_acl_verified:11,policies_canonicalized_for_minor_pg_version:canonicalizedPolicies,migration_phase3_local_applied_twice:true,local_migration_executor:'supabase_admin',existing_data_and_security_unchanged:true,
  supabase_platform_restore_complete:false,platform_limit:'Role bootstrap tersedia lokal; layanan Auth/Storage/Gateway, konfigurasi eksternal dan kunci platform tidak dipulihkan sebagai stack penuh.',
  storage_blob_backup_verified:false,production_migration_executed:false,data_checks:dataChecks};
 writeFileSync(`${backup}/restore-verification.json`,JSON.stringify(report,null,2)+'\n');

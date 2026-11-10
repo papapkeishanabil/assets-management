@@ -14,6 +14,17 @@ User menyetujui deployment frontend; tidak ada push/migration/write bisnis. Migr
 belum mendapat persetujuan eksekusi. Panduan Google Cloud lama menjadi opsional,
 bukan prasyarat versi gratis. Jangan membuka billing atau meminta key Maps lagi.
 
+**Backup/preflight terbaru 10 November, 09.09–09.16 WIB:** user mengisi password
+PostgreSQL di terminal. `D:\Backups\harmas-pre-phase3-20261110-090939-f4bf7fbd`;
+9 preflight PASS, restore logis **140 tabel/1.908 baris**, 95 blob/29.027.178 byte
+terverifikasi. Migration dua kali hanya di clone lokal, executor `supabase_admin`;
+17 baseline/helper/policy existing utuh. Container dihentikan; tidak ada migration,
+push atau deploy tambahan. Full platform/role global/restore layanan Storage belum
+teruji. [Kesiapan terbaru dan kendala bootstrap](PHASE3_ACTIVATION_READINESS_20261110.md).
+**Langkah berikut: minta persetujuan eksplisit migration Fase 3**, lalu periksa
+baseline terakhir dan hak role SQL produksi sebelum mengeksekusi. Izin backup bukan
+izin migration; password helper sudah dibersihkan.
+
 **Pembaruan 9 November 2026:** Fase 2 **sudah terpasang di produksi**; isi empat fungsi cocok
 dengan migration dan frontend publik memuat Fase 1+2. Commit Fase 2 `c02a66d5`, HEAD lokal
 `12de0de4`; reflog mencatat push 6 November pukul 14.39 WIB. Jangan ulangi migration/deploy.
@@ -36,7 +47,7 @@ user; frontend produksi kemudian juga dirilis ketika user mengonfirmasi alamat u
 Database Fase 3 tetap belum dipasang. Hasil final dan batas pengujian:
 [Laporan Fase 3](PHASE3_IMPLEMENTATION_REPORT.md). Google Maps nyata belum diuji karena
 API key/Map ID belum tersedia; pengujian SDK tiruan tidak menggantikan UAT layanan Google.
-Preflight/backup terbaru kini lulus setelah user mengisi password melalui terminal:
+Preflight/backup historis 9 November lulus setelah user mengisi password melalui terminal:
 9 kelompok preflight, restore logis 139 tabel dan salinan 95 blob terverifikasi.
 [Kesiapan aktivasi](PHASE3_ACTIVATION_READINESS_20261109.md) menjelaskan hasil dan batas
 restore platform; migration produksi masih menunggu izin eksplisit. Pengambilan
@@ -59,14 +70,15 @@ di terminal tersembunyi, lalu menjalankan driver preflight/backup existing. Stat
 runtime ada di `.vercel/phase3-activation-status.json` (diabaikan Git); cek state dan
 manifest terbaru, jangan menganggap backup selesai hanya karena terminal dibuka.
 Helper tidak menjalankan migration atau mengubah environment cloud.
-**Backup/preflight kini lulus:** user memasukkan password di terminal. Backup baru
+**Backup/preflight 9 November (historis):** user memasukkan password di terminal. Backup
 `D:\Backups\harmas-pre-phase3-20261109-162946-b0c15d41`; 9 preflight PASS, restore
 139 tabel COPY/1.905 baris cocok, 95 blob cocok ukuran/ETag/hash. Migration dua kali
 hanya di clone; produksi belum dimigration. Container restore dihentikan. Lihat
 [kesiapan aktivasi terbaru dan batas restore platform](PHASE3_ACTIVATION_READINESS_20261109.md).
 Pilihan key/Map ID kemudian diganti peta gratis pada 10 November; frontend gratis sudah
-dirilis dengan persetujuan user. Langkah berikut: persetujuan eksplisit migration Fase 3. Perbarui
-preflight/baseline saat akan migration karena snapshot backup berasal dari 9 November.
+dirilis dengan persetujuan user. Backup/preflight sudah diperbarui 10 November, lihat
+catatan terbaru di atas. Langkah berikut: persetujuan eksplisit migration Fase 3;
+baseline dan izin eksekutor harus diperiksa kembali saat akan migration.
 
 ---
 
@@ -80,7 +92,7 @@ preflight/baseline saat akan migration karena snapshot backup berasal dari 9 Nov
 6. **Tidak ada role QC.** Keputusan K1 final: hanya role `sourcing`. Petugas QC HARMAS tanpa akun; hasil QC diinput Sourcing atas nama petugas (`inspector_name` + opsional `inspector_employee_id → employees`), dengan jejak koreksi (`vendor_qc_run_revisions`).
 7. **Laporan jujur berbasis bukti.** User menuntut verifikasi nyata, melaporkan kegagalan apa adanya, dan tabel hasil pemeriksaan. Setiap push/deploy baru memerlukan persetujuan eksplisit; status pascarilis bukan izin untuk tindakan rilis berikutnya.
 
-## 2. Snapshot Status (9 Nov 2026)
+## 2. Snapshot Status (10 Nov 2026)
 
 | Area | Status |
 |---|---|
@@ -88,7 +100,7 @@ preflight/baseline saat akan migration karena snapshot backup berasal dari 9 Nov
 | Frontend Fase 1+2 | Bundle publik HTTP 200, akses anonim terlindungi; UAT baca Super Admin/Sourcing lulus, tanpa error browser/API |
 | Security hardening produksi | ✅ `exec_sql` di-revoke dari PUBLIC/anon/authenticated · RLS aktif di `user_profiles`/`roles`/`notifications` (8 policy v3 + trigger guard profil) |
 | Backup pra-Fase 2 | Historis: `D:\Backups\harmas-pre-phase2-2026-11-06.dump`; lihat catatan keterbatasan restore lama |
-| Backup pra-Fase 3 terbaru | `D:\Backups\harmas-pre-phase3-20261109-162946-b0c15d41`; restore logis 139 tabel/1.905 baris cocok, 95 blob cocok ETag/hash; full stack platform belum direstore |
+| Backup pra-Fase 3 terbaru | `D:\Backups\harmas-pre-phase3-20261110-090939-f4bf7fbd`; restore logis 140 tabel/1.908 baris cocok, 95 blob cocok ETag/hash; full stack platform belum direstore |
 | Git | Fase 2 `c02a66d5`, origin lokal `12de0de4`; dokumentasi penerimaan Fase 1+2 `73b8680a`, implementasi Fase 3 pada commit lokal berikutnya (lihat git log). Tidak ada push baru |
 | Fase 2 | Schema dan frontend produksi; UAT baca 9 PASS + lifecycle 6 PASS, akun uji bersih; kandidat/follow-up masih 0 |
 | Fase 3 | Peta GRATIS Leaflet/OSM + rute production READY `5ae0c673`, 64 pemeriksaan/build lokal lulus, artifact/anon browser produksi lulus. Backend lokasi masih menunggu persetujuan migration |

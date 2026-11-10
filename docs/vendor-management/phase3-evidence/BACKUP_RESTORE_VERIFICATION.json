@@ -1,13 +1,13 @@
 {
-  "checked_at": "2026-11-09T09:38:48.329Z",
-  "container": "harmas-vendor-restore-phase3-20261109-8bb9cf17",
+  "checked_at": "2026-11-10T02:15:03.269Z",
+  "container": "harmas-vendor-restore-phase3-20261110-b010c3b7",
   "network": "none",
   "published_ports": [],
-  "backup_sha256": "c0224faff889ff635a33167212a0d5190aa640b43fe19249d5b66a656cd9cebc",
+  "backup_sha256": "1c0183981ddcdaa4e91a55cccb7a688c8de97d52c2fd33add276c6e42c6105f9",
   "pg_restore_exit": 0,
   "logical_database_restore_verified": true,
-  "copy_tables_verified": 139,
-  "total_rows_verified": 1905,
+  "copy_tables_verified": 140,
+  "total_rows_verified": 1908,
   "counts": {
     "public_tables": 89,
     "public_policies": 208,
@@ -19,6 +19,7 @@
   "existing_functions_and_acl_verified": 11,
   "policies_canonicalized_for_minor_pg_version": 9,
   "migration_phase3_local_applied_twice": true,
+  "local_migration_executor": "supabase_admin",
   "existing_data_and_security_unchanged": true,
   "supabase_platform_restore_complete": false,
   "platform_limit": "Role bootstrap tersedia lokal; layanan Auth/Storage/Gateway, konfigurasi eksternal dan kunci platform tidak dipulihkan sebagai stack penuh.",
@@ -102,8 +103,8 @@
     },
     {
       "table": "auth.refresh_tokens",
-      "rows": 172,
-      "sha256": "fe8afadd9b27597d6ba00b46b36eaf8afae46485ca1bd908947e6f066f36b7f0"
+      "rows": 174,
+      "sha256": "205a98c65c61b3b5dec79de22f9243e5f5a26a3cb2c225eb7133edb53306dab4"
     },
     {
       "table": "auth.saml_providers",
@@ -133,7 +134,7 @@
     {
       "table": "auth.sessions",
       "rows": 12,
-      "sha256": "c117d8884251c623bcc8d9616908754c142aa34156ca0dc1936670d88915bca3"
+      "sha256": "8aa8163f0f243ef8b3a3dea5455e324d2fa8b3c344be8fbdd1ea55ff3d7111da"
     },
     {
       "table": "auth.sso_domains",
@@ -148,7 +149,7 @@
     {
       "table": "auth.users",
       "rows": 6,
-      "sha256": "b052088602ac36689f1b568a003ebdf3cb7ea25037c3a2c13c3d8a0925391b07"
+      "sha256": "f4a490d2baf2fe533f88899eb2356bd5c12997f6eb8218975169550bdce3b923"
     },
     {
       "table": "auth.webauthn_challenges",
@@ -167,8 +168,8 @@
     },
     {
       "table": "cron.job_run_details",
-      "rows": 105,
-      "sha256": "ad3c7387fd2383f127cc444958599c365e2eb030ffdf8d78d592ae410135fdce"
+      "rows": 106,
+      "sha256": "611e9e058eb55f670238a803fca35b81c96a2897f57333d1be2e3d44375989f7"
     },
     {
       "table": "public.asset_activity_logs",
@@ -647,6 +648,11 @@
     },
     {
       "table": "realtime.messages_2026_11_12",
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "table": "realtime.messages_2026_11_13",
       "rows": 0,
       "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     },

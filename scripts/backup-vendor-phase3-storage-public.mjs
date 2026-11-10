@@ -1,20 +1,27 @@
 // Backup blob existing yang PUBLIC. Inventaris dari restore lokal, bukan query produksi.
 // Tidak memakai service key, tidak mengunggah/mengubah/menghapus file remote.
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, realpathSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 
 const info=JSON.parse(readFileSync('.vercel/phase3-restore-container.json','utf8'));
-assert.match(info.name,/^harmas-vendor-restore-phase3-20261109-[a-f0-9]{8}$/);
-const root=info.backup.replaceAll('\\','/');
-assert.equal(root,'D:/Backups/harmas-pre-phase3-20261109-162946-b0c15d41');
+assert.match(info.name,/^harmas-vendor-restore-phase3-\d{8}-[a-f0-9]{8}$/);
+const root=realpathSync(info.backup).replaceAll('\\','/');
+assert.match(root,/^D:\/Backups\/harmas-pre-phase3-\d{8}-\d{6}-[a-f0-9]{8}$/);
+assert.equal(info.name.split('-').at(-2),root.split('-').at(-3),'Tanggal clone/backup berbeda');
+const backupManifest=JSON.parse(readFileSync(`${root}/manifest.json`,'utf8'));
+assert.equal(backupManifest.target,'https://uwlxkwyauxwewoexfgwi.supabase.co');
 const inspect=spawnSync('docker',['inspect',info.name],{encoding:'utf8'});assert.equal(inspect.status,0);
-assert.equal(JSON.parse(inspect.stdout)[0].HostConfig.NetworkMode,'none');
+const config=JSON.parse(inspect.stdout)[0];
+assert.equal(config.HostConfig.NetworkMode,'none');
+assert.equal(config.Config.Labels['harmas.task'],'vendor-phase3-backup-restore');
+assert.ok(!config.HostConfig.PortBindings||Object.keys(config.HostConfig.PortBindings).length===0);
+assert.ok(config.Mounts.some(m=>m.Destination==='/backup'&&!m.RW&&m.Source.replaceAll('\\','/')===root));
 const query=`SELECT coalesce(jsonb_agg(jsonb_build_object('id',o.id,'bucket',o.bucket_id,'name',o.name,'metadata',o.metadata,'public',b.public) ORDER BY o.bucket_id,o.name),'[]'::jsonb) FROM storage.objects o JOIN storage.buckets b ON b.id=o.bucket_id;`;
 const result=spawnSync('docker',['exec','-i',info.name,'psql','-X','-q','-A','-t','-U','supabase_admin','-d','phase3_restore','-v','ON_ERROR_STOP=1'],{input:query,encoding:'utf8',maxBuffer:8e6});assert.equal(result.status,0);
 const objects=JSON.parse(result.stdout);
-assert.equal(objects.length,95,'Inventaris backup berubah');
+assert.equal(objects.length,backupManifest.post_dump_baseline.buckets.reduce((n,b)=>n+b.objects,0),'Inventaris restore tidak cocok dengan snapshot backup');
 assert.ok(objects.every(o=>o.public),'Ada file private: perlukan jalur backup berotorisasi terpisah');
 const folder=`${root}/storage-blobs`;assert.ok(!existsSync(folder),'Direktori blob sudah ada; jangan menimpa backup sebelumnya');mkdirSync(folder);
 const sha=v=>createHash('sha256').update(v).digest('hex');
