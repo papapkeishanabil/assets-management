@@ -1,0 +1,39 @@
+Exit code: 0
+
+> harmas-asset-management@1.0.0 build
+> vite build
+
+vite v5.4.21 building for production...
+transforming...
+✓ 1580 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/registerSW.js                                      0.13 kB
+dist/manifest.webmanifest                               0.48 kB
+dist/index.html                                         0.76 kB │ gzip:   0.42 kB
+dist/assets/leaflet-Dgihpmma.css                       15.04 kB │ gzip:   6.38 kB
+dist/assets/index-IAC4795b.css                         82.09 kB │ gzip:  14.20 kB
+dist/assets/MasterVendorLocationsPanel-DrjUkj7S.js      2.67 kB │ gzip:   1.23 kB
+dist/assets/VendorMapPage-CFa_rFvC.js                  11.22 kB │ gzip:   3.91 kB
+dist/assets/leaflet-src-BJfdR35B.js                   149.98 kB │ gzip:  43.55 kB
+dist/assets/index-BSQZjGew.js                       1,257.83 kB │ gzip: 307.34 kB
+✓ built in 5.33s
+vite v5.4.21 building for production...
+transforming...
+✓ 65 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/sw.js  18.40 kB │ gzip: 6.13 kB
+✓ built in 120ms
+
+PWA v0.17.5
+mode      injectManifest
+precache  9 entries (1562.24 KiB)
+files generated
+  dist\sw.js
+
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.

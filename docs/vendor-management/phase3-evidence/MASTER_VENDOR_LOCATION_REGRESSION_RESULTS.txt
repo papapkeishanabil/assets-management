@@ -1,0 +1,24 @@
+Checked: 2026-11-10T03:55:50.031Z
+Target: Docker synthetic + loopback only
+PASS | Lokasi pertama: URL Maps dibaca dengan konfirmasi; primary otomatis, bukan koordinat 0,0
+PASS | GPS perangkat meminta izin dan tidak dipakai sebelum petugas mengonfirmasi
+PASS | Lokasi tanpa koordinat tersimpan NULL dan akan masuk daftar belum dipetakan
+PASS | Upload nyata Storage lokal: signature tervalidasi, re-encode WebP tanpa EXIF, taken_at tetap NULL, signed URL berhasil dan public URL tertutup
+PASS | Preview foto privat dapat dibuka dan ditutup
+PASS | Beberapa foto dan pergantian cover tidak menghapus riwayat
+PASS | Storage backend menolak MIME terlarang, >5 MB, dan overwrite blob
+PASS | Pelaksana tidak dapat membuat signed URL foto lokasi
+PASS | Super Admin memverifikasi lokasi dengan alamat, koordinat dan exterior lengkap
+PASS | Sourcing tidak mendapat kontrol verifikasi; edit koordinat membatalkan verifikasi lama
+PASS | Setiap kartu fasilitas memiliki rute ke GPS sendiri, termasuk sesudah edit koordinat
+PASS | Vendor tanpa GPS tidak memiliki tombol rute palsu
+PASS | Peta gratis tanpa key: multi fasilitas, filter, panel, dan rute konsisten dengan titik pilihan
+PASS | Peta/rute mobile light 390px: pin tetap di viewport, tanpa overflow dan atribusi tetap terlihat
+PASS | Lokasikan Vendor Aktif membuka profil terhubung tanpa menulis master/aset
+PASS | Dashboard mengambil kelengkapan lokasi nyata melalui RPC Fase 3
+PASS | Direksi membaca lokasi/foto tanpa tombol tulis
+PASS | URL peta HRD tanpa module key ditolak
+PASS | Master Data → Vendor tetap membaca seluruh master existing tanpa perubahan alur
+PASS | Query frontend mengambil seluruh >1000 baris lokasi, tidak terpotong batas REST
+PASS | Tidak ada pageerror/REST error aplikasi atau request ke Supabase/Maps produksi
+PASS | Cleanup hanya fixture Docker: data existing dan guard dikembalikan utuh

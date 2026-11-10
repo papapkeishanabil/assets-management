@@ -1,0 +1,71 @@
+{
+  "checked_at": "2026-11-10T03:55:20.834Z",
+  "target": "Docker synthetic + loopback only",
+  "production_database_writes": false,
+  "results": [
+    {
+      "check": "Membuka/menutup koordinat Master Vendor tidak menulis profil terhubung atau master",
+      "pass": true
+    },
+    {
+      "check": "Alamat master menjadi draf; koordinat parsial dan pembatalan tidak membuat data",
+      "pass": true
+    },
+    {
+      "check": "Simpan koordinat langsung di Master Vendor membuat satu link/lokasi/audit tanpa menulis master atau nested form",
+      "pass": true
+    },
+    {
+      "check": "Buka ulang memakai link yang sama; edit koordinat memperbarui tujuan rute dan master tetap identik",
+      "pass": true
+    },
+    {
+      "check": "Beberapa fasilitas pada Master Vendor memakai kandidat yang sama dan hanya satu primary",
+      "pass": true
+    },
+    {
+      "check": "Tab keyboard bekerja dan draf profil tidak tersimpan saat mengelola lokasi",
+      "pass": true
+    },
+    {
+      "check": "Lokasi yang diisi dari Master Vendor langsung tersedia pada Peta Vendor dan rute per fasilitas",
+      "pass": true
+    },
+    {
+      "check": "Master nonaktif yang belum terhubung tidak bisa melewati guard retrofit",
+      "pass": true
+    },
+    {
+      "check": "HRD tanpa vendor_map tetap memakai Master Vendor tanpa kontrol atau request lokasi",
+      "pass": true
+    },
+    {
+      "check": "Guard halaman Master Vendor untuk Sourcing/Direksi tetap berlaku",
+      "pass": true
+    },
+    {
+      "check": "Vendor baru: Simpan dan Isi Koordinat menyimpan profil lalu melanjutkan lokasi di Master Vendor",
+      "pass": true
+    },
+    {
+      "check": "Enter/Simpan biasa tetap menyimpan profil tanpa otomatis membuat link atau lokasi",
+      "pass": true
+    },
+    {
+      "check": "RPC/insert gagal ditampilkan; retry memakai link yang sudah berhasil tanpa duplikasi",
+      "pass": true
+    },
+    {
+      "check": "Modal Master Vendor dengan lokasi/foto responsif pada mobile light 390px",
+      "pass": true
+    },
+    {
+      "check": "Tidak ada pageerror atau request ke Supabase/Google Maps produksi; tile OSM dimock",
+      "pass": true
+    },
+    {
+      "check": "Cleanup fixture Docker selesai; master/aset/profil/role/permission/notifikasi existing identik",
+      "pass": true
+    }
+  ]
+}

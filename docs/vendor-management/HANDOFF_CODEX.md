@@ -3,6 +3,14 @@
 **Dokumen serah terima untuk agent penerus (Codex).** Disusun 6 November 2026.
 Dokumen induk: [AUDIT_DAN_RENCANA_IMPLEMENTASI.md](AUDIT_DAN_RENCANA_IMPLEMENTASI.md) · Spesifikasi user: [HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md](HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md)
 
+**Permintaan terbaru 10 November — input koordinat juga di Master Data → Vendor:**
+implementasi lokal selesai, **16 browser Master + 22 regresi lokasi/foto PASS**, build
+PASS. Tombol Koordinat per baris, tab Lokasi & Koordinat di edit, serta Simpan dan Isi
+Koordinat untuk vendor baru. Memakai data lokasi Fase 3 yang sama; tidak ada migration,
+perubahan tabel master/role/RLS atau write produksi. **Belum deployment versi Master**;
+frontend utama tetap `5ae0c673`. [Laporan dan bukti](MASTER_VENDOR_COORDINATES_20261110.md).
+Langkah berikut untuk perubahan ini: persetujuan deployment frontend terpisah.
+
 **FASE 3 SUDAH AKTIF DI PRODUKSI, 10 November 2026 09.29 WIB.** User menyetujui
 migration dengan “ya setuju”. Hanya `202611090001_vendor_management_phase3.sql`
 dijalankan; 9 preflight, 25 SQL pasca-commit dan 11 HTTP lulus; 17 checksum tabel dan

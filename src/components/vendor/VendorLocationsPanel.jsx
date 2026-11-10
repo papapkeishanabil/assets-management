@@ -12,7 +12,7 @@ import LocationFormModal from './LocationFormModal';
 import LocationPhotos from './LocationPhotos';
 import VendorLocationNavigation from './VendorLocationNavigation';
 
-export default function VendorLocationsPanel({ candidateId, onChanged }) {
+export default function VendorLocationsPanel({ candidateId, onChanged, initialLocationValues }) {
   const { role } = useAuth();
   const { hasAccess, loading: permissionsLoading } = useRolePermissions();
   const allowed = hasAccess('vendor_map') && LOCATION_READ_ROLES.includes(role?.role_name);
@@ -49,6 +49,6 @@ export default function VendorLocationsPanel({ candidateId, onChanged }) {
         <LocationPhotos location={location} canWrite={canWrite} canArchive={role?.role_name === 'super_admin'} onChanged={refresh} />
       </article>;
     })}
-    {editing && <LocationFormModal candidateId={candidateId} editing={editing.id ? editing : null} canVerify={canVerify} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); refresh(); }} />}
+    {editing && <LocationFormModal candidateId={candidateId} editing={editing.id ? editing : null} initialValues={initialLocationValues} canVerify={canVerify} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); refresh(); }} />}
   </div>;
 }

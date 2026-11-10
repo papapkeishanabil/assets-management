@@ -14,12 +14,18 @@ export async function fetchLocations(candidateId) {
   return data || [];
 }
 
-export async function saveLocation(candidateId, form, canVerify) {
+export function locationPayload(form, canVerify) {
   const pair = coordinatePair(form.latitude, form.longitude);
   const payload = { location_name: form.location_name.trim(), location_type: form.location_type,
     ...Object.fromEntries(['address_line', 'village', 'district', 'city', 'province', 'postal_code'].map((k) => [k, form[k].trim() || null])),
     latitude: pair?.latitude ?? null, longitude: pair?.longitude ?? null, coordinate_source: pair ? form.coordinate_source || 'MANUAL' : null };
   if (canVerify) { payload.verification_status = form.verification_status; payload.verification_notes = form.verification_notes.trim() || null; }
+  if (!payload.location_name) throw new Error('Nama lokasi wajib diisi');
+  return payload;
+}
+
+export async function saveLocation(candidateId, form, canVerify) {
+  const payload = locationPayload(form, canVerify);
   const query = form.id ? supabase.from('vendor_locations').update(payload).eq('id', form.id).eq('candidate_id', candidateId)
     : supabase.from('vendor_locations').insert({ ...payload, candidate_id: candidateId });
   const { data, error } = await query.select('id').single();
@@ -88,6 +94,12 @@ export async function linkExistingActiveVendor(id) {
   const { data, error } = await supabase.rpc('vendor_link_existing_active', { p_vendor_id: id });
   if (error) throw error;
   return data;
+}
+export async function fetchLinkedMasterCandidate(id) {
+  const { data, error } = await supabase.from('vendor_candidates').select('id')
+    .eq('vendor_id', id).order('created_at').order('id').limit(1).maybeSingle();
+  if (error) throw error;
+  return data?.id || null;
 }
 export async function fetchMapSpecialties() {
   const rows = [];

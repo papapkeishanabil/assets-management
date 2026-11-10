@@ -1,17 +1,30 @@
-import { useState, useEffect, useCallback } from 'react';
+import { lazy, Suspense, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useRolePermissions } from '../hooks/useRolePermissions';
+import { LOCATION_READ_ROLES } from '../lib/vendor-location-utils';
+import { VENDOR_WRITE_ROLES } from '../lib/vendor-constants';
 import { VENDOR_TYPES } from '../lib/constants';
 import toast from 'react-hot-toast';
-import { Plus, Edit, Trash2, Search, RefreshCw, Truck, X, Save } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, RefreshCw, Truck, X, Save, MapPin } from 'lucide-react';
+
+const MasterVendorLocationsPanel = lazy(() => import('../components/vendor/MasterVendorLocationsPanel'));
 
 export default function VendorsPage() {
-  const { profile } = useAuth();
+  const { profile, role } = useAuth();
+  const { hasAccess, loading: permissionsLoading } = useRolePermissions();
+  const canReadLocations = !permissionsLoading && hasAccess('vendor_map') && LOCATION_READ_ROLES.includes(role?.role_name);
+  const canWriteLocations = canReadLocations && VENDOR_WRITE_ROLES.includes(role?.role_name);
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [editingVendor, setEditingVendor] = useState(null);
+  const [modalTab, setModalTab] = useState('profile');
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const showingLocations = Boolean(editingId && canReadLocations && modalTab === 'location');
   const [form, setForm] = useState({
     vendor_code: '',
     vendor_name: '',
@@ -57,22 +70,34 @@ export default function VendorsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (savingRef.current) return;
     if (!form.vendor_code || !form.vendor_name) {
       toast.error('Kode dan nama vendor wajib diisi');
       return;
     }
 
+    savingRef.current = true; setSaving(true);
+    const continueToLocation = !editingId && canWriteLocations && form.is_active && e.nativeEvent.submitter?.value === 'location';
     try {
       const dataToSubmit = { ...form, created_by: profile?.id };
+      let createdVendor;
 
       if (editingId) {
         const { error } = await supabase.from('vendors').update(dataToSubmit).eq('id', editingId);
         if (error) throw error;
         toast.success('Vendor berhasil diperbarui');
       } else {
-        const { error } = await supabase.from('vendors').insert([dataToSubmit]);
+        const query = supabase.from('vendors').insert([dataToSubmit]);
+        const { data, error } = await (continueToLocation ? query.select('*').single() : query);
         if (error) throw error;
+        createdVendor = data;
         toast.success('Vendor berhasil ditambahkan');
+      }
+
+      if (continueToLocation) {
+        await fetchVendors();
+        handleEdit(createdVendor, 'location');
+        return;
       }
 
       setShowModal(false);
@@ -95,11 +120,15 @@ export default function VendorsPage() {
       fetchVendors();
     } catch (error) {
       toast.error(error.message);
+    } finally {
+      savingRef.current = false; setSaving(false);
     }
   };
 
-  const handleEdit = (vendor) => {
+  const handleEdit = (vendor, tab = 'profile') => {
     setEditingId(vendor.id);
+    setEditingVendor(vendor);
+    setModalTab(tab);
     setForm({
       vendor_code: vendor.vendor_code,
       vendor_name: vendor.vendor_name,
@@ -149,7 +178,7 @@ export default function VendorsPage() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500 group-focus-within:text-primary-400 transition-colors pointer-events-none" />
             <input type="text" className="input pl-9" placeholder="Cari kode atau nama vendor..." value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
-          <button onClick={() => { setEditingId(null); setForm({ vendor_code: '', vendor_name: '', vendor_type: '', contact_person: '', whatsapp_number: '', phone_number: '', email: '', address: '', city: '', tax_number: '', service_type: '', notes: '', is_active: true }); setShowModal(true); }} className="btn-primary text-sm whitespace-nowrap">
+          <button onClick={() => { setEditingId(null); setEditingVendor(null); setModalTab('profile'); setForm({ vendor_code: '', vendor_name: '', vendor_type: '', contact_person: '', whatsapp_number: '', phone_number: '', email: '', address: '', city: '', tax_number: '', service_type: '', notes: '', is_active: true }); setShowModal(true); }} className="btn-primary text-sm whitespace-nowrap">
             <Plus size={14} />
             Tambah Vendor
           </button>
@@ -196,6 +225,7 @@ export default function VendorsPage() {
                     </td>
                     <td className="text-right">
                       <div className="flex items-center justify-end gap-1">
+                        {canReadLocations && <button type="button" onClick={() => handleEdit(vendor, 'location')} className="inline-flex items-center gap-1 px-2 py-1.5 text-primary-400 hover:bg-primary-500/10 rounded-md transition-all text-xs whitespace-nowrap" aria-label={`Lokasi & Koordinat ${vendor.vendor_name}`} title="Lokasi & Koordinat"><MapPin size={14} /> Koordinat</button>}
                         <button onClick={() => handleEdit(vendor)} className="p-1.5 text-primary-400 hover:bg-primary-500/10 rounded-md transition-all" title="Edit"><Edit size={14} /></button>
                         <button onClick={() => handleDelete(vendor.id)} className="p-1.5 text-danger-400 hover:bg-danger-500/10 rounded-md transition-all" title="Hapus"><Trash2 size={14} /></button>
                       </div>
@@ -210,27 +240,40 @@ export default function VendorsPage() {
 
       {showModal && (
         <div className="modal-overlay">
-          <div className="modal-content max-w-lg">
+          <div className={`modal-content ${showingLocations ? 'max-w-5xl' : 'max-w-lg'}`} role="dialog" aria-modal="true" aria-labelledby="master-vendor-modal-title">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-primary-500/10 border border-primary-500/20">
                   <Truck size={18} className="text-primary-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">{editingId ? 'Edit Vendor' : 'Tambah Vendor'}</h3>
+                <h3 id="master-vendor-modal-title" className="text-lg font-semibold text-white">{editingId ? 'Edit Vendor' : 'Tambah Vendor'}</h3>
               </div>
-              <button onClick={() => { setShowModal(false); setEditingId(null); }} className="p-1.5 text-ink-400 hover:bg-white/5 hover:text-white rounded-md transition-all">
+              <button disabled={saving} aria-label="Tutup vendor" onClick={() => { setShowModal(false); setEditingId(null); }} className="p-1.5 text-ink-400 hover:bg-white/5 hover:text-white rounded-md transition-all">
                 <X size={18} />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {editingId && canReadLocations && <div role="tablist" aria-label="Data vendor" className="flex gap-2 border-b border-white/10 mb-5 px-5" onKeyDown={(event) => {
+              if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+              event.preventDefault();
+              const nextLocation = event.key === 'End' || (event.key !== 'Home' && !showingLocations);
+              setModalTab(nextLocation ? 'location' : 'profile');
+              document.getElementById(nextLocation ? 'master-vendor-location-tab' : 'master-vendor-profile-tab')?.focus();
+            }}>
+              <button type="button" role="tab" id="master-vendor-profile-tab" tabIndex={showingLocations ? -1 : 0} aria-selected={!showingLocations} aria-controls="master-vendor-profile" disabled={saving} className={`px-3 py-2 text-sm border-b-2 ${!showingLocations ? 'border-primary-400 text-white' : 'border-transparent text-ink-400'}`} onClick={() => setModalTab('profile')}>Profil Vendor</button>
+              <button type="button" role="tab" id="master-vendor-location-tab" tabIndex={showingLocations ? 0 : -1} aria-selected={showingLocations} aria-controls="master-vendor-location" disabled={saving} className={`px-3 py-2 text-sm border-b-2 ${showingLocations ? 'border-primary-400 text-white' : 'border-transparent text-ink-400'}`} onClick={() => setModalTab('location')}>Lokasi & Koordinat</button>
+            </div>}
+            {showingLocations ? <section id="master-vendor-location" role="tabpanel" aria-labelledby="master-vendor-location-tab" className="px-5 pb-5">
+              <p className="font-medium text-white mb-4">{editingVendor.vendor_name}</p>
+              <Suspense fallback={<p role="status" className="p-4 text-ink-400">Memuat pengelolaan koordinat…</p>}><MasterVendorLocationsPanel key={editingId} vendor={editingVendor} /></Suspense>
+            </section> : <form id="master-vendor-profile" role={editingId && canReadLocations ? 'tabpanel' : undefined} aria-labelledby={editingId && canReadLocations ? 'master-vendor-profile-tab' : undefined} onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="label">Kode Vendor <span className="text-danger-400">*</span></label>
-                  <input type="text" className="input" value={form.vendor_code} onChange={(e) => setForm({...form, vendor_code: e.target.value})} required />
+                  <label className="label" htmlFor="master-vendor-code">Kode Vendor <span className="text-danger-400">*</span></label>
+                  <input id="master-vendor-code" type="text" className="input" value={form.vendor_code} onChange={(e) => setForm({...form, vendor_code: e.target.value})} required />
                 </div>
                 <div>
-                  <label className="label">Nama Vendor <span className="text-danger-400">*</span></label>
-                  <input type="text" className="input" value={form.vendor_name} onChange={(e) => setForm({...form, vendor_name: e.target.value})} required />
+                  <label className="label" htmlFor="master-vendor-name">Nama Vendor <span className="text-danger-400">*</span></label>
+                  <input id="master-vendor-name" type="text" className="input" value={form.vendor_name} onChange={(e) => setForm({...form, vendor_name: e.target.value})} required />
                 </div>
               </div>
               <div>
@@ -263,13 +306,13 @@ export default function VendorsPage() {
                 </div>
               </div>
               <div>
-                <label className="label">Alamat</label>
-                <textarea className="input" rows="2" value={form.address} onChange={(e) => setForm({...form, address: e.target.value})}></textarea>
+                <label className="label" htmlFor="master-vendor-address">Alamat</label>
+                <textarea id="master-vendor-address" className="input" rows="2" value={form.address} onChange={(e) => setForm({...form, address: e.target.value})}></textarea>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="label">Kota</label>
-                  <input type="text" className="input" value={form.city} onChange={(e) => setForm({...form, city: e.target.value})} />
+                  <label className="label" htmlFor="master-vendor-city">Kota</label>
+                  <input id="master-vendor-city" type="text" className="input" value={form.city} onChange={(e) => setForm({...form, city: e.target.value})} />
                 </div>
                 <div>
                   <label className="label">NPWP</label>
@@ -288,14 +331,16 @@ export default function VendorsPage() {
                 <input type="checkbox" id="is_active" checked={form.is_active} onChange={(e) => setForm({...form, is_active: e.target.checked})} className="w-4 h-4 rounded border-white/10 bg-white/5 text-primary-500 focus:ring-primary-500/30" />
                 Aktif
               </label>
-              <div className="flex gap-3 justify-end pt-2">
-                <button type="button" onClick={() => { setShowModal(false); setEditingId(null); }} className="btn-secondary">Batal</button>
-                <button type="submit" className="btn-primary">
+              {!editingId && canReadLocations && <p className="text-xs text-ink-400">Alamat lokasi, latitude dan longitude dapat diisi setelah profil vendor aktif disimpan.</p>}
+              <div className="flex flex-wrap gap-3 justify-end pt-2">
+                <button type="button" disabled={saving} onClick={() => { setShowModal(false); setEditingId(null); }} className="btn-secondary">Batal</button>
+                <button type="submit" disabled={saving} className="btn-primary">
                   <Save size={14} />
-                  Simpan
+                  {saving ? 'Menyimpan…' : 'Simpan'}
                 </button>
+                {!editingId && canWriteLocations && form.is_active && <button type="submit" value="location" disabled={saving} className="btn-secondary"><MapPin size={14} /> Simpan dan Isi Koordinat</button>}
               </div>
-            </form>
+            </form>}
           </div>
         </div>
       )}
