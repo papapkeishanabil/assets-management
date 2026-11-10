@@ -7,18 +7,22 @@ Dokumen induk: [AUDIT_DAN_RENCANA_IMPLEMENTASI.md](AUDIT_DAN_RENCANA_IMPLEMENTAS
 Dashboard Vendor, Vendor Aktif, Calon Vendor, Follow-Up Vendor, Peta Vendor. Vendor
 di Master Data dipindahkan menjadi Vendor Aktif, tetap URL `/vendors` dan key
 `vendors`; guard role SA/HRD dipertahankan. Tautan silang Dashboard/master ditambah.
-**Selesai lokal: 7 navigasi + 16 regresi master PASS, build PASS; belum deployment**.
+**Production READY 10 Nov 11.14 WIB**, source `09b980ce`, deployment
+`dpl_2SpGpZVPrLNzJSFJ4HpcziZURWtE`; user menyetujui dengan “ok deploy”.
+7 navigasi + 16 regresi master PASS, build PASS; artifact 8 file dan guard anonim
+5 route produksi lulus, 0 error browser/log saat rilis.
 Tidak ada perubahan DB/RLS/KPI/migration; data dan koordinat memakai backend yang
-sama. [Laporan integrasi](VENDOR_NAVIGATION_INTEGRATION_20261110.md). Perubahan ini
-bersama input koordinat master masih menunggu persetujuan deployment gabungan.
+sama. [Laporan integrasi](VENDOR_NAVIGATION_INTEGRATION_20261110.md) dan
+[bukti rilis gabungan](INTEGRATED_VENDOR_PRODUCTION_RELEASE_20261110.md). Perubahan ini
+bersama input koordinat master sudah dirilis; tidak ada push/migration tambahan.
 
 **Permintaan terbaru 10 November — input koordinat juga di Master Data → Vendor:**
 implementasi lokal selesai, **16 browser Master + 22 regresi lokasi/foto PASS**, build
 PASS. Tombol Koordinat per baris, tab Lokasi & Koordinat di edit, serta Simpan dan Isi
 Koordinat untuk vendor baru. Memakai data lokasi Fase 3 yang sama; tidak ada migration,
-perubahan tabel master/role/RLS atau write produksi. **Belum deployment versi Master**;
-frontend utama tetap `5ae0c673`. [Laporan dan bukti](MASTER_VENDOR_COORDINATES_20261110.md).
-Langkah berikut untuk perubahan ini: persetujuan deployment frontend terpisah.
+perubahan tabel master/role/RLS atau write produksi. **Sudah dirilis gabungan dengan
+integrasi menu**, frontend utama kini `09b980ce`. [Laporan dan bukti](MASTER_VENDOR_COORDINATES_20261110.md).
+Langkah berikut: UAT input lokasi asli menggunakan akun operasional berizin.
 
 **FASE 3 SUDAH AKTIF DI PRODUKSI, 10 November 2026 09.29 WIB.** User menyetujui
 migration dengan “ya setuju”. Hanya `202611090001_vendor_management_phase3.sql`
@@ -130,7 +134,7 @@ tidak perlu mengulang migration atau deployment untuk penggunaan lokasi sekarang
 | Backup pra-Fase 3 terbaru | `D:\Backups\harmas-pre-phase3-20261110-090939-f4bf7fbd`; restore logis 140 tabel/1.908 baris cocok, 95 blob cocok ETag/hash; full stack platform belum direstore |
 | Git | Fase 2 `c02a66d5`, origin lokal `12de0de4`; dokumentasi penerimaan Fase 1+2 `73b8680a`, implementasi Fase 3 pada commit lokal berikutnya (lihat git log). Tidak ada push baru |
 | Fase 2 | Schema dan frontend produksi; UAT baca 9 PASS + lifecycle 6 PASS, akun uji bersih; kandidat/follow-up masih 0 |
-| Fase 3 | Backend lokasi/foto SUDAH AKTIF 10 Nov 09.29 WIB; 25 SQL + 11 HTTP lulus, baseline/keamanan existing utuh. Frontend gratis `5ae0c673`; pin menunggu input lokasi asli dan UAT operasional |
+| Fase 3 | Backend lokasi/foto AKTIF 10 Nov 09.29 WIB; frontend integrasi menu + koordinat master `09b980ce` READY 11.14 WIB. Baseline/keamanan utuh; pin menunggu input lokasi asli dan UAT operasional |
 | Fase 4–5 | Belum dimulai. Rancangan lengkap di dokumen induk §D–G |
 
 ## 3. Stack & Konvensi Kode

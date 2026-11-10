@@ -2,13 +2,14 @@
 
 **Pembaruan integrasi menu:** user kemudian memilih satu kelompok Manajemen Vendor.
 Menu master kini berlabel **Vendor Aktif** di kelompok tersebut pada implementasi
-lokal; URL tetap `/vendors`. [Laporan integrasi](VENDOR_NAVIGATION_INTEGRATION_20261110.md).
-Kedua perubahan frontend belum di-deploy.
+frontend; URL tetap `/vendors`. [Laporan integrasi](VENDOR_NAVIGATION_INTEGRATION_20261110.md).
+Kedua perubahan frontend sudah production READY 11.14 WIB setelah user menyetujui
+deployment. [Bukti rilis](INTEGRATED_VENDOR_PRODUCTION_RELEASE_20261110.md).
 
-Status **selesai dan diuji lokal; belum di-deploy**. User meminta input koordinat
+Status **selesai, diuji lokal dan sudah di-deploy gabungan**. User meminta input koordinat
 juga tersedia pada Master Data → Vendor. Perubahan frontend memakai backend Fase 3
 yang sudah aktif, tanpa migration atau kolom tambahan pada tabel master `vendors`.
-Frontend utama tetap versi `5ae0c673` sampai deployment baru disetujui.
+Frontend utama kini versi `09b980ce`, mencakup implementasi master `ec617b81`.
 
 ## Alur penggunaan
 
@@ -71,7 +72,7 @@ Tidak mengubah role/permission, policy atau helper keamanan di database.
 | `scripts/test-master-vendor-locations-browser.mjs` | Integrasi UI → API → Docker untuk alur baru dan cleanup fixture |
 
 Tidak ada perubahan migration/rollback, dependency, environment atau database produksi.
-Tidak melakukan push Git atau deployment.
+Tidak melakukan push Git; deployment gabungan kemudian dilakukan setelah persetujuan user.
 
 ## Bukti pengujian
 
@@ -98,10 +99,10 @@ juga dirapikan setelah meninjau screenshot, lalu uji mobile dan build diulang.
 Warning bundle utama >500 kB masih ada; panel master dimuat lazy (2,67 kB gzip 1,23 kB)
 dan Leaflet tetap dimuat dinamis hanya saat diperlukan.
 
-## Rilis berikutnya
+## Rilis dan UAT
 
-Perubahan frontend siap untuk deployment setelah **persetujuan terpisah user**,
-sesuai batasan rilis. Backend Fase 3 sudah aktif sehingga tidak ada migration baru.
-UAT setelah deployment: login akun berizin, buka `/vendors`, pilih Koordinat,
+Perubahan frontend sudah dirilis setelah **persetujuan terpisah user**, sesuai
+batasan rilis. Backend Fase 3 sudah aktif sehingga tidak ada migration baru.
+UAT berikutnya: login akun berizin, buka Manajemen Vendor → Vendor Aktif (`/vendors`), pilih Koordinat,
 simpan lokasi asli, pastikan titik dan rutenya konsisten pada `/vendor/map`.
 Tidak membuat data dummy atau akun uji produksi otomatis.

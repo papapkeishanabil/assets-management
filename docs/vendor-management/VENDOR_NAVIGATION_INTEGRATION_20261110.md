@@ -1,9 +1,10 @@
 # Integrasi navigasi Manajemen Vendor — 10 November 2026
 
-Status **selesai dan diuji lokal; belum di-deploy**. User memilih menyatukan menu
+Status **production READY 10 November, 11.14 WIB**. User memilih menyatukan menu
 menjadi Dashboard, Vendor Aktif, Calon Vendor, Follow-Up dan Peta dalam satu kelompok
 Manajemen Vendor. Ini melanjutkan perubahan input koordinat Master Vendor pada
-commit `ec617b81`; deployment kedua perubahan tetap memerlukan persetujuan user.
+commit `ec617b81`; user kemudian menyetujui deployment gabungan dengan “ok deploy”.
+[Bukti rilis production](INTEGRATED_VENDOR_PRODUCTION_RELEASE_20261110.md).
 
 ## Susunan akhir
 
@@ -43,7 +44,7 @@ Operasional / Vendor Aktif; key dan baris permission database tidak diubah.
 
 Tidak ada perubahan pada route guard App.jsx, RLS, role, permission database,
 master/aset/kontrak, schema/migration, environment, dependency atau data produksi.
-Tidak melakukan push Git atau deployment.
+Tidak melakukan push Git. Deployment frontend gabungan kemudian disetujui dan selesai.
 
 ## File perubahan
 
@@ -82,5 +83,5 @@ Bukti: [navigasi](phase3-evidence/VENDOR_NAVIGATION_BROWSER_RESULTS.json),
 [desktop](phase3-evidence/vendor-navigation-desktop.png),
 [mobile](phase3-evidence/vendor-navigation-mobile.png).
 Warning bundle utama >500 kB tetap ada. Peninjauan screenshot desktop/mobile dan
-`git diff --check` lulus. Deployment gabungan menunggu persetujuan user; tidak perlu
-migration baru karena backend lokasi sudah aktif.
+`git diff --check` lulus. Deployment gabungan sudah selesai dan diverifikasi setelah
+persetujuan user; tidak perlu migration baru karena backend lokasi sudah aktif.

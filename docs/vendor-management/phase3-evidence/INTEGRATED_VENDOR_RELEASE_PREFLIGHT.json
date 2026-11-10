@@ -1,0 +1,28 @@
+{
+  "checked_at": "2026-11-10T04:13:55.990Z",
+  "commit": "09b980ce",
+  "scanned_files": 80,
+  "checks": {
+    "production_project": true,
+    "vendor_active_menu": true,
+    "candidate_menu": true,
+    "coordinate_tab": true,
+    "create_then_coordinates": true,
+    "master_panel_chunk": true,
+    "free_osm": true,
+    "directions": true,
+    "no_private_patterns": true,
+    "no_environment_or_dump": true
+  },
+  "entry": "/assets/index-B6D9i4wz.js",
+  "entry_sha256": "ffe044c82933c74ace1f21371f204591be553955cbbcb90e9459263a013d5ce5",
+  "public_config": {
+    "checked_at": "2026-11-10T04:11:43.226Z",
+    "project_matches": true,
+    "public_key_validated": true,
+    "auth_settings_readonly_http": 200,
+    "local_build_cache_corrected": true,
+    "cloud_environment_changed": false,
+    "database_writes": false
+  }
+}
