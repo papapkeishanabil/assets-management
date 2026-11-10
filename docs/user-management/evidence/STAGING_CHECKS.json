@@ -1,0 +1,54 @@
+{
+  "checked_at": "2026-11-10T08:05:10.173Z",
+  "deployment_id": "dpl_3Z7Rm7KEApHETkfSnuGcHiWbZUKR",
+  "deployment": "https://harmas-asset-management-2a4sj6mxy.vercel.app",
+  "commit": "b5d07ba5",
+  "checks": [
+    {
+      "path": "/index.html",
+      "sha256": "03f8be6bf1725b76d9dd7b09170dd19603fe54845c1a3408a0efb83c96ecf575",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/index-MELo0Wop.js",
+      "sha256": "c8db264fbf4a9515a69df235fd797bd096152607da82fbe4439e98f575a33b6a",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/index-CZ6N_Mna.css",
+      "sha256": "32d13705d44217becf3c064c3f9c13a240421ea81e271ce493e2898a6c5efa71",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/leaflet-Dgihpmma.css",
+      "sha256": "7e14f0f44c4713eb7519182d93575f59139200ca781397a493a11f1dff0ce5e1",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/leaflet-src-90JM780L.js",
+      "sha256": "1894d427a02e828b49b0ac52178815421088ba6b0b9628de10fe0ec0aa335e0d",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/MasterVendorLocationsPanel-C8ZM23yi.js",
+      "sha256": "e6ea8fbfaf92f8832de1492bec0063dc4d19155b195a9ad9fb6cd240720ad947",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorMapPage-DSFDRkqT.js",
+      "sha256": "b1303c99a39d859ea0f9f87488e025e87d1d4bc04a08bbe64677711879e306c1",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorSourcingPanel-DYZzxYwI.js",
+      "sha256": "b159a8a1a82af8fa4cfd7559c1270a45b1461286a061b1ebc4f6ef5b1256d936",
+      "artifact_matches": true
+    },
+    {
+      "path": "/sw.js",
+      "sha256": "b2ed43dbc8b8a7735affd6a1a84a86f723e995ca1d4481f0bc52f8815a7ecb57",
+      "artifact_matches": true
+    }
+  ],
+  "primary_domain_unchanged_before_promotion": true
+}

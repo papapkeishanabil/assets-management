@@ -1,0 +1,22 @@
+{
+  "prepared_at": "2026-11-10T08:03:17.871Z",
+  "project_ref": "uwlxkwyauxwewoexfgwi",
+  "function_slug": "admin-update-user",
+  "commit": "b5d07ba5",
+  "files": [
+    {
+      "name": "index.ts",
+      "bytes": 225,
+      "sha256": "ded9211f6b62838d97080c6840c89ad71dfa3c31c1831df7117e179a63f27a84"
+    },
+    {
+      "name": "handler.js",
+      "bytes": 10366,
+      "sha256": "409ecdbb47f27ca0aa9ea77d1c1751e89f02d9479e245efcd4a63e744407c32f"
+    }
+  ],
+  "zip_sha256": "e2a9af3c032518fc6c407cc51c3b9f90878d1a12b73528ada62861fcb4aae7e0",
+  "verify_jwt_required": true,
+  "credentials_included": false,
+  "backend_deployed": false
+}

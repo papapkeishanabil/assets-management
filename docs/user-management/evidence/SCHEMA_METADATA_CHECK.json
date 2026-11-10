@@ -1,0 +1,7 @@
+{
+  "checked_at": "2026-11-10T08:05:48.381Z",
+  "method": "GET OpenAPI schema only",
+  "http_status": 401,
+  "data_rows_read": false,
+  "business_writes": false
+}

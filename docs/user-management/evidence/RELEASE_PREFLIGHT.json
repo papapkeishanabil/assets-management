@@ -1,0 +1,37 @@
+{
+  "checked_at": "2026-11-10T08:02:41.820Z",
+  "commit": "b5d07ba5",
+  "scanned_files": 81,
+  "checks": {
+    "edit_identity": true,
+    "password_reset": true,
+    "backend_function": true,
+    "operational_tab": true,
+    "active_vendor_cards": true,
+    "colored_card_badge": true,
+    "sourcing_panel": true,
+    "production_project": true,
+    "vendor_active_menu": true,
+    "candidate_menu": true,
+    "coordinate_tab": true,
+    "create_then_coordinates": true,
+    "master_panel_chunk": true,
+    "free_osm": true,
+    "directions": true,
+    "no_private_patterns": true,
+    "no_environment_or_dump": true
+  },
+  "entry": "/assets/index-MELo0Wop.js",
+  "entry_sha256": "c8db264fbf4a9515a69df235fd797bd096152607da82fbe4439e98f575a33b6a",
+  "tested_artifact_matches": true,
+  "public_config": {
+    "checked_at": "2026-11-10T07:58:12.870Z",
+    "project_matches": true,
+    "public_key_validated": true,
+    "auth_settings_readonly_http": 200,
+    "local_build_cache_corrected": true,
+    "cloud_environment_changed": false,
+    "database_writes": false
+  },
+  "backend_authorization_pending": true
+}
