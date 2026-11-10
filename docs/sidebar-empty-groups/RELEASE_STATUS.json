@@ -1,0 +1,17 @@
+{
+  "released_at": "2026-11-10T09:05:54.685Z",
+  "source_commit": "b4f4025dd25d96bf0e40ae8a6ffa104525cad5dd",
+  "deployment_id": "dpl_EvUg1fFbiXATT3xTv4fGem4UGVsT",
+  "deployment": "https://harmas-asset-management-2wbh8xjq0.vercel.app",
+  "origin": "https://harmas-asset-management.vercel.app",
+  "primary_alias_verified_by_cli_inspect": true,
+  "verified_files": 9,
+  "anonymous_login_guards": 6,
+  "browser_errors": 0,
+  "release_time_runtime_error_entries": 0,
+  "production_authenticated_uat": false,
+  "production_database_writes": false,
+  "rls_changed": false,
+  "git_push": false,
+  "rollback_deployment_id": "dpl_8SDAoYq6yauaAa6X7wQvoLPNkzp4"
+}

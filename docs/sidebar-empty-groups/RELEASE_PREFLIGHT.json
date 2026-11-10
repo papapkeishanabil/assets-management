@@ -1,0 +1,45 @@
+{
+  "checked_at": "2026-11-10T09:04:33.876Z",
+  "commit": "b4f4025dd25d96bf0e40ae8a6ffa104525cad5dd",
+  "scanned_files": 81,
+  "checks": {
+    "edit_identity": true,
+    "password_reset": true,
+    "backend_function": true,
+    "operational_tab": true,
+    "active_vendor_cards": true,
+    "colored_card_badge": true,
+    "sourcing_panel": true,
+    "production_project": true,
+    "vendor_active_menu": true,
+    "candidate_menu": true,
+    "coordinate_tab": true,
+    "create_then_coordinates": true,
+    "master_panel_chunk": true,
+    "free_osm": true,
+    "directions": true,
+    "no_private_patterns": true,
+    "no_environment_or_dump": true
+  },
+  "entry": "/assets/index-tjAPBcmk.js",
+  "entry_sha256": "392a7b3ef0e767351611bc6577a1ac2d06651f1827f9d95011a30f5f7cf42d6c",
+  "local_build": {
+    "command": "npm run build",
+    "exit_code": 0,
+    "entry": "/assets/index-tjAPBcmk.js",
+    "sha256": "392a7b3ef0e767351611bc6577a1ac2d06651f1827f9d95011a30f5f7cf42d6c",
+    "source_sha256": "219d4a9ac44d917e33833bc7c9da260aa756f786705e4fa4d9d7fd8f2b911a2f"
+  },
+  "section_headings_conditional": true,
+  "public_config": {
+    "checked_at": "2026-11-10T09:04:10.780Z",
+    "project_matches": true,
+    "public_key_validated": true,
+    "auth_settings_readonly_http": 200,
+    "local_build_cache_corrected": true,
+    "cloud_environment_changed": false,
+    "database_writes": false
+  },
+  "rollback_deployment_id": "dpl_8SDAoYq6yauaAa6X7wQvoLPNkzp4",
+  "rollback_url": "https://harmas-asset-management-l6a58dmzy.vercel.app"
+}
