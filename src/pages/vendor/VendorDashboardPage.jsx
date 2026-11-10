@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { RefreshCw, ArrowUpRight, Truck, MapPin, AlertTriangle, Package, CheckCircle2, Users, MessageSquare, Clock3 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRolePermissions } from '../../hooks/useRolePermissions';
-import { VENDOR_WRITE_ROLES } from '../../lib/vendor-constants';
+import { MASTER_VENDOR_READ_ROLES, VENDOR_WRITE_ROLES } from '../../lib/vendor-constants';
 import { VENDOR_TYPES } from '../../lib/constants';
 import { fetchVendorOverview } from '../../lib/vendor-dashboard-helpers';
 import { fetchSourcingDashboard, remindOverdueFollowups } from '../../lib/vendor-followup-helpers';
@@ -57,7 +57,7 @@ export default function VendorDashboardPage() {
   const { hasAccess, loading: permissionsLoading } = useRolePermissions();
   const allowed = !permissionsLoading && hasAccess('vendor_management') && ['sourcing', 'hrd', 'direksi', 'super_admin'].includes(role?.role_name);
   const canFollowups = hasAccess('vendor_followups'), canMap = hasAccess('vendor_map'), canAssets = hasAccess('assets');
-  const canActiveVendors = hasAccess('vendors') && ['super_admin', 'hrd'].includes(role?.role_name);
+  const canActiveVendors = hasAccess('vendors') && MASTER_VENDOR_READ_ROLES.includes(role?.role_name);
   const canRemind = allowed && canFollowups && VENDOR_WRITE_ROLES.includes(role?.role_name);
   const [tab, setTab] = useState('overview'), [version, setVersion] = useState(0);
   const [overview, setOverview] = useState(null), [sourcing, setSourcing] = useState(null);

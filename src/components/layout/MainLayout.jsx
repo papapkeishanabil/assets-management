@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
 import { useRolePermissions } from '../../hooks/useRolePermissions';
 import { ROLE_LABELS, ROLES } from '../../lib/constants';
+import { MASTER_VENDOR_READ_ROLES } from '../../lib/vendor-constants';
 import ThemeToggle from '../ThemeToggle';
 import BrandLogo from '../BrandLogo';
 import HelpModal from '../HelpModal';
@@ -98,7 +99,7 @@ export default function MainLayout() {
   ];
 
   const { hasAccess } = useRolePermissions();
-  const canAccessActiveVendors = ['super_admin', 'hrd'].includes(role?.role_name) && hasAccess('vendors');
+  const canAccessActiveVendors = MASTER_VENDOR_READ_ROLES.includes(role?.role_name) && hasAccess('vendors');
   const visibleNavItems = navItems.filter(item => !item.moduleKey || hasAccess(item.moduleKey));
   const visibleMasterDataItems = masterDataItems.filter(item => !item.moduleKey || hasAccess(item.moduleKey));
   const visibleAssetItems = assetItems.filter(item => !item.moduleKey || hasAccess(item.moduleKey));

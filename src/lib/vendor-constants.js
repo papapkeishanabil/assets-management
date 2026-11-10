@@ -146,6 +146,10 @@ export const BUSINESS_TYPES = { USAHA: 'Badan Usaha', PERORANGAN: 'Perorangan' }
 // Role yang boleh menulis data pipeline vendor (selaras policy RLS fase 1)
 export const VENDOR_WRITE_ROLES = ['sourcing', 'hrd', 'super_admin'];
 
+// Reading operational vendors does not grant access to change the master data.
+export const MASTER_VENDOR_READ_ROLES = ['super_admin', 'hrd', 'sourcing'];
+export const MASTER_VENDOR_WRITE_ROLES = ['super_admin', 'hrd'];
+
 // Nilai kelayakan yang merupakan KEPUTUSAN AKHIR — hanya direksi/super_admin
 // (ditegakkan trigger guard DB `vendor_guard_restricted_columns`; UI hanya
 // menyembunyikan opsi, database tetap penjaga sebenarnya).

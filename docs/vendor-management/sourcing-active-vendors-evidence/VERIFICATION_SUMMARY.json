@@ -1,0 +1,26 @@
+{
+  "checked_at": "2026-11-10T08:44:34.989Z",
+  "pass": 22,
+  "fail": 0,
+  "build": {
+    "command": "npm run build",
+    "exit_code": 0,
+    "entry": "/assets/index-CqjY3wg6.js",
+    "sha256": "bbcfc823249e89d9a9e902f3c6d27eb1dc140d5ee69939a55b6562e4d3527721",
+    "warning": "Existing main bundle >500 kB"
+  },
+  "source_sha256": {
+    "src/App.jsx": "f48a0697e87c1344675f2fea68c67844f08933c1db9b9b83482e9aaf2345430c",
+    "src/components/layout/MainLayout.jsx": "76a4c4c24b806e3b1d9a336b9988caa85789da5af3823f5f3e4fe775c39b055c",
+    "src/lib/vendor-constants.js": "54daa674e533040339fdb61bc3c3f59f2f8182bb666b499222626fa59d223992",
+    "src/pages/VendorsPage.jsx": "0d3f7db28f7f4548bdc18b216b368e1deff98e68c7fe595115fc0fa4ca5c1ad8",
+    "src/pages/vendor/VendorDashboardPage.jsx": "65e75540ed331524d2984c16c1bf6ac34d1ed93bee0baf24f0a86aba60a40c83",
+    "scripts/test-sourcing-active-vendors.mjs": "8f7ef77f85842cc0ebea3343ea0a618de6717716da017fb703944784fd509a2d"
+  },
+  "production_accessed": false,
+  "production_database_changed": false,
+  "rls_changed": false,
+  "migrations_required": false,
+  "git_push": false,
+  "deployed": false
+}

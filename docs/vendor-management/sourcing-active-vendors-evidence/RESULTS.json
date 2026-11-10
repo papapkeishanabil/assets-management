@@ -1,0 +1,100 @@
+{
+  "checked_at": "2026-11-10T08:43:39.883Z",
+  "target": "Docker synthetic + loopback browser",
+  "production_accessed": false,
+  "permission_switches_mocked_in_browser": true,
+  "rls_policy_fixture": "Temporary transaction-scoped writer policy; original fixture RLS/policies restored by ROLLBACK",
+  "accounts_cleaned": 7,
+  "browser_errors": [],
+  "sourcing_master_write_requests": [],
+  "checks": [
+    {
+      "check": "Local RLS transaction: sourcing cannot INSERT/UPDATE/DELETE master vendors",
+      "pass": true
+    },
+    {
+      "check": "Local RLS transaction: hrd retains INSERT/UPDATE/DELETE master vendors",
+      "pass": true
+    },
+    {
+      "check": "Local RLS transaction: super_admin retains INSERT/UPDATE/DELETE master vendors",
+      "pass": true
+    },
+    {
+      "check": "Temporary RLS test transactions restore policies and master data exactly",
+      "pass": true
+    },
+    {
+      "check": "Sourcing with vendors permission sees sidebar and Dashboard link and opens Vendor Aktif",
+      "pass": true
+    },
+    {
+      "check": "Sourcing direct URL/reload and search work; master add/edit/delete actions absent",
+      "pass": true
+    },
+    {
+      "check": "Sourcing profile fields disabled and forced form submission sends no master write",
+      "pass": true
+    },
+    {
+      "check": "Opening/cancelling Sourcing location form does not create a linked candidate",
+      "pass": true
+    },
+    {
+      "check": "Sourcing with vendor_map saves real Docker coordinates through existing RPC without changing master",
+      "pass": true
+    },
+    {
+      "check": "Sourcing can update coordinates but location verification control remains restricted",
+      "pass": true
+    },
+    {
+      "check": "Sourcing mobile menu and read-only profile remain usable without overflow",
+      "pass": true
+    },
+    {
+      "check": "vendors permission works independently; vendor_map OFF hides location controls and avoids location queries",
+      "pass": true
+    },
+    {
+      "check": "sourcing vendors OFF hides links and denies direct URL",
+      "pass": true
+    },
+    {
+      "check": "hrd vendors OFF hides links and denies direct URL",
+      "pass": true
+    },
+    {
+      "check": "direksi remains denied even with vendors module enabled",
+      "pass": true
+    },
+    {
+      "check": "finance remains denied even with vendors module enabled",
+      "pass": true
+    },
+    {
+      "check": "pelaksana remains denied even with vendors module enabled",
+      "pass": true
+    },
+    {
+      "check": "Inactive Sourcing remains blocked before vendor data access",
+      "pass": true
+    },
+    {
+      "check": "super_admin retains actual browser CRUD and Super Admin module bypass",
+      "pass": true
+    },
+    {
+      "check": "hrd retains actual browser CRUD",
+      "pass": true
+    },
+    {
+      "check": "No page errors, Sourcing master writes, unexpected writes or production requests",
+      "pass": true
+    },
+    {
+      "check": "Cleanup restores 14 table checksums including Auth users/identities and exact vendor RLS metadata",
+      "pass": true
+    }
+  ]
+}

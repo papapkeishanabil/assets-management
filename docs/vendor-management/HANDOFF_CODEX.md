@@ -1,5 +1,14 @@
 # HANDOFF — Modul Manajemen Vendor HARMAS Asset Management
 
+**Perbaikan akses Sourcing ke Vendor Aktif, 10 November:** implementasi lokal selesai,
+belum deploy. Bila izin `vendors` aktif, Sourcing dapat membuka sidebar/dashboard/URL
+master dan melihat profil tanpa CRUD master. Lokasi mengikuti `vendor_map` dan
+aturan existing; guard keputusan/aktivasi tetap. Route master kini juga menegakkan
+izin modul untuk HRD. **22/22** uji Docker/browser PASS, checksum 14 tabel dan metadata
+RLS kembali identik, build PASS. Tidak ada akses DB produksi/migration/push/deploy.
+[Laporan dan bukti](SOURCING_ACTIVE_VENDORS_FIX_20261110.md). Catatan historis di bawah
+yang menyebut master hanya SA/HRD menggambarkan versi produksi sebelum perbaikan ini.
+
 **Dokumen serah terima untuk agent penerus (Codex).** Disusun 6 November 2026.
 Dokumen induk: [AUDIT_DAN_RENCANA_IMPLEMENTASI.md](AUDIT_DAN_RENCANA_IMPLEMENTASI.md) · Spesifikasi user: [HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md](HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md)
 

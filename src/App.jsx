@@ -41,6 +41,7 @@ import PPMPoDetailPage from './pages/PPMPoDetailPage';
 import LoadingScreen from './components/LoadingScreen';
 import { ROLES } from './lib/constants';
 import { useRolePermissions } from './hooks/useRolePermissions';
+import { MASTER_VENDOR_READ_ROLES } from './lib/vendor-constants';
 import ContractsPage from './pages/contracts/ContractsPage';
 import ContractFormPage from './pages/contracts/ContractFormPage';
 import ContractDetailPage from './pages/contracts/ContractDetailPage';
@@ -153,13 +154,13 @@ function HRDRoute({ children }) {
 
 // Modul Manajemen Vendor: guard kombinasi role + module access
 // (RLS database tetap penjaga utama; ini mencegah akses URL langsung).
-function VendorRoute({ children, moduleKey = 'vendor_management' }) {
+function VendorRoute({ children, moduleKey = 'vendor_management', allowedRoles = ['super_admin', 'hrd', 'direksi', 'sourcing'] }) {
   const { role, profile, loading } = useAuth();
   const { hasAccess, loading: permissionsLoading } = useRolePermissions();
 
   if (loading || permissionsLoading) return <LoadingScreen />;
   if (!profile) return <Navigate to="/login" replace />;
-  const roleAllowed = role && ['super_admin', 'hrd', 'direksi', 'sourcing'].includes(role.role_name);
+  const roleAllowed = role && allowedRoles.includes(role.role_name);
   if (!roleAllowed || !hasAccess(moduleKey)) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -225,9 +226,9 @@ export default function App() {
           </HRDRoute>
         } />
         <Route path="vendors" element={
-          <HRDRoute>
+          <VendorRoute moduleKey="vendors" allowedRoles={MASTER_VENDOR_READ_ROLES}>
             <VendorsPage />
-          </HRDRoute>
+          </VendorRoute>
         } />
         <Route path="vendor" element={<VendorRoute><VendorDashboardPage /></VendorRoute>} />
         <Route path="vendor/followups" element={<VendorRoute moduleKey="vendor_followups"><VendorFollowupsPage /></VendorRoute>} />

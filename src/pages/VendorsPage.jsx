@@ -4,16 +4,18 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useRolePermissions } from '../hooks/useRolePermissions';
 import { LOCATION_READ_ROLES } from '../lib/vendor-location-utils';
-import { VENDOR_WRITE_ROLES } from '../lib/vendor-constants';
+import { MASTER_VENDOR_READ_ROLES, MASTER_VENDOR_WRITE_ROLES, VENDOR_WRITE_ROLES } from '../lib/vendor-constants';
 import { VENDOR_TYPES } from '../lib/constants';
 import toast from 'react-hot-toast';
-import { Plus, Edit, Trash2, Search, RefreshCw, Truck, X, Save, MapPin } from 'lucide-react';
+import { Plus, Edit, Eye, Trash2, Search, RefreshCw, Truck, X, Save, MapPin } from 'lucide-react';
 
 const MasterVendorLocationsPanel = lazy(() => import('../components/vendor/MasterVendorLocationsPanel'));
 
 export default function VendorsPage() {
   const { profile, role } = useAuth();
   const { hasAccess, loading: permissionsLoading } = useRolePermissions();
+  const canReadMaster = !permissionsLoading && hasAccess('vendors') && MASTER_VENDOR_READ_ROLES.includes(role?.role_name);
+  const canWriteMaster = canReadMaster && MASTER_VENDOR_WRITE_ROLES.includes(role?.role_name);
   const canReadLocations = !permissionsLoading && hasAccess('vendor_map') && LOCATION_READ_ROLES.includes(role?.role_name);
   const canWriteLocations = canReadLocations && VENDOR_WRITE_ROLES.includes(role?.role_name);
   const [vendors, setVendors] = useState([]);
@@ -43,6 +45,7 @@ export default function VendorsPage() {
   });
 
   const fetchVendors = useCallback(async () => {
+    if (!canReadMaster) return;
     setLoading(true);
     try {
       let query = supabase
@@ -63,7 +66,7 @@ export default function VendorsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, canReadMaster]);
 
   useEffect(() => {
     fetchVendors();
@@ -71,6 +74,7 @@ export default function VendorsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!canWriteMaster) return;
     if (savingRef.current) return;
     if (!form.vendor_code || !form.vendor_name) {
       toast.error('Kode dan nama vendor wajib diisi');
@@ -149,6 +153,7 @@ export default function VendorsPage() {
   };
 
   const handleDelete = async (id) => {
+    if (!canWriteMaster) return;
     if (!confirm('Yakin ingin menghapus vendor ini?')) return;
     try {
       const { error } = await supabase.from('vendors').delete().eq('id', id);
@@ -160,12 +165,16 @@ export default function VendorsPage() {
     }
   };
 
+  if (permissionsLoading) return <p role="status" className="text-ink-400">Memuat akses vendor…</p>;
+  if (!canReadMaster) return <p className="text-ink-400">Akses Vendor Aktif ditolak.</p>;
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">Master Vendor</h1>
           <p className="text-sm text-ink-400 mt-1">Data vendor operasional, status aktif/nonaktif, lokasi dan koordinat</p>
+          {!canWriteMaster && <p className="text-xs text-ink-400 mt-2">Akses profil vendor hanya untuk melihat. Pengelolaan lokasi mengikuti izin Peta Vendor.</p>}
         </div>
         <div className="flex flex-wrap gap-2">
         {hasAccess('vendor_management') && <Link to="/vendor" className="btn-secondary text-sm">Dashboard Vendor</Link>}
@@ -183,10 +192,10 @@ export default function VendorsPage() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500 group-focus-within:text-primary-400 transition-colors pointer-events-none" />
             <input type="text" className="input pl-9" placeholder="Cari kode atau nama vendor..." value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
-          <button onClick={() => { setEditingId(null); setEditingVendor(null); setModalTab('profile'); setForm({ vendor_code: '', vendor_name: '', vendor_type: '', contact_person: '', whatsapp_number: '', phone_number: '', email: '', address: '', city: '', tax_number: '', service_type: '', notes: '', is_active: true }); setShowModal(true); }} className="btn-primary text-sm whitespace-nowrap">
+          {canWriteMaster && <button onClick={() => { setEditingId(null); setEditingVendor(null); setModalTab('profile'); setForm({ vendor_code: '', vendor_name: '', vendor_type: '', contact_person: '', whatsapp_number: '', phone_number: '', email: '', address: '', city: '', tax_number: '', service_type: '', notes: '', is_active: true }); setShowModal(true); }} className="btn-primary text-sm whitespace-nowrap">
             <Plus size={14} />
             Tambah Vendor
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -201,7 +210,7 @@ export default function VendorsPage() {
           <div className="empty-state">
             <div className="empty-state-icon"><Truck size={48} /></div>
             <h3 className="empty-state-title">Tidak ada data vendor</h3>
-            <p className="empty-state-text">Tambahkan vendor baru untuk mulai mencatat supplier</p>
+            <p className="empty-state-text">{canWriteMaster ? 'Tambahkan vendor baru untuk mulai mencatat supplier' : 'Data vendor operasional belum tersedia.'}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -231,8 +240,10 @@ export default function VendorsPage() {
                     <td className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         {canReadLocations && <button type="button" onClick={() => handleEdit(vendor, 'location')} className="inline-flex items-center gap-1 px-2 py-1.5 text-primary-400 hover:bg-primary-500/10 rounded-md transition-all text-xs whitespace-nowrap" aria-label={`Lokasi & Koordinat ${vendor.vendor_name}`} title="Lokasi & Koordinat"><MapPin size={14} /> Koordinat</button>}
-                        <button onClick={() => handleEdit(vendor)} className="p-1.5 text-primary-400 hover:bg-primary-500/10 rounded-md transition-all" title="Edit"><Edit size={14} /></button>
-                        <button onClick={() => handleDelete(vendor.id)} className="p-1.5 text-danger-400 hover:bg-danger-500/10 rounded-md transition-all" title="Hapus"><Trash2 size={14} /></button>
+                        {canWriteMaster ? <>
+                          <button onClick={() => handleEdit(vendor)} className="p-1.5 text-primary-400 hover:bg-primary-500/10 rounded-md transition-all" title="Edit"><Edit size={14} /></button>
+                          <button onClick={() => handleDelete(vendor.id)} className="p-1.5 text-danger-400 hover:bg-danger-500/10 rounded-md transition-all" title="Hapus"><Trash2 size={14} /></button>
+                        </> : <button onClick={() => handleEdit(vendor)} className="p-1.5 text-primary-400 hover:bg-primary-500/10 rounded-md transition-all" aria-label={`Lihat profil ${vendor.vendor_name}`} title="Lihat profil"><Eye size={14} /></button>}
                       </div>
                     </td>
                   </tr>
@@ -251,7 +262,7 @@ export default function VendorsPage() {
                 <div className="p-2.5 rounded-xl bg-primary-500/10 border border-primary-500/20">
                   <Truck size={18} className="text-primary-400" />
                 </div>
-                <h3 id="master-vendor-modal-title" className="text-lg font-semibold text-white">{editingId ? 'Edit Vendor' : 'Tambah Vendor'}</h3>
+                <h3 id="master-vendor-modal-title" className="text-lg font-semibold text-white">{editingId ? canWriteMaster ? 'Edit Vendor' : 'Detail Vendor' : 'Tambah Vendor'}</h3>
               </div>
               <button disabled={saving} aria-label="Tutup vendor" onClick={() => { setShowModal(false); setEditingId(null); }} className="p-1.5 text-ink-400 hover:bg-white/5 hover:text-white rounded-md transition-all">
                 <X size={18} />
@@ -271,6 +282,7 @@ export default function VendorsPage() {
               <p className="font-medium text-white mb-4">{editingVendor.vendor_name}</p>
               <Suspense fallback={<p role="status" className="p-4 text-ink-400">Memuat pengelolaan koordinat…</p>}><MasterVendorLocationsPanel key={editingId} vendor={editingVendor} /></Suspense>
             </section> : <form id="master-vendor-profile" role={editingId && canReadLocations ? 'tabpanel' : undefined} aria-labelledby={editingId && canReadLocations ? 'master-vendor-profile-tab' : undefined} onSubmit={handleSubmit} className="space-y-4">
+              <fieldset disabled={!canWriteMaster || saving} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="label" htmlFor="master-vendor-code">Kode Vendor <span className="text-danger-400">*</span></label>
@@ -337,13 +349,14 @@ export default function VendorsPage() {
                 Aktif
               </label>
               {!editingId && canReadLocations && <p className="text-xs text-ink-400">Alamat lokasi, latitude dan longitude dapat diisi setelah profil vendor aktif disimpan.</p>}
+              </fieldset>
               <div className="flex flex-wrap gap-3 justify-end pt-2">
-                <button type="button" disabled={saving} onClick={() => { setShowModal(false); setEditingId(null); }} className="btn-secondary">Batal</button>
-                <button type="submit" disabled={saving} className="btn-primary">
+                <button type="button" disabled={saving} onClick={() => { setShowModal(false); setEditingId(null); }} className="btn-secondary">{canWriteMaster ? 'Batal' : 'Tutup'}</button>
+                {canWriteMaster && <button type="submit" disabled={saving} className="btn-primary">
                   <Save size={14} />
                   {saving ? 'Menyimpan…' : 'Simpan'}
-                </button>
-                {!editingId && canWriteLocations && form.is_active && <button type="submit" value="location" disabled={saving} className="btn-secondary"><MapPin size={14} /> Simpan dan Isi Koordinat</button>}
+                </button>}
+                {canWriteMaster && !editingId && canWriteLocations && form.is_active && <button type="submit" value="location" disabled={saving} className="btn-secondary"><MapPin size={14} /> Simpan dan Isi Koordinat</button>}
               </div>
             </form>}
           </div>
