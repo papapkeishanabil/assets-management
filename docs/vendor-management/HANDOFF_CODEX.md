@@ -8,8 +8,10 @@ menuju fasilitas. Rancangan Google Maps JavaScript API diganti **Leaflet 1.9.4 +
 OpenStreetMap tanpa key/billing**; Google Maps dipakai hanya sebagai tautan navigasi
 yang dibuka pengguna. Implementasi lokal dan 64 pemeriksaan lulus, build lulus.
 [Laporan perubahan peta gratis/rute](FREE_MAP_AND_DIRECTIONS_20261110.md).
-Versi gratis ini belum di-deploy; frontend utama masih `d3beb8f5`. Migration Fase 3
-juga belum mendapat persetujuan eksekusi. Panduan Google Cloud lama menjadi opsional,
+Versi gratis `5ae0c673` **sudah production READY sekitar 09.06 WIB, 10 Nov**, deployment
+`dpl_F3UijNeKStcKMe8nTQfUdvLVo7BC`; [bukti rilis](FREE_MAP_PRODUCTION_RELEASE_20261110.md).
+User menyetujui deployment frontend; tidak ada push/migration/write bisnis. Migration Fase 3
+belum mendapat persetujuan eksekusi. Panduan Google Cloud lama menjadi opsional,
 bukan prasyarat versi gratis. Jangan membuka billing atau meminta key Maps lagi.
 
 **Pembaruan 9 November 2026:** Fase 2 **sudah terpasang di produksi**; isi empat fungsi cocok
@@ -62,8 +64,8 @@ Helper tidak menjalankan migration atau mengubah environment cloud.
 139 tabel COPY/1.905 baris cocok, 95 blob cocok ukuran/ETag/hash. Migration dua kali
 hanya di clone; produksi belum dimigration. Container restore dihentikan. Lihat
 [kesiapan aktivasi terbaru dan batas restore platform](PHASE3_ACTIVATION_READINESS_20261109.md).
-Pilihan key/Map ID kemudian diganti peta gratis pada 10 November. Langkah berikut:
-persetujuan deploy frontend gratis dan persetujuan eksplisit migration Fase 3. Perbarui
+Pilihan key/Map ID kemudian diganti peta gratis pada 10 November; frontend gratis sudah
+dirilis dengan persetujuan user. Langkah berikut: persetujuan eksplisit migration Fase 3. Perbarui
 preflight/baseline saat akan migration karena snapshot backup berasal dari 9 November.
 
 ---
@@ -89,7 +91,7 @@ preflight/baseline saat akan migration karena snapshot backup berasal dari 9 Nov
 | Backup pra-Fase 3 terbaru | `D:\Backups\harmas-pre-phase3-20261109-162946-b0c15d41`; restore logis 139 tabel/1.905 baris cocok, 95 blob cocok ETag/hash; full stack platform belum direstore |
 | Git | Fase 2 `c02a66d5`, origin lokal `12de0de4`; dokumentasi penerimaan Fase 1+2 `73b8680a`, implementasi Fase 3 pada commit lokal berikutnya (lihat git log). Tidak ada push baru |
 | Fase 2 | Schema dan frontend produksi; UAT baca 9 PASS + lifecycle 6 PASS, akun uji bersih; kandidat/follow-up masih 0 |
-| Fase 3 | Frontend utama rilis lama; peta GRATIS Leaflet/OSM + rute selesai lokal, 64 pemeriksaan/build lulus, menunggu persetujuan deploy. Backend lokasi masih menunggu persetujuan migration |
+| Fase 3 | Peta GRATIS Leaflet/OSM + rute production READY `5ae0c673`, 64 pemeriksaan/build lokal lulus, artifact/anon browser produksi lulus. Backend lokasi masih menunggu persetujuan migration |
 | Fase 4–5 | Belum dimulai. Rancangan lengkap di dokumen induk §D–G |
 
 ## 3. Stack & Konvensi Kode

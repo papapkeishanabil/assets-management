@@ -1,11 +1,11 @@
 # Peta gratis dan rute fasilitas — 10 November 2026
 
-Status: **implementasi/test lokal selesai, belum deploy versi ini**. User memilih
+Status: **frontend produksi READY 10 November 2026**. User memilih
 layanan gratis dan meminta navigasi menuju posisi vendor. Keputusan ini menggantikan
 pilihan Google Maps JavaScript API pada rancangan awal. **Leaflet 1.9.4 + OpenStreetMap**
 menjadi peta utama, tanpa API key atau billing Google. Database/migration Fase 3 tidak
-diubah atau dijalankan ke produksi. Frontend produksi masih rilis `d3beb8f5` sampai
-deployment baru disetujui.
+diubah atau dijalankan ke produksi. Frontend `5ae0c673` sudah dirilis setelah user
+menyetujui deployment frontend terpisah; lihat [bukti rilis](FREE_MAP_PRODUCTION_RELEASE_20261110.md).
 
 ## Perilaku akhir
 
@@ -97,8 +97,8 @@ audit fix atau perubahan dependency di luar penambahan Leaflet.
 
 ## Rilis dan aktivasi
 
-Perubahan siap direview untuk commit/deploy frontend terpisah. **Belum push/deploy
-versi gratis ini.** Persetujuan migration produksi juga belum diterima. Backend lokasi
+Frontend versi gratis sudah di-deploy dan diverifikasi; **belum push Git**.
+Persetujuan migration produksi belum diterima. Backend lokasi
 dan GPS nyata harus aktif dan diisi sebelum ada pin/rute vendor produksi. Peta dasar
 tetap dapat tampil tanpa konfigurasi Google Cloud.
 

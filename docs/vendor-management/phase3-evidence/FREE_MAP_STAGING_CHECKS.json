@@ -1,0 +1,34 @@
+{
+  "checked_at": "2026-11-10T02:04:53.110Z",
+  "deployment_id": "dpl_F3UijNeKStcKMe8nTQfUdvLVo7BC",
+  "url": "https://harmas-asset-management-1qkkw7fbc.vercel.app",
+  "source_commit": "5ae0c673",
+  "checks": [
+    {
+      "path": "/index.html",
+      "sha256": "8d661dcaae9ee8e7f9af4e861f201895b57922ce2a3bafe055433f0c3c4ee3d7",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/index-Bv4kaRUk.js",
+      "sha256": "c8e8d766625be31675c730f4c39e8cf4bfce0ee20284be8613ae77556419a790",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorMapPage-Bc8re0uz.js",
+      "sha256": "55ba090a98223b48c631c2389214e4271956aaa99528c66fff4b08794a6ddd19",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/leaflet-src-BejwVK5Z.js",
+      "sha256": "c1e8b82e4259d838b657d117e1cdf463f1b0a4d6a655f134513c5914b949ed5c",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/leaflet-Dgihpmma.css",
+      "sha256": "7e14f0f44c4713eb7519182d93575f59139200ca781397a493a11f1dff0ce5e1",
+      "artifact_matches": true
+    }
+  ],
+  "production_migration_executed": false
+}

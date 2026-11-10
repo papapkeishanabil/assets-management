@@ -1,0 +1,68 @@
+{
+  "checked_at": "2026-11-10T02:06:39.823Z",
+  "origin": "https://harmas-asset-management.vercel.app",
+  "deployment_id": "dpl_F3UijNeKStcKMe8nTQfUdvLVo7BC",
+  "source_commit": "5ae0c673",
+  "status": "PASS",
+  "checks": [
+    {
+      "path": "/index.html",
+      "http_status": 200,
+      "artifact_matches": true,
+      "sha256": "8d661dcaae9ee8e7f9af4e861f201895b57922ce2a3bafe055433f0c3c4ee3d7"
+    },
+    {
+      "path": "/assets/index-Bv4kaRUk.js",
+      "http_status": 200,
+      "artifact_matches": true,
+      "sha256": "c8e8d766625be31675c730f4c39e8cf4bfce0ee20284be8613ae77556419a790"
+    },
+    {
+      "path": "/assets/VendorMapPage-Bc8re0uz.js",
+      "http_status": 200,
+      "artifact_matches": true,
+      "sha256": "55ba090a98223b48c631c2389214e4271956aaa99528c66fff4b08794a6ddd19"
+    },
+    {
+      "path": "/assets/leaflet-src-BejwVK5Z.js",
+      "http_status": 200,
+      "artifact_matches": true,
+      "sha256": "c1e8b82e4259d838b657d117e1cdf463f1b0a4d6a655f134513c5914b949ed5c"
+    },
+    {
+      "path": "/assets/leaflet-Dgihpmma.css",
+      "http_status": 200,
+      "artifact_matches": true,
+      "sha256": "7e14f0f44c4713eb7519182d93575f59139200ca781397a493a11f1dff0ce5e1"
+    },
+    {
+      "path": "/sw.js",
+      "http_status": 200,
+      "artifact_matches": true,
+      "sha256": "7a513dcacb08111bf0c6a19a9a1b79d14403f27b0e283cace7c06f8aaa5301b0"
+    }
+  ],
+  "routes": [
+    {
+      "path": "/vendors",
+      "http_status": 200,
+      "login_guard": true
+    },
+    {
+      "path": "/vendor",
+      "http_status": 200,
+      "login_guard": true
+    },
+    {
+      "path": "/vendor/map",
+      "http_status": 200,
+      "login_guard": true
+    }
+  ],
+  "browser_page_errors": 0,
+  "failed_assets": 0,
+  "attempted_write_requests": 0,
+  "production_migration_executed": false,
+  "production_authenticated_map_uat": false,
+  "real_osm_tiles_tested": false
+}

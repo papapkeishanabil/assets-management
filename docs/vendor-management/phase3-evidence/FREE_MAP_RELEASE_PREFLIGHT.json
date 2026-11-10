@@ -1,0 +1,34 @@
+{
+  "checked_at": "2026-11-10T02:07:36.769Z",
+  "build": {
+    "source_commit": "5ae0c673",
+    "scanned_files": 79,
+    "checks": {
+      "production_supabase_host": true,
+      "free_osm_tiles": true,
+      "directions_url": true,
+      "directions_label": true,
+      "no_google_sdk": true,
+      "leaflet_chunk": true,
+      "no_private_credential_patterns": true,
+      "no_private_environment_or_dump_files": true
+    },
+    "entry": "/assets/index-Bv4kaRUk.js",
+    "entry_sha256": "c8e8d766625be31675c730f4c39e8cf4bfce0ee20284be8613ae77556419a790"
+  },
+  "public_config": {
+    "checked_at": "2026-11-10T02:03:18.823Z",
+    "project_matches": true,
+    "public_key_validated": true,
+    "auth_settings_readonly_http": 200,
+    "local_build_cache_corrected": true,
+    "cloud_environment_changed": false,
+    "database_writes": false
+  },
+  "error_log_scan": {
+    "deployment_id": "dpl_F3UijNeKStcKMe8nTQfUdvLVo7BC",
+    "window": "last 10 minutes",
+    "entries": 0,
+    "continuous_monitoring": false
+  }
+}
