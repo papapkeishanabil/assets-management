@@ -45,7 +45,7 @@ try {
  clone=`harmas-candidate-archive-restore-${stamp.slice(0,8)}-${suffix}`;
  run(['run','-d','--name',clone,'--network','none','--label','harmas.task=candidate-archive-restore','--mount',mount+',readonly','--env','POSTGRES_PASSWORD','public.ecr.aws/supabase/postgres:17.11.0.011','postgres','-D','/etc/postgresql','-c','shared_preload_libraries=pg_stat_statements,pg_net,pg_cron','-c','cron.database_name=archive_restore','-c','cron.launch_active_jobs=off'],undefined,{env:{...process.env,POSTGRES_PASSWORD:randomUUID()}});
  write(path.join(folder,'restore-container.json'),{name:clone,network:'none',published_ports:[],backup:folder});
- let ready=false;for(let i=0;i<40;i++){const r=spawnSync('docker',['exec',clone,'pg_isready','-U','postgres','-d','postgres'],{encoding:'utf8',timeout:5000});if(r.status===0){ready=true;break;}await new Promise(resolve=>setTimeout(resolve,1000));}assert.ok(ready,'Clone belum siap');
+ let ready=false;for(let i=0;i<60;i++){const r=spawnSync('docker',['exec',clone,'pg_isready','-h','127.0.0.1','-U','postgres','-d','postgres'],{encoding:'utf8',timeout:5000});if(r.status===0){ready=true;break;}await new Promise(resolve=>setTimeout(resolve,1000));}assert.ok(ready,'Clone TCP server belum siap');
  const config=JSON.parse(run(['inspect',clone]))[0];assert.equal(config.HostConfig.NetworkMode,'none');assert.equal(config.Config.Labels['harmas.task'],'candidate-archive-restore');assert.equal(Object.keys(config.HostConfig.PortBindings||{}).length,0);
  const schema=run(['exec',clone,'pg_restore','--schema-only','--file=-','/backup/database.dump']);
  const roles=[...new Set([...schema.matchAll(/^(?:GRANT[^\r\n]+ TO|REVOKE[^\r\n]+ FROM|ALTER[^\r\n]+ OWNER TO) ([a-z_][a-z_0-9]*);/gm)].map(m=>m[1]))].filter(r=>r!=='PUBLIC');

@@ -1,5 +1,19 @@
 # Aktivasi arsip kandidat yang disetujui
 
+**Pembaruan lanjutan:** backup terbaru
+`D:\Backups\harmas-pre-candidate-archive-20261110-094551-7cf2f2a6` dibuat dengan
+password yang valid. Proses restore awal berhenti saat server bootstrap clone
+restart. Readiness kini memakai TCP loopback agar menunggu server final, bukan
+socket server sementara. Cold restore offline baru berhasil sampai akhir:
+141 tabel/1.830 baris, baseline dan keamanan cocok, migration/rollback dua kali lulus.
+`BACKUP_OFFLINE_VERIFICATION.json` kini menunjuk backup terbaru dan cold restore ini.
+Belum ada percobaan write produksi. Driver final
+`scripts/apply-approved-vendor-candidate-archive.mjs` dapat memakai backup tersebut:
+hash/hasil restore wajib valid, usia snapshot maksimal satu jam, dan dua snapshot
+produksi read-only wajib identik dengan backup sebelum satu write yang disetujui.
+Jika ada perubahan, proses berhenti; bukan mengabaikan backup stale. Password
+dibersihkan sehingga terminal final meminta input ulang. Izin yang sama tetap berlaku.
+
 **Pembaruan verifikasi backup:** autentikasi pertama ditolak sebelum backup/write.
 Input kedua berhasil; backup `D:\Backups\harmas-pre-candidate-archive-20261110-094017-12d0c079`
 dibuat, tetapi perbandingan restore sempat berhenti karena urutan ACL tiga fungsi.

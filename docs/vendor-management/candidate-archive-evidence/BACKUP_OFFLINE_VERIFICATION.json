@@ -1,7 +1,7 @@
 {
-  "checked_at": "2026-11-10T09:43:34.866Z",
-  "backup_directory": "D:\\Backups\\harmas-pre-candidate-archive-20261110-094017-12d0c079",
-  "backup_sha256": "a29303a10c01fff8a796e39cf76aeca1cbdedfcb698644c91557bf0770f49711",
+  "checked_at": "2026-11-10T09:48:25.302Z",
+  "backup_directory": "D:\\Backups\\harmas-pre-candidate-archive-20261110-094551-7cf2f2a6",
+  "backup_sha256": "b8c382313178e2a5c9b8e7b54cc37559b4293d1d50345da6babc04f16f55dcff",
   "copy_tables_verified": 141,
   "total_rows_verified": 1830,
   "baseline_tables_verified": 18,
@@ -10,5 +10,7 @@
   "archive_migration_applied_twice": true,
   "archive_rollback_applied_twice": true,
   "stale_guard_rejected": true,
+  "cold_restore_verified": true,
+  "clone": "harmas-candidate-archive-restore-20261110-ed332440",
   "production_accessed": false
 }
