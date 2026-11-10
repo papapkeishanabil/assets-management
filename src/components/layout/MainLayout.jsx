@@ -171,7 +171,7 @@ export default function MainLayout() {
 
         {/* Nav */}
         <nav className="relative flex-1 overflow-y-auto p-3 space-y-0.5 h-[calc(100vh-14rem)]">
-          <SectionLabel>Menu</SectionLabel>
+          {visibleNavItems.length > 0 && <SectionLabel>Menu</SectionLabel>}
           {visibleNavItems.map((item) => (
             <NavLink
               key={item.to}
@@ -201,7 +201,7 @@ export default function MainLayout() {
             </>
           )}
 
-          <SectionLabel>Aset</SectionLabel>
+          {visibleAssetItems.length > 0 && <SectionLabel>Aset</SectionLabel>}
           {visibleAssetItems.map((item) => (
             <NavLink
               key={item.to}
