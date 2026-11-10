@@ -1,5 +1,16 @@
 # Aktivasi arsip kandidat yang disetujui
 
+**Pembaruan verifikasi backup:** autentikasi pertama ditolak sebelum backup/write.
+Input kedua berhasil; backup `D:\Backups\harmas-pre-candidate-archive-20261110-094017-12d0c079`
+dibuat, tetapi perbandingan restore sempat berhenti karena urutan ACL tiga fungsi.
+Tidak ada percobaan migration produksi. Reviewer kini mengurutkan isi ACL dengan
+collation C, tetap membandingkan seluruh grant/grantor serta izin efektif.
+8/8 uji transaksi tetap lulus. Verifikasi offline penuh backup: **141 tabel COPY /
+1.830 baris**, 18 baseline, helper/guard/ACL/RLS cocok; migration dan rollback dua
+kali di clone berhasil. [Bukti](candidate-archive-evidence/BACKUP_OFFLINE_VERIFICATION.json).
+Clone dihentikan. Password sudah dibersihkan; terminal lanjutan meminta ulang
+password dan membuat backup baru sebelum write yang telah disetujui.
+
 Pengguna menyetujui migration secara eksplisit dengan **“ya setuju”**, setelah
 menyetujui deployment frontend. Persetujuan berlaku untuk migration
 `202611100001_vendor_candidate_archive.sql`, SHA-256

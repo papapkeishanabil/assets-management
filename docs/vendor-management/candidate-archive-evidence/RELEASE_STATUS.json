@@ -7,12 +7,14 @@
   "primary_domain_changed": false,
   "primary_deployment_id": "dpl_EvUg1fFbiXATT3xTv4fGem4UGVsT",
   "frontend_deploy_approved": true,
-  "production_migration_approved": false,
+  "production_migration_approved": true,
   "production_schema_verified": false,
   "production_backup_verified": false,
   "pgpassword_available_in_session": false,
   "production_migration_executed": false,
   "production_business_writes": false,
   "git_push": false,
-  "promotion_pending": "Explicit database migration approval plus read-only preflight and verified fresh backup"
+  "promotion_pending": "Verified fresh backup and successful approved migration",
+  "migration_approval_user_message": "ya setuju",
+  "credential_status": "Initial PostgreSQL password rejected; replacement interactive prompt opened"
 }

@@ -6,7 +6,7 @@ $repositoryRoot=[System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 Set-Location -LiteralPath $repositoryRoot
 $securePassword=$null
 try {
-  $Host.UI.RawUI.WindowTitle='HARMAS - Arsip Kandidat - Backup dan Migration DISETUJUI'
+  $Host.UI.RawUI.WindowTitle='HARMAS - Arsip Kandidat - Lanjut setelah verifikasi ACL'
   Write-Host 'HARMAS - Backup terbaru, verifikasi restore lokal dan migration arsip yang disetujui.' -ForegroundColor Cyan
   Write-Host 'Target: uwlxkwyauxwewoexfgwi. Hanya migration 202611100001_vendor_candidate_archive.sql.'
   Write-Host 'Write hanya dijalankan bila preflight, backup, restore dan pemeriksaan clone lulus.'

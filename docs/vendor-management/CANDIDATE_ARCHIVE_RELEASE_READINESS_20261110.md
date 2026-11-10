@@ -29,7 +29,7 @@ Frontend baru membutuhkan kolom archived_at/by/reason dan RPC arsip. Karena itu
 staging tidak boleh dipromosikan sebelum backend arsip tervalidasi di produksi.
 UAT login staging juga belum diklaim berjalan dengan backend arsip produksi.
 
-Migration konkret yang menunggu persetujuan:
+Migration konkret yang sudah disetujui:
 [202611100001_vendor_candidate_archive.sql](../../supabase/migrations/202611100001_vendor_candidate_archive.sql)
 (SHA-256 `f2ed4b42d2fb77ab8c9e986ff5fd6bead177d28b72d562bb2671ab8d06aeb1c5`).
 [Rollback terpisah](../../supabase/rollbacks/202611100001_vendor_candidate_archive_rollback.sql).

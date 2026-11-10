@@ -1,0 +1,14 @@
+{
+  "checked_at": "2026-11-10T09:43:34.866Z",
+  "backup_directory": "D:\\Backups\\harmas-pre-candidate-archive-20261110-094017-12d0c079",
+  "backup_sha256": "a29303a10c01fff8a796e39cf76aeca1cbdedfcb698644c91557bf0770f49711",
+  "copy_tables_verified": 141,
+  "total_rows_verified": 1830,
+  "baseline_tables_verified": 18,
+  "functions_acl_set_equal": true,
+  "policies_canonically_equal": true,
+  "archive_migration_applied_twice": true,
+  "archive_rollback_applied_twice": true,
+  "stale_guard_rejected": true,
+  "production_accessed": false
+}
