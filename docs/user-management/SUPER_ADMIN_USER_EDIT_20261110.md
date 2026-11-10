@@ -1,6 +1,6 @@
 # Super Admin: edit identitas dan password pengguna
 
-Status 10 November 2026: **backend dideploy pengguna sebagai smooth-task; frontend disiapkan untuk rilis sesuai persetujuan**.
+Status 10 November 2026: **backend smooth-task dan frontend a220e274 aktif di produksi; UAT perubahan akun menunggu Super Admin**.
 Ruang lingkup dikoreksi user menjadi pengelolaan pengguna lain oleh Super Admin,
 bukan penambahan self-service pada Profil Saya. Perubahan awal self-service yang
 belum di-commit sudah dibatalkan; halaman Profil Saya dan AuthContext tidak berubah.
@@ -116,7 +116,10 @@ Screenshot data sintetis: [edit identitas](evidence/admin-identity-desktop.png),
 ## Catatan rilis
 
 Tidak perlu migration baru; kolom profil/organisasi sudah menjadi schema aplikasi
-existing. Rilis harus mencakup **fungsi Supabase smooth-task (source admin-update-user) dan frontend**:
+existing. Rilis sudah mencakup **fungsi Supabase smooth-task (source admin-update-user) dan frontend**:
+
+Langkah berikut merupakan catatan prosedur rilis yang sudah dilakukan; UAT pada
+akun target tetap dilakukan pengguna. [Laporan rilis](RELEASE_READINESS_20261110.md).
 
 1. Verifikasi project Supabase HARMAS dan kredensial deployment yang sudah tersedia;
    jangan mengambil service key produksi dari file legacy atau meminta password di chat.

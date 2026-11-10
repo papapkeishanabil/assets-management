@@ -1,17 +1,17 @@
 {
-  "checked_at": "2026-11-10T08:05:10.173Z",
-  "deployment_id": "dpl_3Z7Rm7KEApHETkfSnuGcHiWbZUKR",
-  "deployment": "https://harmas-asset-management-2a4sj6mxy.vercel.app",
-  "commit": "b5d07ba5",
+  "checked_at": "2026-11-10T08:29:06.887Z",
+  "deployment_id": "dpl_3P4JiPZE2QwZE1EsQVDBHZgsTX2Q",
+  "deployment": "https://harmas-asset-management-a7qfp4wli.vercel.app",
+  "commit": "a220e274",
   "checks": [
     {
       "path": "/index.html",
-      "sha256": "03f8be6bf1725b76d9dd7b09170dd19603fe54845c1a3408a0efb83c96ecf575",
+      "sha256": "b76307aab030e52d56f93dc901b8058a161c524e8b4b4e4e575147689199b0fb",
       "artifact_matches": true
     },
     {
-      "path": "/assets/index-MELo0Wop.js",
-      "sha256": "c8db264fbf4a9515a69df235fd797bd096152607da82fbe4439e98f575a33b6a",
+      "path": "/assets/index-BppnBezW.js",
+      "sha256": "9ed1de9d45e3c6723438401a78cfe4ccd89b947429e9a7fe0cdab8aa4d29cf69",
       "artifact_matches": true
     },
     {
@@ -25,28 +25,28 @@
       "artifact_matches": true
     },
     {
-      "path": "/assets/leaflet-src-90JM780L.js",
-      "sha256": "1894d427a02e828b49b0ac52178815421088ba6b0b9628de10fe0ec0aa335e0d",
+      "path": "/assets/leaflet-src-CbaHUJTg.js",
+      "sha256": "7b21381b869958c7520e27db4cb75fe9f75fd2f2786f1fdd9c8a83fe94fbc7f6",
       "artifact_matches": true
     },
     {
-      "path": "/assets/MasterVendorLocationsPanel-C8ZM23yi.js",
-      "sha256": "e6ea8fbfaf92f8832de1492bec0063dc4d19155b195a9ad9fb6cd240720ad947",
+      "path": "/assets/MasterVendorLocationsPanel-BJYrmsXf.js",
+      "sha256": "32441a401cb82fe37567f0fe44fec4412449d2e03092ff61fd21d4ebfb11c0dc",
       "artifact_matches": true
     },
     {
-      "path": "/assets/VendorMapPage-DSFDRkqT.js",
-      "sha256": "b1303c99a39d859ea0f9f87488e025e87d1d4bc04a08bbe64677711879e306c1",
+      "path": "/assets/VendorMapPage-DjHjO9qV.js",
+      "sha256": "2618360bb774fc0a714e68ec42fd6037a71030c76e395ef66f88399456ad5510",
       "artifact_matches": true
     },
     {
-      "path": "/assets/VendorSourcingPanel-DYZzxYwI.js",
-      "sha256": "b159a8a1a82af8fa4cfd7559c1270a45b1461286a061b1ebc4f6ef5b1256d936",
+      "path": "/assets/VendorSourcingPanel-BXwRgbKQ.js",
+      "sha256": "cefca2b36e383ba402860abd1be10a86da8736ddb16364f1d77d19da375fc72f",
       "artifact_matches": true
     },
     {
       "path": "/sw.js",
-      "sha256": "b2ed43dbc8b8a7735affd6a1a84a86f723e995ca1d4481f0bc52f8815a7ecb57",
+      "sha256": "a5f557c3eb896b2354f3232d816036bff31cfff254ccf7acb464a61092573810",
       "artifact_matches": true
     }
   ],

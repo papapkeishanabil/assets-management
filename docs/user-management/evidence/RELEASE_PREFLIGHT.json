@@ -1,6 +1,6 @@
 {
-  "checked_at": "2026-11-10T08:02:41.820Z",
-  "commit": "b5d07ba5",
+  "checked_at": "2026-11-10T08:28:12.361Z",
+  "commit": "a220e274",
   "scanned_files": 81,
   "checks": {
     "edit_identity": true,
@@ -21,11 +21,11 @@
     "no_private_patterns": true,
     "no_environment_or_dump": true
   },
-  "entry": "/assets/index-MELo0Wop.js",
-  "entry_sha256": "c8db264fbf4a9515a69df235fd797bd096152607da82fbe4439e98f575a33b6a",
+  "entry": "/assets/index-BppnBezW.js",
+  "entry_sha256": "9ed1de9d45e3c6723438401a78cfe4ccd89b947429e9a7fe0cdab8aa4d29cf69",
   "tested_artifact_matches": true,
   "public_config": {
-    "checked_at": "2026-11-10T07:58:12.870Z",
+    "checked_at": "2026-11-10T08:27:40.691Z",
     "project_matches": true,
     "public_key_validated": true,
     "auth_settings_readonly_http": 200,
@@ -33,5 +33,6 @@
     "cloud_environment_changed": false,
     "database_writes": false
   },
-  "backend_authorization_pending": true
+  "backend_function": "smooth-task",
+  "backend_guard_probes_passed": true
 }

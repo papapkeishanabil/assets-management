@@ -19,7 +19,7 @@
   },
   "production_accessed": true,
   "backend_deployed": true,
-  "frontend_deployed": false,
+  "frontend_deployed": true,
   "deno": {
     "version": "2.9.6",
     "entrypoint_typecheck_exit_code": 0,
@@ -28,5 +28,7 @@
   },
   "local_test_checked_at": "2026-11-10T08:24:29.569Z",
   "production_access_mode": "Anonymous/invalid-token endpoint probes only; no account writes",
-  "deployed_function_slug": "smooth-task"
+  "deployed_function_slug": "smooth-task",
+  "frontend_deployment_id": "dpl_3P4JiPZE2QwZE1EsQVDBHZgsTX2Q",
+  "production_authenticated_business_uat": false
 }

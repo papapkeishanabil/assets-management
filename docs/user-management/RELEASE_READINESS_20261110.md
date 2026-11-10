@@ -22,8 +22,13 @@ Supabase Docker sintetis. Sembilan akun uji dibersihkan, checksum 14 tabel terma
 Auth kembali identik. Build frontend exit 0; warning bundle existing >500 kB.
 [Hasil](evidence/RESULTS.json), [hash build](evidence/VERIFICATION_SUMMARY.json).
 
-Rilis frontend baru akan distage sebagai production tanpa alias, dibandingkan hash
-sembilan file, kemudian dipromosikan sesuai persetujuan yang sudah diberikan.
+Rilis frontend **sudah aktif** di https://harmas-asset-management.vercel.app/users .
+Source **a220e274**, deployment **dpl_3P4JiPZE2QwZE1EsQVDBHZgsTX2Q**
+(https://harmas-asset-management-a7qfp4wli.vercel.app). Sembilan file cocok dengan
+build teruji pada staging dan domain utama. Enam route termasuk /users dan menu
+vendor menolak sesi anonim ke login; nol error browser, asset gagal, atau request
+tulis pada pemeriksaan tersebut. Query runtime error saat rilis mengembalikan nol
+entri. Ini bukan UAT perubahan akun dengan sesi produksi.
 Rollback sebelum rilis: dpl_3g9VVqhLqJuvCoZK3v5Mt7evdVPa,
 https://harmas-asset-management-gaoll0eom.vercel.app (source 539932d1).
 
@@ -47,5 +52,6 @@ diperbarui, lalu memeriksa hasil. Reset password hanya pada akun yang disepakati
 uji login password baru dan penolakan password lama. Pastikan role/status tetap.
 Role lain tetap tidak boleh mengelola pengguna. Tidak perlu menjalankan migration vendor.
 
-Bukti staging dan produksi akan mencatat deployment final, hash, guard anonim,
-error browser dan tidak adanya write request selama pemeriksaan publik.
+Bukti: [staging](evidence/STAGING_CHECKS.json), [produksi](evidence/PRODUCTION_CHECKS.json),
+[status rilis dan rollback](evidence/RELEASE_STATUS.json).
+Pemeriksaan publik tidak melakukan reset password atau edit identitas akun produksi.
