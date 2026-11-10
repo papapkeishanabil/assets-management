@@ -1,0 +1,18 @@
+{
+  "checked_at": "2026-11-10T09:27:37.248Z",
+  "source_commit": "a32d3c4914ec43bf21b4856e549872803f9496ad",
+  "frontend_staging_deployment_id": "dpl_8HZD3SCrS2ZuwGWRonkkYPRPUKEu",
+  "frontend_staging_url": "https://harmas-asset-management-ic54qndin.vercel.app",
+  "frontend_staging_verified_files": 9,
+  "primary_domain_changed": false,
+  "primary_deployment_id": "dpl_EvUg1fFbiXATT3xTv4fGem4UGVsT",
+  "frontend_deploy_approved": true,
+  "production_migration_approved": false,
+  "production_schema_verified": false,
+  "production_backup_verified": false,
+  "pgpassword_available_in_session": false,
+  "production_migration_executed": false,
+  "production_business_writes": false,
+  "git_push": false,
+  "promotion_pending": "Explicit database migration approval plus read-only preflight and verified fresh backup"
+}

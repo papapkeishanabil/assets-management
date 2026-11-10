@@ -1,5 +1,13 @@
 # HANDOFF — Modul Manajemen Vendor HARMAS Asset Management
 
+**Staging arsip kandidat, 10 November sekitar 16.27 WIB:** user menyetujui deploy
+frontend. Source `a32d3c49` telah distage sebagai production tanpa alias utama,
+deployment `dpl_8HZD3SCrS2ZuwGWRonkkYPRPUKEu`. Sembilan hash file PASS. Domain
+utama tetap rilis sidebar `b4f4025d`. Jangan promosikan sebelum migration arsip:
+izin migration terpisah, PGPASSWORD/preflight dan backup terbaru masih diperlukan.
+Tidak ada write database/migration/push. Izin deploy frontend tetap berlaku.
+[Kesiapan rilis](CANDIDATE_ARCHIVE_RELEASE_READINESS_20261110.md).
+
 **Hapus dari daftar calon vendor, 10 November:** implementasi lokal selesai,
 **belum migration produksi/push/deploy**. Menggunakan arsip/pulihkan dengan alasan
 dan audit, bukan DELETE fisik. Tugas OPEN dibatalkan secara atomik; riwayat tetap.
