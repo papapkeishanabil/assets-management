@@ -1,8 +1,10 @@
 # Dashboard Vendor: ringkasan operasional dan sourcing
 
-Status 10 November 2026: **implementasi lokal selesai, belum di-deploy**.
-User memilih implementasi lokal tanpa ekspor source ke Superdesign. Database produksi,
-Git remote, environment cloud dan deployment aktif tidak diakses/diubah pada pekerjaan ini.
+Status 10 November 2026: **sudah LIVE 13.23 WIB**, commit frontend `539932d1`.
+[Laporan deployment dan batas UAT](VENDOR_DASHBOARD_PRODUCTION_RELEASE_20261110.md).
+User memilih implementasi lokal tanpa ekspor source ke Superdesign, lalu menyetujui
+deployment. Pada tahap implementasi lokal, database produksi, Git remote, environment
+cloud dan deployment aktif tidak diakses/diubah.
 
 **Pembaruan kartu sesuai screenshot user:** kartu KPI kini memakai pola dashboard
 utama HARMAS: ikon kiri atas, tint biru/hijau/rose/amber, label uppercase, nilai besar,
@@ -13,7 +15,8 @@ Masalah paint kartu saat scroll mobile telah diperbaiki dan diverifikasi ulang.
 [Pratinjau light](dashboard-cards-evidence/dashboard-reference-size.png),
 [kartu](dashboard-cards-evidence/vendor-cards-light.png),
 [bukti terbaru](dashboard-cards-evidence/VERIFICATION_SUMMARY.json),
-[QA visual](../../design-qa.md). Belum deploy/push atau mengakses produksi.
+[QA visual](../../design-qa.md). Deployment kemudian disetujui dan selesai;
+tidak ada push Git, migration atau write bisnis produksi.
 
 ## Perilaku
 
@@ -122,8 +125,8 @@ Tidak ada pengujian login/CRUD baru di produksi pada pekerjaan ini.
 
 ## Rilis berikutnya
 
-Perubahan frontend siap ditinjau. Deployment/push belum dijalankan dan memerlukan
-persetujuan tersendiri. Tidak diperlukan migration atau rollback database.
+Frontend sudah dirilis setelah persetujuan tersendiri; push Git belum dilakukan.
+Tidak diperlukan migration atau rollback database.
 Jika deployment disetujui, ikuti prosedur build/env/artifact rilis terintegrasi
 existing; environment cloud pernah berisi placeholder sehingga jangan mengandalkan
 remote build tanpa validasi (lihat laporan rilis 10 November).

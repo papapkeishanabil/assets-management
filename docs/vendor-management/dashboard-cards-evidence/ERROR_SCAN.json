@@ -1,0 +1,10 @@
+{
+  "checked_at": "2026-11-10T06:23:44.217Z",
+  "deployment_id": "dpl_3g9VVqhLqJuvCoZK3v5Mt7evdVPa",
+  "command": "vercel logs <deployment> --level error --since 10m --json --no-follow --no-branch",
+  "exit_code": 0,
+  "error_entries": 0,
+  "snapshot_only": true,
+  "continuous_monitoring_claimed": false,
+  "drains_checked": false
+}

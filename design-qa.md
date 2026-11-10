@@ -1,5 +1,9 @@
 # Vendor dashboard cards — 10 November 2026
 
+Deployment update: the approved frontend was released at 13.23 WIB, source
+`539932d1`. See `docs/vendor-management/VENDOR_DASHBOARD_PRODUCTION_RELEASE_20261110.md`.
+The QA results below describe the local pre-release verification.
+
 **Target:** adopt the existing HARMAS dashboard card style shown in the user's
 attached 1919 × 1062 light-theme screenshot. This is an update to the existing
 application, not a standalone prototype or a clone of its asset-management content.

@@ -3,15 +3,24 @@
 **Dokumen serah terima untuk agent penerus (Codex).** Disusun 6 November 2026.
 Dokumen induk: [AUDIT_DAN_RENCANA_IMPLEMENTASI.md](AUDIT_DAN_RENCANA_IMPLEMENTASI.md) · Spesifikasi user: [HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md](HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md)
 
-**Kartu Dashboard sesuai screenshot user — lokal, BELUM DEPLOY:** kartu KPI vendor
+**Dashboard Vendor sudah LIVE — 10 November 13.23 WIB.** User menyetujui dengan
+“ok deploy”. Source `539932d1`, deployment `dpl_3g9VVqhLqJuvCoZK3v5Mt7evdVPa`,
+https://harmas-asset-management.vercel.app/vendor . 9 hash artifact produksi cocok,
+5 guard anonim PASS, 0 error browser/log dalam pemeriksaan rilis. Tidak ada migration,
+push Git, write data bisnis atau akun baru. Konfigurasi cloud masih bermasalah;
+rilis prebuilt memakai cache publik lokal yang divalidasi. UAT login/data aktual
+menunggu pengguna. [Laporan rilis](VENDOR_DASHBOARD_PRODUCTION_RELEASE_20261110.md).
+
+**Kartu Dashboard sesuai screenshot user — selesai, sudah dirilis:** kartu KPI vendor
 memakai pola dashboard utama: tint 4 warna, ikon kiri atas, label uppercase, angka
 besar, progres GPS dan komposisi jenis vendor. Header/tanggal diselaraskan. 15/15
 browser terbaru PASS, build exit 0; perbaikan paint scroll mobile terverifikasi,
 12 checksum Docker kembali identik. Data contract/role/RLS tidak berubah.
 [Bukti terbaru](dashboard-cards-evidence/VERIFICATION_SUMMARY.json) dan
-[QA visual](../../design-qa.md). Tidak ada migration, push, deploy atau akses produksi.
+[QA visual](../../design-qa.md). Pada tahap uji lokal tidak ada akses produksi;
+deployment kemudian disetujui dan selesai sesuai catatan rilis di atas.
 
-**Penyempurnaan Dashboard 10 November — lokal, BELUM DEPLOY:** user meminta
+**Penyempurnaan Dashboard 10 November — selesai, sudah dirilis:** user meminta
 dashboard mencakup vendor aktif dengan tampilan modern, lalu memilih implementasi
 lokal tanpa ekspor source. `/vendor` kini mempunyai Ringkasan operasional (master
 aktif, GPS/fasilitas, kelengkapan, aset, sebaran jenis, prioritas) dan tab Sourcing
@@ -20,8 +29,8 @@ vendor baru; angka aktivitas, vendor dan titik dipisah. **56/56** pemeriksaan lo
 lulus (9 agregasi + 6 query + 14 browser + 20 regresi follow-up + 7 navigasi), build
 lulus; 12 checksum tabel Docker kembali identik. Tidak ada migration/perubahan DB,
 push, deployment, atau akses produksi. [Laporan dan bukti](VENDOR_DASHBOARD_REDESIGN_20261110.md).
-Produksi masih deployment integrasi menu di bawah; perubahan dashboard menunggu
-review dan persetujuan deployment baru.
+Status 56 pemeriksaan di atas adalah tahap implementasi dasar. Dashboard telah
+dirilis sesudah penyempurnaan kartu dan persetujuan user; lihat catatan terbaru.
 
 **Integrasi menu terbaru 10 November:** user memilih satu kelompok Manajemen Vendor:
 Dashboard Vendor, Vendor Aktif, Calon Vendor, Follow-Up Vendor, Peta Vendor. Vendor
