@@ -1,0 +1,70 @@
+{
+  "checked_at": "2026-11-10T05:58:01.135Z",
+  "target": "Supabase Docker synthetic + loopback",
+  "production_connected": false,
+  "reminder_mocked": true,
+  "writes": [],
+  "pageErrors": [],
+  "results": [
+    {
+      "check": "Default dashboard shows real active-master total including masters without linked profiles",
+      "pass": true
+    },
+    {
+      "check": "Two GPS facilities count as one active vendor; inactive mapped vendor excluded; null profile incomplete",
+      "pass": true
+    },
+    {
+      "check": "Asset count uses vendor relation; candidate count excludes active-master linked profiles",
+      "pass": true
+    },
+    {
+      "check": "Attention list routes linked locations correctly and offers master action for unlinked active vendor",
+      "pass": true
+    },
+    {
+      "check": "Sourcing detail and filters remain available without changing global operational totals",
+      "pass": true
+    },
+    {
+      "check": "Dashboard tabs support arrow keys, Home and a single active keyboard tab stop",
+      "pass": true
+    },
+    {
+      "check": "Mobile 390px has no page overflow; table scroll stays within card",
+      "pass": true
+    },
+    {
+      "check": "Light theme uses existing application tokens",
+      "pass": true
+    },
+    {
+      "check": "Sourcing and Direksi can read operational summary without gaining master edit access",
+      "pass": true
+    },
+    {
+      "check": "Missing module permissions hide location/asset numbers and prevent their data requests",
+      "pass": true
+    },
+    {
+      "check": "Map query error preserves master totals and shows unavailable GPS rather than false zero",
+      "pass": true
+    },
+    {
+      "check": "Dashboard module guard still rejects HRD without vendor_management",
+      "pass": true
+    },
+    {
+      "check": "Reference card source captured at user screenshot viewport using synthetic API fixtures",
+      "pass": true
+    },
+    {
+      "check": "No browser exceptions, business writes or requests to production Supabase",
+      "pass": true
+    },
+    {
+      "check": "Fixture cleanup restores all 12 table checksums",
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "viewport": {
+    "width": 1919,
+    "height": 1062
+  },
+  "deviceScaleFactor": 1,
+  "source": {
+    "width": 1615,
+    "height": 202
+  },
+  "vendor": {
+    "width": 1615,
+    "height": 206
+  },
+  "comparison": "Top: unchanged main dashboard; bottom: vendor dashboard; original CSS pixels, no rescaling"
+}

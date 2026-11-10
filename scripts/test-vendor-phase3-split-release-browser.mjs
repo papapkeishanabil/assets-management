@@ -40,7 +40,7 @@ try {
   });
   const page = await context.newPage(); page.on('pageerror',e => errors.push(e.message));
   const pending = 'Lokasi dan foto vendor belum aktif. Data sourcing dan follow-up tetap dapat digunakan.';
-  await page.goto(`${origin}/vendor`); await page.getByRole('heading',{name:'Produktivitas PIC Sourcing',exact:true}).waitFor(); await page.getByText(pending,{exact:true}).waitFor();
+  await page.goto(`${origin}/vendor`);await page.getByRole('tab',{name:'Sourcing',exact:true}).click(); await page.getByRole('heading',{name:'Produktivitas PIC Sourcing',exact:true}).waitFor(); await page.getByText(pending,{exact:true}).waitFor();
   assert.equal(await page.getByText(/Gagal memuat dashboard/).count(),0); pass('Dashboard Fase 2 tetap tampil ketika RPC lokasi Fase 3 belum tersedia');
   await page.goto(`${origin}/vendor/map`); await page.getByText(pending,{exact:true}).waitFor();
   assert.ok(await page.getByRole('button',{name:'Semua lokasi (—)',exact:true}).isDisabled());

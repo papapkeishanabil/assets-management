@@ -1,0 +1,47 @@
+{
+  "checked_at": "2026-11-10T05:26:34.708Z",
+  "sets": [
+    {
+      "name": "aggregation",
+      "pass": 9,
+      "fail": 0
+    },
+    {
+      "name": "queries",
+      "pass": 6,
+      "fail": 0
+    },
+    {
+      "name": "browser",
+      "pass": 14,
+      "fail": 0
+    },
+    {
+      "name": "navigation",
+      "pass": 7,
+      "fail": 0
+    },
+    {
+      "name": "followup-regression",
+      "pass": 20,
+      "fail": 0
+    }
+  ],
+  "total_pass": 56,
+  "total_fail": 0,
+  "build": {
+    "command": "npm run build",
+    "exit_code": 0,
+    "entry": "/assets/index-DBQvPaOM.js",
+    "entry_sha256": "60f1a8c4a1d9f846986719e2e235e0a5bd9934a135e2631f9315022e1794aea1",
+    "warning": "Existing main bundle >500 kB; not a build failure"
+  },
+  "deployment": false,
+  "production_database_accessed": false,
+  "source_sha256": {
+    "src/pages/vendor/VendorDashboardPage.jsx": "6e89f1c086434a87de8acaf1feae61719293b7c619403e1f4a9e37cc6b66dffc",
+    "src/components/vendor/VendorSourcingPanel.jsx": "8c61c78cb8badccb97813cb6b11773e3a9026597b40fdd85b9488ec2bd9ee1f9",
+    "src/lib/vendor-dashboard-helpers.js": "6d51dcb4531c46fcc6aab79ad4a2429abbabe2a5f216680e12c682086b2321af",
+    "src/lib/vendor-dashboard-utils.js": "d0b1d229e3beccd388291be79b2be11fa94745b04dacd31ae197259a41ced16b"
+  }
+}

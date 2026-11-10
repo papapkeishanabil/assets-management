@@ -1,0 +1,22 @@
+PASS | Dashboard sourcing tampil; KPI/prioritas dari RPC Supabase lokal
+PASS | Filter dashboard kategori Jahit + PIC menampilkan kandidat yang sesuai
+PASS | Dua request reminder REST serentak (sourcing/HRD) menghasilkan tepat satu notifikasi PIC
+PASS | UI -> REST -> DB -> UI: tiga follow-up tersimpan terpisah beserta PIC/media/aksi/deadline
+PASS | Dashboard: satu vendor terhubung berbeda dari tiga aktivitas/tiga tugas; produktivitas PIC tampil
+PASS | Filter overdue mengesampingkan status terminal sebelumnya; hanya OPEN melewati deadline
+PASS | Tugas selesai keluar dari overdue dan completed_at disimpan database
+PASS | Pembatalan tugas tersimpan tanpa menghapus catatan
+PASS | Dashboard setelah penutupan: tugas OPEN/SELESAI/DIBATALKAN terpisah, vendor unik tetap satu
+PASS | Tab Follow-Up detail tersaring hanya ke kandidat yang dibuka
+PASS | Riwayat menampilkan audit follow-up dan penutupan tugas
+PASS | Form profil Fase 1 tetap terbuka setelah perbaikan import konstanta
+PASS | Mobile 390px/light: catatan dapat dibaca, tanpa overflow halaman
+PASS | Modal mobile tampil tanpa overflow dan dapat ditutup dengan Escape
+PASS | Direksi membaca log tanpa tombol tulis/penutupan
+PASS | Super Admin membuka Dashboard dan Follow-Up melalui bypass permission yang sah
+PASS | Master Data Vendor tetap menampilkan seluruh vendor sintetis existing tanpa mencampur kandidat pipeline
+PASS | HRD tanpa module key vendor_followups ditolak saat membuka URL langsung
+PASS | Tidak ada pageerror atau REST error Fase 2; nol request ke Supabase produksi
+SUPPORTING_LAYOUT_ERRORS: []
+BLOCKED_EXTERNAL_HOSTS: ["fonts.googleapis.com"]
+PASS | Cleanup fixture lokal; checksum vendors/assets/profiles/roles/permissions/notifications identik

@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-11-10T05:24:02.458Z",
+  "network": false,
+  "results": [
+    {
+      "check": "Pagination loads 1001 masters and 1001 facilities beyond API default cap",
+      "pass": true
+    },
+    {
+      "check": "No map or assets permission means no corresponding API requests",
+      "pass": true
+    },
+    {
+      "check": "Missing map backend is pending; active master totals survive",
+      "pass": true
+    },
+    {
+      "check": "Denied map query is an error, never a pending backend or zero GPS",
+      "pass": true
+    },
+    {
+      "check": "Master failure does not trigger asset queries or fabricate zero master count",
+      "pass": true
+    },
+    {
+      "check": "Asset and candidate count errors remain independent of operational metrics",
+      "pass": true
+    }
+  ]
+}

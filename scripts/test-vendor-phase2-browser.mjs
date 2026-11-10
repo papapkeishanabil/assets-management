@@ -14,7 +14,9 @@ const candidate = '22222222-0000-4000-a000-000000000801';
 const second = '22222222-0000-4000-a000-000000000802';
 const pid = '11111111-0000-4000-a000-000000000004';
 const evidence = [];
-const artifacts = new URL('../docs/vendor-management/phase2-evidence/',import.meta.url);
+const artifacts = process.env.HARMAS_VENDOR_EVIDENCE_DIR
+  ? pathToFileURL(`${process.env.HARMAS_VENDOR_EVIDENCE_DIR.replaceAll('\\', '/').replace(/\/$/, '')}/`)
+  : new URL('../docs/vendor-management/phase2-evidence/',import.meta.url);
 mkdirSync(artifacts,{recursive:true});
 function docker(args,input) {
   const r = spawnSync('docker',args,{ input,encoding:'utf8',maxBuffer:8e6 });
@@ -83,7 +85,7 @@ try {
     return {ctx,page};
   }
   const {ctx,page} = await contextFor('sourcing.test@harmas.local');
-  await page.goto(`${origin}/vendor`);
+  await page.goto(`${origin}/vendor`);await page.getByRole('tab',{name:'Sourcing',exact:true}).click();
   await page.getByRole('heading',{name:'Prioritas tindak lanjut'}).waitFor();
   await page.screenshot({path:fileURLToPath(new URL('dashboard-desktop.png',artifacts)),fullPage:true,animations:'disabled'});
   pass('Dashboard sourcing tampil; KPI/prioritas dari RPC Supabase lokal');
@@ -129,14 +131,14 @@ try {
   pass('Dua request reminder REST serentak (sourcing/HRD) menghasilkan tepat satu notifikasi PIC');
   pass('UI -> REST -> DB -> UI: tiga follow-up tersimpan terpisah beserta PIC/media/aksi/deadline');
   await page.screenshot({path:fileURLToPath(new URL('followups-desktop.png',artifacts)),fullPage:true,animations:'disabled'});
-  await page.goto(`${origin}/vendor`);
+  await page.goto(`${origin}/vendor`);await page.getByRole('tab',{name:'Sourcing',exact:true}).click();
   await page.getByRole('heading',{name:'Produktivitas PIC Sourcing'}).waitFor();
   const metric = (label) => page.getByText(label,{exact:true}).locator('..').locator('p').nth(1);
   assert.equal(await metric('Vendor berhasil dihubungi').innerText(),'1');
   assert.equal(await metric('Aktivitas follow-up').innerText(),'3');
   assert.equal(await metric('Tugas terbuka').innerText(),'3');
   assert.equal(await metric('Tugas overdue').innerText(),'1');
-  assert.equal(await metric('Total kandidat unik').innerText(),sql('SELECT count(*) FROM public.vendor_candidates;'));
+  assert.equal(await metric('Total profil unik').innerText(),sql('SELECT count(*) FROM public.vendor_candidates;'));
   await page.screenshot({path:fileURLToPath(new URL('dashboard-desktop.png',artifacts)),fullPage:true,animations:'disabled'});
   pass('Dashboard: satu vendor terhubung berbeda dari tiga aktivitas/tiga tugas; produktivitas PIC tampil');
   await page.goto(`${origin}/vendor/followups?candidate=${candidate}`);
@@ -159,7 +161,7 @@ try {
   await third.getByRole('button',{name:'Batalkan tugas'}).click();
   await third.getByText('Dibatalkan',{exact:true}).waitFor();
   pass('Pembatalan tugas tersimpan tanpa menghapus catatan');
-  await page.goto(`${origin}/vendor`);
+  await page.goto(`${origin}/vendor`);await page.getByRole('tab',{name:'Sourcing',exact:true}).click();
   await page.getByRole('heading',{name:'Produktivitas PIC Sourcing'}).waitFor();
   assert.equal(await metric('Tugas terbuka').innerText(),'1');
   assert.equal(await metric('Tugas selesai').innerText(),'1');
@@ -205,7 +207,7 @@ try {
   pass('Direksi membaca log tanpa tombol tulis/penutupan');
   await direksi.ctx.close();
   const admin = await contextFor('superadmin.test@harmas.local');
-  await admin.page.goto(`${origin}/vendor`);
+  await admin.page.goto(`${origin}/vendor`);await admin.page.getByRole('tab',{name:'Sourcing',exact:true}).click();
   await admin.page.getByRole('heading',{name:'Produktivitas PIC Sourcing'}).waitFor();
   await admin.page.goto(`${origin}/vendor/followups?candidate=${candidate}`);
   await admin.page.getByRole('button',{name:'Catat Follow-Up'}).waitFor();

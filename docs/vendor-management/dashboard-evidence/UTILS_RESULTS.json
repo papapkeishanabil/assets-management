@@ -1,0 +1,41 @@
+{
+  "checked_at": "2026-11-10T05:24:01.701Z",
+  "results": [
+    {
+      "check": "All active masters counted, including masters without profiles; inactive excluded",
+      "pass": true
+    },
+    {
+      "check": "Zero coordinates are valid; missing profiles counted as unmapped and incomplete",
+      "pass": true
+    },
+    {
+      "check": "Multiple facilities and linked profiles do not multiply vendor totals",
+      "pass": true
+    },
+    {
+      "check": "Facility GPS does not make an incomplete primary location complete",
+      "pass": true
+    },
+    {
+      "check": "Verification and completeness must belong to the same profile",
+      "pass": true
+    },
+    {
+      "check": "Permission denial or unavailable locations produce null, not misleading zero",
+      "pass": true
+    },
+    {
+      "check": "Type distribution counts vendors once and includes missing types",
+      "pass": true
+    },
+    {
+      "check": "Empty database has zero counts, finite percentage, and no attention rows",
+      "pass": true
+    },
+    {
+      "check": "Legacy type labels and enum keys share a single distribution category",
+      "pass": true
+    }
+  ]
+}

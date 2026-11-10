@@ -1,7 +1,7 @@
 // Navigasi terpadu, hanya Docker sintetis/loopback. Tidak membuat fixture bisnis.
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
-import {writeFileSync} from 'node:fs';
+import {writeFileSync,mkdirSync} from 'node:fs';
 import {pathToFileURL} from 'node:url';
 const api='http://127.0.0.1:54321',origin='http://127.0.0.1:7017';
 assert.ok(process.env.HARMAS_LOCAL_TEST_PASSWORD);
@@ -10,7 +10,7 @@ const sql=q=>docker(['exec','-i','supabase_db_harmas-vendor-test','psql','-X','-
 const key=docker(['exec','supabase_kong_harmas-vendor-test','cat','/home/kong/kong.yml']).match(/sb_publishable_[A-Za-z0-9_-]+/)?.[0];assert.ok(key);
 const snapshot=()=>sql(`SELECT jsonb_object_agg(name,hash) FROM (${['vendors','assets','user_profiles','roles','role_permissions','notifications'].map(t=>`SELECT '${t}' name,md5(coalesce(jsonb_agg(to_jsonb(x) ORDER BY id)::text,'')) hash FROM public.${t} x`).join(' UNION ALL ')}) q;`);
 const before=snapshot(),results=[],errors=[],writes=[],external=[];let server,browser,lastPage;
-const dir='docs/vendor-management/phase3-evidence';
+const dir=process.env.HARMAS_VENDOR_EVIDENCE_DIR || 'docs/vendor-management/phase3-evidence';mkdirSync(dir,{recursive:true});
 const pass=check=>{results.push({check,pass:true});console.log(`PASS | ${check}`);};
 try {
  const {createServer}=await import('vite');server=await createServer({envFile:false,define:{'import.meta.env.VITE_SUPABASE_URL':JSON.stringify(api),'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY':JSON.stringify(key),'import.meta.env.VITE_VENDOR_MAP_TILE_URL':'""','import.meta.env.VITE_VENDOR_MAP_TILE_CREDIT':'""'},server:{host:'127.0.0.1',port:7017,strictPort:true},clearScreen:false});await server.listen();

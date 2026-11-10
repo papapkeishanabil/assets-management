@@ -1,0 +1,18 @@
+{
+  "checked_at": "2026-11-10T05:58:14.991Z",
+  "scope": "Card styling matching user screenshot; existing data contract unchanged",
+  "browser_pass": 15,
+  "browser_fail": 0,
+  "build": {
+    "command": "npm run build",
+    "exit_code": 0,
+    "entry": "/assets/index-DfD_bc3H.js",
+    "sha256": "aa630ead5edaffac363a74666d4e05cb5cf1fe2bf58ce2c185496422c518d6bf",
+    "warning": "Existing main bundle >500 kB"
+  },
+  "source_sha256": "ab6d6c6b6d426ab9bba2e0a9e4f624b36685225adc769eae0314166524d76d40",
+  "production_accessed": false,
+  "deployed": false,
+  "pushed": false,
+  "previous_functional_regressions": "dashboard-evidence/VERIFICATION_SUMMARY.json (historical 56 checks, before this card restyle)"
+}
