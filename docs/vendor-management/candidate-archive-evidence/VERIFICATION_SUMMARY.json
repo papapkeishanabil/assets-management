@@ -1,0 +1,35 @@
+{
+  "checked_at": "2026-11-10T09:19:03.583Z",
+  "pass": 19,
+  "fail": 0,
+  "build": {
+    "command": "npm run build",
+    "exit_code": 0,
+    "entry": "/assets/index-BXKUYMUZ.js",
+    "sha256": "e6c7b9f479992229e955ce5a9ca4951bcd233e23f631663a3ffcdd073435fa8c",
+    "modules": 1586,
+    "warning": "Existing main bundle >500 kB"
+  },
+  "artifact_scanned_files": 12,
+  "private_credentials_in_frontend": 0,
+  "source_sha256": {
+    "src/components/vendor/CandidateArchiveModal.jsx": "ead13744fe0086bf864c9aec75d685f84f9cda1fbc118e05da829e6fa93c69d5",
+    "src/pages/vendor/VendorDatabasePage.jsx": "dec4758069e3a333b2f4901a41416d9d11fcbd3c25e0d1f0d5804539b9538e3c",
+    "src/pages/vendor/VendorDetailPage.jsx": "70b9851d41e5985ee1f4dc3f755a738d2f15b96bed2a3970510ca6e8a51906e9",
+    "src/lib/vendor-helpers.js": "84cb40b5395c02acc5eb416293d35ca91afcba0f4cdbe20beb4febd7d3ad5d42",
+    "src/lib/vendor-followup-helpers.js": "16b1dd759965594b4169f39b720e7ec5b59c291230b055bf9ec2b808f6c000b2",
+    "src/lib/vendor-dashboard-helpers.js": "5fa76e2b9f69c902a7afe51d7f746cb53956fa9d45d58e11de0e5fe9c3c6edd2",
+    "src/components/vendor/VendorFollowupsPanel.jsx": "2c021e7458328ed6111ae0999e0571437ac3d58241f058614454b57d9342b9cf",
+    "src/components/vendor/VendorLocationsPanel.jsx": "c3ce1f60745095d37c296d3e6c99d98833332e2760686ff806ab2273575bc36e",
+    "supabase/migrations/202611100001_vendor_candidate_archive.sql": "f2ed4b42d2fb77ab8c9e986ff5fd6bead177d28b72d562bb2671ab8d06aeb1c5",
+    "supabase/rollbacks/202611100001_vendor_candidate_archive_rollback.sql": "6c29c03a39511c70da6456a90152f2a351dfaac50d0a5aaabee61a93d3359902",
+    "scripts/test-vendor-candidate-archive.mjs": "26902df0507ebd2ca4e31f5f5a2369091d75ef19b0d7c30f21959182850d6728"
+  },
+  "production_accessed": false,
+  "production_migration_executed": false,
+  "git_push": false,
+  "deployed": false,
+  "migration_applied_twice_locally": true,
+  "rollback_applied_twice_locally": true,
+  "local_accounts_cleaned": 7
+}

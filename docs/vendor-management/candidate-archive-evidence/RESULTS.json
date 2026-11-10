@@ -1,0 +1,86 @@
+{
+  "checked_at": "2026-11-10T09:16:35.895Z",
+  "target": "Docker synthetic + loopback browser only",
+  "production_accessed": false,
+  "accounts_cleaned": 7,
+  "checks": [
+    {
+      "check": "Migration applies twice; no existing archive values, security helpers/guards/RLS unchanged",
+      "pass": true
+    },
+    {
+      "check": "Anonymous, Direksi, Finance, Pelaksana and inactive Sourcing cannot archive",
+      "pass": true
+    },
+    {
+      "check": "Invalid reason and nonexistent candidate rejected",
+      "pass": true
+    },
+    {
+      "check": "Linked vendors, operational ACTIVE and every final decision remain protected",
+      "pass": true
+    },
+    {
+      "check": "Direct archive metadata spoof and direct approval/activation remain blocked",
+      "pass": true
+    },
+    {
+      "check": "Archive records authoritative actor/reason and cancels open task atomically; follow-up content retained",
+      "pass": true
+    },
+    {
+      "check": "Archived candidate excluded from sourcing dashboard/map; no archived task reminder or master change",
+      "pass": true
+    },
+    {
+      "check": "Archived profile and child writes blocked; physical DELETE denied even for Super Admin",
+      "pass": true
+    },
+    {
+      "check": "Repeated archive is idempotent; restoration preserves closed tasks and creates audit reason",
+      "pass": true
+    },
+    {
+      "check": "Stale confirmation rejected; concurrent archive produces exactly one event",
+      "pass": true
+    },
+    {
+      "check": "HRD and Super Admin retain authorized archive/restore flow",
+      "pass": true
+    },
+    {
+      "check": "Browser default list separates prospects from active linked profiles",
+      "pass": true
+    },
+    {
+      "check": "Cancel confirmation does not write or archive",
+      "pass": true
+    },
+    {
+      "check": "Reason validation and failure retry preserve draft; confirmed archive disappears from working list",
+      "pass": true
+    },
+    {
+      "check": "Archive detail retains history/reason/location while editing and follow-up creation are hidden",
+      "pass": true
+    },
+    {
+      "check": "Restore from archive works on mobile and returns candidate to working list",
+      "pass": true
+    },
+    {
+      "check": "Linked active vendor remains accessible in its own view and has no removal button",
+      "pass": true
+    },
+    {
+      "check": "Direksi gets no archive control; zero browser errors/production requests; security baseline preserved",
+      "pass": true
+    },
+    {
+      "check": "Rollback twice and cleanup restore 14 table checksums and security helpers/guards/RLS",
+      "pass": true
+    }
+  ],
+  "browser_errors": [],
+  "permission_switches_mocked": true
+}

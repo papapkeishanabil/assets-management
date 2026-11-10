@@ -3,15 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { Plus, Search, RefreshCw, Eye, Edit, Users, Settings2, Trash2, X } from 'lucide-react';
+import { Plus, Search, RefreshCw, Eye, Edit, Users, Settings2, Trash2, X, Archive, RotateCcw } from 'lucide-react';
 import {
   PROCESS_STAGE_LABELS, PROCESS_STAGE_BADGES,
   QUALIFICATION_LABELS, QUALIFICATION_BADGES,
   VENDOR_WRITE_ROLES
 } from '../../lib/vendor-constants';
-import { fetchVendorCandidates } from '../../lib/vendor-helpers';
+import { canArchiveCandidate, fetchVendorCandidates } from '../../lib/vendor-helpers';
 import { formatDateID } from '../../lib/maintenance-helpers';
 import VendorFormModal from '../../components/vendor/VendorFormModal';
+import CandidateArchiveModal from '../../components/vendor/CandidateArchiveModal';
 
 // Database Calon Vendor — pipeline kualifikasi (terpisah dari Master Vendor aktif).
 export default function VendorDatabasePage() {
@@ -26,6 +27,7 @@ export default function VendorDatabasePage() {
   const [filterCategory, setFilterCategory] = useState('');
   const [filterStage, setFilterStage] = useState('');
   const [filterQualification, setFilterQualification] = useState('');
+  const [scope, setScope] = useState('prospects'), [archiveTarget, setArchiveTarget] = useState(null);
 
   const [categories, setCategories] = useState([]);
   const [users, setUsers] = useState([]);
@@ -44,7 +46,8 @@ export default function VendorDatabasePage() {
         search,
         categoryId: filterCategory,
         stage: filterStage,
-        qualification: filterQualification
+        qualification: filterQualification,
+        scope
       });
       setCandidates(data);
     } catch (error) {
@@ -53,7 +56,7 @@ export default function VendorDatabasePage() {
     } finally {
       setLoading(false);
     }
-  }, [search, filterCategory, filterStage, filterQualification]);
+  }, [search, filterCategory, filterStage, filterQualification, scope]);
 
   const loadMaster = useCallback(async () => {
     const [{ data: cats, error }, { data: usrs }] = await Promise.all([
@@ -127,7 +130,7 @@ export default function VendorDatabasePage() {
           <p className="text-xs text-primary-400 font-semibold tracking-wide uppercase">Manajemen Vendor</p>
           <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mt-1">Database Calon Vendor</h1>
           <p className="text-sm text-ink-400 mt-1">
-            Pipeline kualifikasi vendor — terpisah dari Master Data → Vendor (vendor aktif). Aktivasi eksplisit di fase persetujuan.
+            Calon vendor baru dipisahkan dari profil vendor aktif terhubung. Kandidat yang dihapus dari daftar tetap tersedia di Arsip.
           </p>
         </div>
         <div className="flex gap-2">
@@ -148,6 +151,7 @@ export default function VendorDatabasePage() {
       </div>
 
       <div className="card p-4">
+        <div className="mb-3 max-w-sm"><label className="label" htmlFor="candidate-list-scope">Tampilkan data</label><select id="candidate-list-scope" className="input" value={scope} onChange={(e) => setScope(e.target.value)}><option value="prospects">Calon vendor</option><option value="linked">Vendor aktif terhubung</option><option value="archives">Arsip calon vendor</option></select></div>
         <div className="flex flex-col md:flex-row gap-3">
           <div className="flex-1 relative group">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500 group-focus-within:text-primary-400 transition-colors pointer-events-none" />
@@ -231,7 +235,7 @@ export default function VendorDatabasePage() {
                           <button onClick={() => navigate(`/vendor/database/${c.id}`)} className="p-1.5 text-ink-400 hover:text-primary-400 hover:bg-primary-500/10 rounded-md transition-all" title="Detail">
                             <Eye size={15} />
                           </button>
-                          {canWrite && (
+                          {canWrite && !c.archived_at && (
                             <button
                               onClick={() => { setEditing(c); setShowForm(true); }}
                               className="p-1.5 text-ink-400 hover:text-primary-400 hover:bg-primary-500/10 rounded-md transition-all"
@@ -240,6 +244,7 @@ export default function VendorDatabasePage() {
                               <Edit size={15} />
                             </button>
                           )}
+                          {canWrite && canArchiveCandidate(c) && <button type="button" onClick={() => setArchiveTarget(c)} className="p-1.5 text-ink-400 hover:text-danger-400 hover:bg-danger-500/10 rounded-md transition-all" aria-label={`${c.archived_at ? 'Pulihkan' : 'Hapus dari daftar'} ${c.business_name}`} title={c.archived_at ? 'Pulihkan kandidat' : 'Hapus dari daftar (arsip)'}>{c.archived_at ? <RotateCcw size={15} /> : <Archive size={15} />}</button>}
                         </div>
                       </td>
                     </tr>
@@ -248,7 +253,7 @@ export default function VendorDatabasePage() {
               </table>
             </div>
             <div className="px-4 py-3 border-t border-white/5 text-xs text-ink-500">
-              Menampilkan {candidates.length} calon vendor
+              Menampilkan {candidates.length} {scope === 'linked' ? 'profil vendor terhubung' : scope === 'archives' ? 'kandidat dalam arsip' : 'calon vendor'}
             </div>
           </>
         )}
@@ -263,6 +268,7 @@ export default function VendorDatabasePage() {
         users={users}
         currentUserId={profile?.id}
       />
+      {archiveTarget && <CandidateArchiveModal candidate={archiveTarget} onClose={() => setArchiveTarget(null)} onSaved={() => { setArchiveTarget(null); loadCandidates(); }} />}
 
       {showMaster && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={() => setShowMaster(false)}>

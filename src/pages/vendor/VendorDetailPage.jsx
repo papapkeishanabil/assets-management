@@ -23,6 +23,7 @@ const FUTURE_TABS = [
   { key: 'sample', label: 'Sampel & QC', phase: 'Fase 4' },
   { key: 'decision', label: 'Keputusan', phase: 'Fase 5' }
 ];
+const activityTitle = (action) => ({ created: 'Kandidat dibuat', profile_updated: 'Profil diperbarui', followup_created: 'Follow-up dicatat', followup_task_closed: 'Tugas follow-up ditutup', candidate_archived: 'Kandidat dihapus dari daftar (arsip)', candidate_restored: 'Kandidat dipulihkan' }[action] || action);
 
 function InfoItem({ label, value }) {
   return (
@@ -39,7 +40,7 @@ export default function VendorDetailPage() {
   const navigate = useNavigate();
   const { profile, role } = useAuth();
   const { hasAccess } = useRolePermissions();
-  const canWrite = role && VENDOR_WRITE_ROLES.includes(role.role_name);
+  const roleCanWrite = role && VENDOR_WRITE_ROLES.includes(role.role_name);
   // Persetujuan akhir tidak operasional di Fase 1: nilai keputusan
   // disembunyikan dari SEMUA role — nanti hanya via mekanisme persetujuan
   // khusus Fase 5 (guard DB juga memblokir UPDATE langsung by siapa pun).
@@ -48,6 +49,7 @@ export default function VendorDetailPage() {
   );
 
   const [candidate, setCandidate] = useState(null);
+  const canWrite = roleCanWrite && !candidate?.archived_at;
   const [history, setHistory] = useState({ statusHistory: [], activityLogs: [] });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(() => params.get('tab') === 'location' ? 'location' : 'summary');
@@ -90,7 +92,7 @@ export default function VendorDetailPage() {
 
   // Ubah dimensi status dari detail — trigger mencatat riwayat otomatis.
   const changeStatus = async (field, value) => {
-    if (!candidate || candidate[field] === value) return;
+    if (!canWrite || !candidate || candidate[field] === value) return;
     setSavingStatus(true);
     try {
       const { error } = await supabase
@@ -149,6 +151,7 @@ export default function VendorDetailPage() {
         </div>
       </div>
 
+      {candidate.archived_at && <div role="status" className="card p-4 text-sm text-ink-300"><span className="badge-gray mr-2">Arsip</span>Profil ini hanya dapat dilihat. Pulihkan melalui daftar Arsip sebelum mengubah data.<p className="mt-2 whitespace-pre-wrap">Alasan: {candidate.archive_reason}</p></div>}
       {/* Tabs */}
       <div className="flex gap-1 border-b border-white/5 overflow-x-auto">
         <button
@@ -189,9 +192,9 @@ export default function VendorDetailPage() {
       </div>
 
       {/* Placeholder fase berikutnya */}
-      {activeTab === 'followup' && <VendorFollowupsPanel candidateId={id}
+      {activeTab === 'followup' && <VendorFollowupsPanel candidateId={id} readOnly={Boolean(candidate.archived_at)}
         onChanged={() => fetchCandidateHistory(id).then(setHistory).catch(() => toast.error('Gagal menyegarkan riwayat'))} />}
-      {activeTab === 'location' && <VendorLocationsPanel candidateId={id}
+      {activeTab === 'location' && <VendorLocationsPanel candidateId={id} readOnly={Boolean(candidate.archived_at)}
         onChanged={() => fetchCandidateHistory(id).then(setHistory).catch(() => toast.error('Gagal menyegarkan riwayat'))} />}
       {FUTURE_TABS.some((t) => t.key === activeTab) && (
         <div className="card p-10 text-center">
@@ -344,7 +347,7 @@ export default function VendorDetailPage() {
                     <div key={`a-${a.id}`} className="flex gap-3">
                       <History size={13} className="text-ink-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-xs text-white">{a.action === 'created' ? 'Kandidat dibuat' : a.action === 'followup_created' ? 'Follow-up dicatat' : a.action === 'followup_task_closed' ? 'Tugas follow-up ditutup' : 'Profil diperbarui'}</p>
+                        <p className="text-xs text-white">{activityTitle(a.action)}</p>
                         <p className="text-[10px] text-ink-500">{a.actor?.full_name || 'Sistem'} · {formatDateID(a.created_at?.slice(0, 10))}</p>
                       </div>
                     </div>
@@ -377,8 +380,8 @@ export default function VendorDetailPage() {
                     key: `a-${a.id}`,
                     at: a.created_at,
                     who: a.actor?.full_name || 'Sistem',
-                    title: a.action === 'created' ? 'Kandidat dibuat' : a.action === 'profile_updated' ? 'Profil diperbarui' : a.action === 'followup_created' ? 'Follow-up dicatat' : a.action === 'followup_task_closed' ? 'Tugas follow-up ditutup' : a.action,
-                    detail: a.new_values?.business_name ? `"${a.new_values.business_name}"` : a.new_values?.followup_code ? `${a.new_values.followup_code} · ${a.new_values.task_status}` : ''
+                    title: activityTitle(a.action),
+                    detail: a.new_values?.reason || (a.new_values?.business_name ? `"${a.new_values.business_name}"` : a.new_values?.followup_code ? `${a.new_values.followup_code} · ${a.new_values.task_status}` : '')
                   }))
                 ].sort((a, b) => new Date(b.at) - new Date(a.at));
 

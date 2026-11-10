@@ -12,14 +12,14 @@ import LocationFormModal from './LocationFormModal';
 import LocationPhotos from './LocationPhotos';
 import VendorLocationNavigation from './VendorLocationNavigation';
 
-export default function VendorLocationsPanel({ candidateId, onChanged, initialLocationValues }) {
+export default function VendorLocationsPanel({ candidateId, onChanged, initialLocationValues, readOnly = false }) {
   const { role } = useAuth();
   const { hasAccess, loading: permissionsLoading } = useRolePermissions();
   const allowed = hasAccess('vendor_map') && LOCATION_READ_ROLES.includes(role?.role_name);
   const canVerify = ['hrd', 'super_admin'].includes(role?.role_name);
   const [rows, setRows] = useState([]), [loading, setLoading] = useState(true), [error, setError] = useState(''), [version, setVersion] = useState(0), [editing, setEditing] = useState(null), [busy, setBusy] = useState(false);
   const [backendPending, setBackendPending] = useState(false);
-  const canWrite = allowed && VENDOR_WRITE_ROLES.includes(role?.role_name) && !backendPending && !loading && !error;
+  const canWrite = allowed && !readOnly && VENDOR_WRITE_ROLES.includes(role?.role_name) && !backendPending && !loading && !error;
   useEffect(() => {
     if (!allowed) return;
     let ignore = false; setLoading(true); setError('');
@@ -46,7 +46,7 @@ export default function VendorLocationsPanel({ candidateId, onChanged, initialLo
         <p className="text-sm text-ink-200 whitespace-pre-wrap break-words">{[location.address_line, location.village, location.district, location.city, location.province, location.postal_code].filter(Boolean).join(', ') || 'Alamat belum dilengkapi'}</p>
         <div className="flex flex-wrap gap-3 text-sm text-ink-400"><span>Koordinat: {navigation ? `${location.latitude}, ${location.longitude}` : 'Belum diisi'}</span><VendorLocationNavigation latitude={location.latitude} longitude={location.longitude} /><span>Sumber: {location.coordinate_source || 'Belum ada'}</span></div>
         <p className="text-xs text-ink-500">{VERIFICATION_LABELS[location.verification_status]}{location.verified_at && ` · ${location.verifier?.full_name || 'Petugas'} · ${formatFollowupTime(location.verified_at)}`}{location.verification_notes && ` · ${location.verification_notes}`}</p>
-        <LocationPhotos location={location} canWrite={canWrite} canArchive={role?.role_name === 'super_admin'} onChanged={refresh} />
+        <LocationPhotos location={location} canWrite={canWrite} canArchive={!readOnly && role?.role_name === 'super_admin'} onChanged={refresh} />
       </article>;
     })}
     {editing && <LocationFormModal candidateId={candidateId} editing={editing.id ? editing : null} initialValues={initialLocationValues} canVerify={canVerify} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); refresh(); }} />}

@@ -7,7 +7,7 @@ export const CANDIDATE_SELECT = `
   source, process_stage, qualification_status, operational_status,
   capacity_qty, capacity_unit, moq, lead_time_days, indicative_price,
   payment_term, service_area, legal_status, notes,
-  vendor_id, activated_at, created_at, updated_at,
+  vendor_id, activated_at, created_at, updated_at, archived_at, archived_by, archive_reason,
   category:vendor_categories(id, name),
   internal_pic:user_profiles!vendor_candidates_internal_pic_id_fkey(id, full_name)
 `;
@@ -15,11 +15,17 @@ export const CANDIDATE_SELECT = `
 /**
  * Ambil daftar calon vendor + relasi, dengan filter opsional.
  */
-export async function fetchVendorCandidates({ search = '', categoryId = '', stage = '', qualification = '' } = {}) {
+export async function fetchVendorCandidates({ search = '', categoryId = '', stage = '', qualification = '', scope = 'prospects' } = {}) {
   let query = supabase
     .from('vendor_candidates')
     .select(CANDIDATE_SELECT)
     .order('created_at', { ascending: false });
+
+  if (scope === 'archives') query = query.not('archived_at', 'is', null);
+  else {
+    query = query.is('archived_at', null);
+    query = scope === 'linked' ? query.not('vendor_id', 'is', null) : query.is('vendor_id', null);
+  }
 
   if (categoryId) query = query.eq('category_id', categoryId);
   if (stage) query = query.eq('process_stage', stage);
@@ -31,6 +37,21 @@ export async function fetchVendorCandidates({ search = '', categoryId = '', stag
   const { data, error } = await query;
   if (error) throw error;
   return data || [];
+}
+
+export function canArchiveCandidate(candidate) {
+  return !candidate.vendor_id && candidate.operational_status === 'NOT_ACTIVE'
+    && !['APPROVED', 'RESERVE', 'REJECTED', 'FROZEN'].includes(candidate.qualification_status);
+}
+
+export async function setCandidateArchive(candidate, archive, reason) {
+  const { error } = await supabase.rpc('vendor_set_candidate_archive', {
+    p_candidate_id: candidate.id, p_archive: archive, p_reason: reason.trim(), p_expected_updated_at: candidate.updated_at
+  });
+  if (error) {
+    if (error.code === 'PGRST202' || error.code === '42883') throw new Error('Layanan arsip kandidat belum diaktifkan. Hubungi administrator.');
+    throw error;
+  }
 }
 
 /**

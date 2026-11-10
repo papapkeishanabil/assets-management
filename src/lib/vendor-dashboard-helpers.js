@@ -20,7 +20,7 @@ export async function fetchVendorOverview({ canMap, canAssets }, client = supaba
     allRows(client, 'vendors', 'id,vendor_code,vendor_name,vendor_type,city,is_active', (q) => q.eq('is_active', true).order('id')),
     canMap ? allRows(client, 'vendor_map_points', 'candidate_id,vendor_id,location_id,latitude,longitude,is_complete,is_verified',
       (q) => q.order('candidate_id').order('location_id', { nullsFirst: true })) : Promise.resolve(null),
-    client.from('vendor_candidates').select('id', { count: 'exact', head: true }).is('vendor_id', null)
+    client.from('vendor_candidates').select('id', { count: 'exact', head: true }).is('vendor_id', null).is('archived_at', null)
   ]);
   const mapStatus = !canMap ? 'restricted' : locations.status === 'fulfilled' ? 'ready'
     : backendPending(locations.reason) ? 'pending' : 'error';

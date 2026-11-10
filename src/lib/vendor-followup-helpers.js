@@ -68,7 +68,7 @@ async function fetchAllOptions(table, select, order, configure = (q) => q) {
 
 export async function fetchFollowupOptions() {
   const [candidates, users, categories] = await Promise.all([
-    fetchAllOptions('vendor_candidates', 'id,candidate_code,business_name,internal_pic_id', 'business_name'),
+    fetchAllOptions('vendor_candidates', 'id,candidate_code,business_name,internal_pic_id', 'business_name', (q) => q.is('archived_at', null)),
     fetchAllOptions('user_profiles', 'id,full_name', 'full_name', (q) => q.eq('account_status', 'ACTIVE')),
     fetchAllOptions('vendor_categories', 'id,name', 'name')
   ]);

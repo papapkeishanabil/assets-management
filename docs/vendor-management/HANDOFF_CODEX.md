@@ -1,5 +1,17 @@
 # HANDOFF — Modul Manajemen Vendor HARMAS Asset Management
 
+**Hapus dari daftar calon vendor, 10 November:** implementasi lokal selesai,
+**belum migration produksi/push/deploy**. Menggunakan arsip/pulihkan dengan alasan
+dan audit, bukan DELETE fisik. Tugas OPEN dibatalkan secara atomik; riwayat tetap.
+Daftar calon vendor kini terpisah dari profil vendor aktif terhubung dan Arsip.
+Vendor terhubung/aktif atau memiliki keputusan akhir tidak dapat diarsipkan.
+Migration baru `202611100001_vendor_candidate_archive.sql` dan rollback terpisah;
+19/19 uji Docker/API/browser PASS, migration/rollback masing-masing dua kali,
+14 checksum/security baseline kembali identik, build PASS. Frontend baru membutuhkan
+migration lebih dulu; kedua aksi produksi memerlukan persetujuan terpisah.
+[Laporan](CANDIDATE_ARCHIVE_IMPLEMENTATION_20261110.md),
+[prosedur kelayakan dan batas fitur saat ini](PROSEDUR_PENILAIAN_KELAYAKAN_VENDOR.md).
+
 **Perbaikan akses Sourcing ke Vendor Aktif, 10 November: sudah LIVE sekitar 15.54 WIB.**
 User menyetujui dengan “ok deploy”; source `5ef09fdc`, deployment
 `dpl_8SDAoYq6yauaAa6X7wQvoLPNkzp4`. Sembilan hash publik dan enam guard anonim PASS;

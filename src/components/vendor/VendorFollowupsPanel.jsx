@@ -8,11 +8,11 @@ import { FOLLOWUP_CHANNELS, FOLLOWUP_STATUSES, FOLLOWUP_BADGES, FOLLOWUP_OUTCOME
 import { closeFollowup, fetchFollowups, fetchFollowupOptions, formatFollowupTime, isFollowupOverdue, remindOverdueFollowups } from '../../lib/vendor-followup-helpers';
 import FollowUpModal from './FollowUpModal';
 
-export default function VendorFollowupsPanel({ candidateId = '', initialCandidate = '', initialOverdue = false, onChanged }) {
+export default function VendorFollowupsPanel({ candidateId = '', initialCandidate = '', initialOverdue = false, onChanged, readOnly = false }) {
   const { profile, role } = useAuth();
   const { hasAccess, loading: permissionsLoading } = useRolePermissions();
   const allowed = hasAccess('vendor_followups') && ['sourcing', 'hrd', 'super_admin', 'direksi'].includes(role?.role_name);
-  const canWrite = allowed && VENDOR_WRITE_ROLES.includes(role?.role_name);
+  const canWrite = allowed && !readOnly && VENDOR_WRITE_ROLES.includes(role?.role_name);
   const [options, setOptions] = useState(null);
   const [rows, setRows] = useState([]);
   const [count, setCount] = useState(0);
