@@ -9,7 +9,7 @@ export const MODULES = [
   { key: 'locations', label: 'Lokasi Aset', icon: 'MapPin' },
   { key: 'departments', label: 'Struktur Organisasi', icon: 'Building2' },
   { key: 'asset_responsibles', label: 'Penanggung Jawab', icon: 'UserCheck' },
-  { key: 'vendors', label: 'Vendor', icon: 'Truck' },
+  { key: 'vendors', label: 'Vendor: Data Operasional / Vendor Aktif', icon: 'Truck' },
   { key: 'vendor_management', label: 'Vendor: Dashboard & Database Calon', icon: 'Users' },
   { key: 'vendor_followups', label: 'Vendor: Follow-Up & Aktivitas', icon: 'PhoneCall' },
   { key: 'vendor_samples', label: 'Vendor: Pengujian Sampel', icon: 'ClipboardList' },

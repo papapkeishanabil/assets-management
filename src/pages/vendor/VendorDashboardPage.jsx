@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { RefreshCw, ArrowRight } from 'lucide-react';
+import { RefreshCw, ArrowRight, Truck } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRolePermissions } from '../../hooks/useRolePermissions';
 import { PROCESS_STAGE_LABELS, PROCESS_STAGE_BADGES, VENDOR_WRITE_ROLES } from '../../lib/vendor-constants';
@@ -30,6 +30,7 @@ export default function VendorDashboardPage() {
   const allowed = hasAccess('vendor_management') && ['sourcing', 'hrd', 'direksi', 'super_admin'].includes(role?.role_name);
   const canFollowups = hasAccess('vendor_followups');
   const canMap = hasAccess('vendor_map');
+  const canActiveVendors = hasAccess('vendors') && ['super_admin', 'hrd'].includes(role?.role_name);
   const canRemind = allowed && canFollowups && VENDOR_WRITE_ROLES.includes(role?.role_name);
   const [options, setOptions] = useState({ categories: [], users: [] });
   const [category, setCategory] = useState('');
@@ -63,7 +64,7 @@ export default function VendorDashboardPage() {
   if (!allowed) return <p className="text-ink-400">Akses dashboard vendor ditolak.</p>;
   return <div className="space-y-6 animate-fade-in">
     <div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-2xl md:text-3xl font-semibold text-white">Dashboard Vendor</h1><p className="text-sm text-ink-400 mt-1">Monitoring sourcing dan prioritas tindak lanjut</p></div>
-      <div className="flex gap-2"><button className="btn-secondary" disabled={loading} onClick={() => setVersion((n) => n + 1)}><RefreshCw size={14} /> Refresh</button><Link className="btn-primary" to="/vendor/database">Database Vendor <ArrowRight size={14} /></Link></div></div>
+      <div className="flex flex-wrap gap-2"><button className="btn-secondary" disabled={loading} onClick={() => setVersion((n) => n + 1)}><RefreshCw size={14} /> Refresh</button>{canActiveVendors && <Link className="btn-secondary" to="/vendors"><Truck size={14} /> Vendor Aktif</Link>}<Link className="btn-primary" to="/vendor/database">Calon Vendor <ArrowRight size={14} /></Link></div></div>
     <div className="card p-4 grid sm:grid-cols-2 gap-4">
       <label><span className="label">Kategori vendor</span><select className="input" value={category} onChange={(e) => setCategory(e.target.value)}><option value="">Semua kategori</option>{options.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
       <label><span className="label">PIC kandidat</span><select className="input" value={pic} onChange={(e) => setPic(e.target.value)}><option value="">Semua PIC</option>{options.users.map((u) => <option key={u.id} value={u.id}>{u.full_name}</option>)}</select></label>

@@ -86,7 +86,6 @@ export default function MainLayout() {
     { to: '/locations', icon: MapPin, label: 'Lokasi Aset', moduleKey: 'locations' },
     { to: '/departments', icon: Building2, label: 'Struktur Organisasi', moduleKey: 'departments' },
     { to: '/asset-responsibles', icon: UserCheck, label: 'Penanggung Jawab', moduleKey: 'asset_responsibles' },
-    { to: '/vendors', icon: Truck, label: 'Vendor', moduleKey: 'vendors' },
   ];
 
   const assetItems = [
@@ -99,6 +98,7 @@ export default function MainLayout() {
   ];
 
   const { hasAccess } = useRolePermissions();
+  const canAccessActiveVendors = ['super_admin', 'hrd'].includes(role?.role_name) && hasAccess('vendors');
   const visibleNavItems = navItems.filter(item => !item.moduleKey || hasAccess(item.moduleKey));
   const visibleMasterDataItems = masterDataItems.filter(item => !item.moduleKey || hasAccess(item.moduleKey));
   const visibleAssetItems = assetItems.filter(item => !item.moduleKey || hasAccess(item.moduleKey));
@@ -213,22 +213,23 @@ export default function MainLayout() {
             </NavLink>
           ))}
 
-          {['super_admin', 'hrd', 'direksi', 'sourcing'].includes(role?.role_name) && (hasAccess('vendor_management') || hasAccess('vendor_followups') || hasAccess('vendor_map')) && (
+          {['super_admin', 'hrd', 'direksi', 'sourcing'].includes(role?.role_name) && (canAccessActiveVendors || hasAccess('vendor_management') || hasAccess('vendor_followups') || hasAccess('vendor_map')) && (
             <>
               <SectionLabel>Manajemen Vendor</SectionLabel>
-              {hasAccess('vendor_management') && <>
-              <NavLink to="/vendor" end onClick={() => setSidebarOpen(false)} className={navLinkClass}>
+              {hasAccess('vendor_management') && <NavLink to="/vendor" end onClick={() => setSidebarOpen(false)} className={navLinkClass}>
                 <Home size={16} className="flex-shrink-0" /> Dashboard Vendor
-              </NavLink>
-              <NavLink
+              </NavLink>}
+              {canAccessActiveVendors && <NavLink to="/vendors" onClick={() => setSidebarOpen(false)} className={navLinkClass}>
+                <Truck size={16} className="flex-shrink-0" /> Vendor Aktif
+              </NavLink>}
+              {hasAccess('vendor_management') && <NavLink
                 to="/vendor/database"
                 onClick={() => setSidebarOpen(false)}
                 className={navLinkClass}
               >
                 <Users size={16} className="flex-shrink-0" />
-                Database Calon Vendor
-              </NavLink>
-              </>}
+                Calon Vendor
+              </NavLink>}
               {hasAccess('vendor_followups') && <NavLink to="/vendor/followups" onClick={() => setSidebarOpen(false)} className={navLinkClass}>
                 <MessageSquare size={16} className="flex-shrink-0" /> Follow-Up Vendor
               </NavLink>}

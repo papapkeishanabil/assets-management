@@ -3,6 +3,15 @@
 **Dokumen serah terima untuk agent penerus (Codex).** Disusun 6 November 2026.
 Dokumen induk: [AUDIT_DAN_RENCANA_IMPLEMENTASI.md](AUDIT_DAN_RENCANA_IMPLEMENTASI.md) · Spesifikasi user: [HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md](HARMAS_Spesifikasi_Modul_Vendor_untuk_Codex.md)
 
+**Integrasi menu terbaru 10 November:** user memilih satu kelompok Manajemen Vendor:
+Dashboard Vendor, Vendor Aktif, Calon Vendor, Follow-Up Vendor, Peta Vendor. Vendor
+di Master Data dipindahkan menjadi Vendor Aktif, tetap URL `/vendors` dan key
+`vendors`; guard role SA/HRD dipertahankan. Tautan silang Dashboard/master ditambah.
+**Selesai lokal: 7 navigasi + 16 regresi master PASS, build PASS; belum deployment**.
+Tidak ada perubahan DB/RLS/KPI/migration; data dan koordinat memakai backend yang
+sama. [Laporan integrasi](VENDOR_NAVIGATION_INTEGRATION_20261110.md). Perubahan ini
+bersama input koordinat master masih menunggu persetujuan deployment gabungan.
+
 **Permintaan terbaru 10 November — input koordinat juga di Master Data → Vendor:**
 implementasi lokal selesai, **16 browser Master + 22 regresi lokasi/foto PASS**, build
 PASS. Tombol Koordinat per baris, tab Lokasi & Koordinat di edit, serta Simpan dan Isi

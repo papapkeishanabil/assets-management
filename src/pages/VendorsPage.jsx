@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState, useEffect, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useRolePermissions } from '../hooks/useRolePermissions';
@@ -164,12 +165,16 @@ export default function VendorsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-semibold text-white tracking-tight">Master Vendor</h1>
-          <p className="text-sm text-ink-400 mt-1">Kelola daftar vendor dan supplier</p>
+          <p className="text-sm text-ink-400 mt-1">Data vendor operasional, status aktif/nonaktif, lokasi dan koordinat</p>
         </div>
+        <div className="flex flex-wrap gap-2">
+        {hasAccess('vendor_management') && <Link to="/vendor" className="btn-secondary text-sm">Dashboard Vendor</Link>}
+        {canReadLocations && <Link to="/vendor/map" className="btn-secondary text-sm"><MapPin size={14} /> Peta Vendor</Link>}
         <button onClick={fetchVendors} className="btn-secondary text-sm" disabled={loading}>
           <RefreshCw size={14} className={`${loading ? 'animate-spin' : ''}`} />
           Refresh
         </button>
+        </div>
       </div>
 
       <div className="card">

@@ -1,5 +1,10 @@
 # Input koordinat pada Master Vendor — 10 November 2026
 
+**Pembaruan integrasi menu:** user kemudian memilih satu kelompok Manajemen Vendor.
+Menu master kini berlabel **Vendor Aktif** di kelompok tersebut pada implementasi
+lokal; URL tetap `/vendors`. [Laporan integrasi](VENDOR_NAVIGATION_INTEGRATION_20261110.md).
+Kedua perubahan frontend belum di-deploy.
+
 Status **selesai dan diuji lokal; belum di-deploy**. User meminta input koordinat
 juga tersedia pada Master Data → Vendor. Perubahan frontend memakai backend Fase 3
 yang sudah aktif, tanpa migration atau kolom tambahan pada tabel master `vendors`.

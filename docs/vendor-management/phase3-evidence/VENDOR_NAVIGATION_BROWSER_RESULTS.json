@@ -1,0 +1,36 @@
+{
+  "checked_at": "2026-11-10T04:06:16.908Z",
+  "target": "Docker synthetic + loopback",
+  "production_writes": false,
+  "permission_reduction_fixture_mocked": true,
+  "results": [
+    {
+      "check": "Lima menu berada dalam urutan Manajemen Vendor; tautan Master Data lama tidak duplikat",
+      "pass": true
+    },
+    {
+      "check": "Dashboard ↔ Vendor Aktif memakai /vendors existing dan input koordinat tetap dapat dibuka",
+      "pass": true
+    },
+    {
+      "check": "Calon Vendor, Follow-Up dan Peta tetap menuju halaman yang benar",
+      "pass": true
+    },
+    {
+      "check": "Menu terpadu mobile bekerja, drawer menutup setelah dipilih dan halaman tanpa overflow",
+      "pass": true
+    },
+    {
+      "check": "HRD dengan hanya izin master tetap melihat Vendor Aktif meskipun modul sourcing disembunyikan",
+      "pass": true
+    },
+    {
+      "check": "Sourcing/Direksi tidak mendapat akses master baru dari menu atau tautan Dashboard",
+      "pass": true
+    },
+    {
+      "check": "Tidak ada pageerror, write bisnis, request produksi atau perubahan enam checksum baseline Docker",
+      "pass": true
+    }
+  ]
+}
