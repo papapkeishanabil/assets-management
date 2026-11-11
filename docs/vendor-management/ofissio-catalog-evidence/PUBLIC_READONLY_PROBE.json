@@ -1,0 +1,72 @@
+{
+  "checked_at": "2026-11-11T05:14:47.231Z",
+  "endpoint": "https://ofissio.com/api/catalog/search?q=KS-003",
+  "catalog_status": 200,
+  "product": {
+    "id": "wc-462",
+    "sku": "KS-003",
+    "name": "Kemeja Safety KS-003",
+    "material": "American Drill",
+    "image_url": "https://woo.ofissio.com/wp-content/uploads/2026/09/ks-003.webp",
+    "product_url": "https://ofissio.com/product/kemeja-safety-ks-003"
+  },
+  "image_status": 200,
+  "image_bytes": 86460,
+  "image_sha256": "ddfda2ab394cd7a0be27d17f6e576e82602ec449b71c66b41450e2f637bfa734",
+  "image_fixture": "test-fixtures/vendor-ofissio/ks-003.webp",
+  "variants_in_search": [],
+  "cors_allow_origin": null,
+  "credentials_used": false,
+  "database_accessed": false,
+  "external_writes": false,
+  "sasienala_via_ofissio": {
+    "endpoint": "https://ofissio.com/api/catalog/search?q=SN",
+    "status": 200,
+    "total": 7,
+    "compatible_results": 7,
+    "products": [
+      {
+        "id": "wc-1707",
+        "sku": "OFS-ba07bcb0-6eff-42cb-b8e2-6e028743c093",
+        "name": "Kemeja Kantor Wanita SN-Basic - Pink-Red Series",
+        "image_origin": "https://woo.ofissio.com"
+      },
+      {
+        "id": "wc-1688",
+        "sku": "OFS-011d3997-813a-4ce5-8c94-6a982461c107",
+        "name": "Kemeja Kantor Wanita SN Basic - Pastel Series",
+        "image_origin": "https://woo.ofissio.com"
+      },
+      {
+        "id": "wc-1603",
+        "sku": "OFS-f5eeaaac-bc7b-4c77-ae59-4f2fd64c28af",
+        "name": "Kemeja Kantor Wanita SN Basic - Brown Series",
+        "image_origin": "https://woo.ofissio.com"
+      },
+      {
+        "id": "wc-1482",
+        "sku": "SN-Green",
+        "name": "Kemeja Kantor Wanita SN Basic - Green Series",
+        "image_origin": "https://woo.ofissio.com"
+      },
+      {
+        "id": "wc-1245",
+        "sku": "SN-ADD",
+        "name": "Kemeja Kantor Wanita SN Basic - Additional Series",
+        "image_origin": "https://woo.ofissio.com"
+      },
+      {
+        "id": "wc-1228",
+        "sku": "SN",
+        "name": "Kemeja Kantor Wanita SN Basic - Monochrome Series",
+        "image_origin": "https://woo.ofissio.com"
+      },
+      {
+        "id": "wc-1188",
+        "sku": "SN-Blue",
+        "name": "Kemeja Kantor Wanita SN Basic - Blue Series",
+        "image_origin": "https://woo.ofissio.com"
+      }
+    ]
+  }
+}

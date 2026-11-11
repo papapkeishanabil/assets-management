@@ -1,5 +1,20 @@
 # HANDOFF — Modul Manajemen Vendor HARMAS Asset Management
 
+**Acuan sampel Ofissio — implementasi lokal 11 November, BELUM produksi.**
+User memilih satu koneksi Ofissio karena produk Sasienala ada dalam katalog yang
+sama. Picker kartu foto pada Tambah Sampel, snapshot nama/SKU/bahan/foto privat
+permanen pada detail/edit/QC, dan manual Harmas tetap tersedia. Backend baru
+`vendor-ofissio-catalog` memvalidasi JWT/ACTIVE/role/modul, GET katalog/foto publik,
+memeriksa bytes/SHA-256 lalu RPC service-only atomik + retry idempoten. Migration
+additive `202611110003_vendor_sample_ofissio_references.sql` dan rollback manual
+terpisah; fungsi/policy Fase 1–5 tetap utuh, SKU katalog terkunci sejak dibuat.
+**40/40 integrasi + 75/75 regresi Fase 4 + 69/69 regresi Fase 5 PASS**, build/PWA PASS;
+17 checksum/security baseline Docker kembali identik, fixture dibersihkan.
+GET publik KS-003/foto dan 7 produk SN Basic HTTP 200. Varian belum ada di API;
+warna/ukuran tetap dalam brief. Belum akses DB produksi, migration, push atau deploy
+baru. Persetujuan rilis Fase 4/5 di bawah tidak mencakup rilis penyempurnaan ini.
+[Laporan, bukti, batasan dan urutan rilis](OFISSIO_SAMPLE_CATALOG_IMPLEMENTATION_20261111.md).
+
 **Fase 4 Sampling & QC + Fase 5 Persetujuan & Aktivasi sudah LIVE — 11 November 2026.**
 User menyetujui migration terpisah: “Setuju migration Fase 4 dan 5 ke produksi”.
 Kedua SQL final (hash di SQL_REVIEW.json) COMMIT dalam satu transaksi; verifikasi

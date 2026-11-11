@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { QC_DECISIONS, saveSampleQC, uploadSampleEvidence } from '../../lib/vendor-sampling';
 import { fromJakartaInput, toJakartaInput } from '../../lib/vendor-followup-helpers';
+import SampleProductReference from './SampleProductReference';
 export default function SampleQCModal({ sample, editing, options, onClose, onSaved }) {
   const dialog = useRef(null), pending = useRef(false), prefix = useId();
   const rubric = editing?.parameter_snapshot || options.parameters.filter((p) => p.is_active && (!p.category_id || p.category_id === sample.category_id)).map((p) => ({ id: p.id, name: p.parameter_name, weight: p.weight }));
@@ -27,6 +28,7 @@ export default function SampleQCModal({ sample, editing, options, onClose, onSav
   };
   return <dialog ref={dialog} aria-labelledby={prefix + 'title'} onCancel={(e) => { e.preventDefault(); if (!busy) onClose(); }} className="m-auto w-[calc(100%-2rem)] max-w-3xl max-h-[90vh] overflow-y-auto rounded-xl border border-white/10 bg-ink-900 text-white p-5 backdrop:bg-black/70"><form onSubmit={submit} className="space-y-4">
     <h2 id={prefix + 'title'} className="text-lg font-semibold">{editing ? `Koreksi QC putaran ${editing.run_no}` : 'Catat Hasil QC'}</h2><p className="text-xs text-ink-400">{sample.sample_code} · Hasil dicatat atas nama petugas pemeriksa. Lulus QC tetap memerlukan persetujuan manajemen.</p>
+    <SampleProductReference reference={sample.product_reference} />
     <div className="grid sm:grid-cols-2 gap-4">
       <div><label className="label" htmlFor={prefix + 'employee'}>Pemeriksa dari data karyawan (opsional)</label><select id={prefix + 'employee'} className="input" disabled={busy} value={form.inspector_employee_id} onChange={(e) => { const emp = options.employees.find((x) => x.id === e.target.value); setForm((s) => ({ ...s, inspector_employee_id: e.target.value, inspector_name: emp?.full_name || s.inspector_name })); }}><option value="">Isi nama pemeriksa secara manual</option>{options.employees.map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}</select></div>
       {field('inspector_name', 'Nama pemeriksa QC *', 'text', { required: true, minLength: 2, maxLength: 200 })}{field('inspected_at', 'Waktu pemeriksaan (WIB) *', 'datetime-local', { required: true })}

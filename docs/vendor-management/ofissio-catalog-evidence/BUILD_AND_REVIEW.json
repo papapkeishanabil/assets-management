@@ -1,0 +1,66 @@
+{
+  "checked_at": "2026-11-11T05:20:07.973Z",
+  "status": "LOCAL_PASS_NOT_RELEASED",
+  "tests": {
+    "integration": {
+      "pass": 40,
+      "total": 40,
+      "by_kind": {
+        "database/API": 31,
+        "browser": 9
+      },
+      "file": "docs/vendor-management/ofissio-catalog-evidence/RESULTS.json"
+    },
+    "phase4": {
+      "pass": 75,
+      "total": 75,
+      "by_kind": {
+        "database": 58,
+        "browser": 17
+      },
+      "file": "docs/vendor-management/ofissio-catalog-evidence/regression-phase4/RESULTS.json"
+    },
+    "phase5": {
+      "pass": 69,
+      "total": 69,
+      "by_kind": {
+        "database": 53,
+        "browser": 16
+      },
+      "file": "docs/vendor-management/ofissio-catalog-evidence/regression-phase5/RESULTS.json"
+    }
+  },
+  "build": {
+    "command": "npm.cmd run build",
+    "exit_code": 0,
+    "pwa": true,
+    "existing_main_bundle_warning": true
+  },
+  "source_sha256": {
+    "src/lib/vendor-product-catalog.js": "4ca862213b82f3b8c799c944928c5bc48780afb643e3c02cc0191ab86a053596",
+    "src/components/vendor/OfissioProductPicker.jsx": "0d128ceab5014fa03198008f30407dfad346b65ef4966935bac59822e3337e0d",
+    "src/components/vendor/SampleProductReference.jsx": "6b5391b48ad4b2eff3ff53c4b684c3d906ddc6c3e67380a95b364cd940cce76c",
+    "src/components/vendor/SampleFormModal.jsx": "4f33bfd2ea20c6a761f38485b30bf0394eafeed3a134c52d0ba8b2de8b6350bd",
+    "src/components/vendor/SampleDetailModal.jsx": "41ed2c618481104483da3beb925405b83e5233d352f517f64b67d8207a39c7b7",
+    "src/components/vendor/SampleQCModal.jsx": "848f9baff23b22e59f13a44c4a94db3cac3a2a8eadc0d7b7a899b9d0a11387a1",
+    "supabase/functions/vendor-ofissio-catalog/index.ts": "a76569a4897861978c1de55060100b639f60f0a29afc197c9b790d25d92af9e0",
+    "supabase/functions/vendor-ofissio-catalog/handler.js": "5bf6dfe4923dc8e20e0e496d02d57f5a85b92a983d2c560439f681735400db88",
+    "supabase/migrations/202611110003_vendor_sample_ofissio_references.sql": "2dc70eecbb64f7198eac55566485c064cd9c148ab041ed6c703e6435de8aa0df",
+    "supabase/rollbacks/202611110003_vendor_sample_ofissio_references_rollback.sql": "b07582f3f2b7948501033f080e81a8f553caa732431638e6c4ee60d2f4735802",
+    "scripts/test-vendor-ofissio-catalog.mjs": "ab8121b6d97f350c049040d1f56f2ca7b8d769398ff86c6d78351630590d73fc",
+    "scripts/probe-ofissio-public-catalog.mjs": "5897836ddeb47ef4cfc7f300a895f9b019a6529676080e9c61c6be3ca4b15412"
+  },
+  "public_catalog_probe": {
+    "status": 200,
+    "photo_status": 200,
+    "sn_products": 7
+  },
+  "credential_pattern_scan": true,
+  "client_bundle_service_key_scan": true,
+  "cleanup_verified": true,
+  "production_database_accessed": false,
+  "production_migration_executed": false,
+  "edge_function_deployed": false,
+  "frontend_deployed": false,
+  "git_push": false
+}

@@ -1,0 +1,213 @@
+{
+  "checked_at": "2026-11-11T05:18:22.118Z",
+  "target": "fixed Docker Supabase + loopback browser",
+  "production_accessed": false,
+  "ofissio_upstream": "injected catalog/image fixtures only",
+  "permissions_mocked": false,
+  "results": [
+    {
+      "check": "Migration twice preserves 17 baseline data checksums and every existing Phase 1–5 function/ACL/policy",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "New reference table has RLS, SELECT only; administrative privileges outside RLS revoked",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Unknown policy aborts migration replay instead of silently activating it",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Anonymous, forged token, inactive, Finance/Pelaksana rejected before upstream access",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Backend independently enforces module permission for search and creation",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Authorized four-role search; empty results; Direksi cannot create samples",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Reject demo products, SSRF hosts, HTTP, SVG and credential/query-bearing image URLs",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Catalog outage, malformed JSON and upstream throttling return safe errors",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Real Auth → handler → Storage → atomic RPC creates sample with verified image hash and authoritative Sourcing actor",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Retry after saved result reuses original snapshot even offline; changed payload/actor cannot reuse request ID",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Concurrent same-request creation produces one sample, one snapshot and one immutable image",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "HRD with module permission and Super Admin can create authenticated catalog samples",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Even app Super Admin cannot call service-only RPC or insert/edit/delete catalog snapshots directly",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Snapshot RLS permits only active vendor roles, including read-only Direksi",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Catalog SKU locked before QC; manual samples retain existing editing behavior and original guards",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Catalog changes cannot mutate saved name/material/photo; creation audit records actor/hash/time",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Private photo signed URLs work for vendor roles; anonymous/public URL and unrelated roles denied",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Authenticated clients cannot upload, replace or delete immutable reference photos",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Removed product, redirected/invalid/oversized photo fail before sample creation",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "RPC failure keeps safe staged image; retry validates existing bytes and creates one sample",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "COMMIT followed by lost HTTP response is recovered idempotently without deleting saved photo",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Real sample guard failure rolls back sample and snapshot together",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Staged file from failed transaction remains unreadable without a saved reference",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Client cannot inject actor, arbitrary fetch URL, unknown sample fields or invalid quantities",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Archived candidate rejected before file upload/sample creation",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Per-user request throttling bounds repeated catalog requests",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Referenced sample completes real QC without changing frozen reference or activating candidate",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "QC/approval basis stays stable when attempted snapshot/brief manipulation is rejected",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Rollback refuses to discard saved sample references",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "check": "Catalog error is visible in browser and does not create a sample",
+      "kind": "browser",
+      "pass": true
+    },
+    {
+      "check": "Product card/photo selection fills and locks SKU",
+      "kind": "browser",
+      "pass": true
+    },
+    {
+      "check": "Browser retries failed save with same request ID and persists through real local RPC/Storage",
+      "kind": "browser",
+      "pass": true
+    },
+    {
+      "check": "Saved private snapshot renders on sample detail using a real signed Storage URL",
+      "kind": "browser",
+      "pass": true
+    },
+    {
+      "check": "Edit retains original snapshot and disallows changing source/SKU",
+      "kind": "browser",
+      "pass": true
+    },
+    {
+      "check": "Mobile detail fits viewport with original product photo/reference",
+      "kind": "browser",
+      "pass": true
+    },
+    {
+      "check": "QC entry includes the saved reference photo alongside inspection fields",
+      "kind": "browser",
+      "pass": true
+    },
+    {
+      "check": "Manual Harmas sample creation remains available in same form",
+      "kind": "browser",
+      "pass": true
+    },
+    {
+      "check": "No browser runtime errors or unexpected external/production requests",
+      "kind": "browser",
+      "pass": true
+    },
+    {
+      "check": "All original Phase 1–5 functions, policies and approval/activation guards remain byte-identical",
+      "kind": "database/API",
+      "pass": true
+    },
+    {
+      "kind": "database/API",
+      "check": "Rollback twice, own fixture/account/file cleanup restore all baseline checksums/security",
+      "pass": true
+    }
+  ],
+  "browser_errors": [],
+  "unexpected_external_hosts": [],
+  "accounts_cleaned": 7,
+  "cleanup_restored_baseline": true
+}

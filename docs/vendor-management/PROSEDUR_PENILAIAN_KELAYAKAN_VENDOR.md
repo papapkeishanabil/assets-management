@@ -51,3 +51,13 @@ Label “Disetujui/Aktif” pada profil tersebut tidak membuktikan bahwa alur QC
 telah dijalankan. Profil ini dipertahankan dan dikelompokkan terpisah dari prospek baru.
 
 Rujukan desain: HANDOFF_CODEX.md §8, AUDIT_DAN_RENCANA_IMPLEMENTASI.md bagian C–G.
+
+## Acuan produk dari Ofissio (penyempurnaan lokal, belum produksi)
+
+User memilih Ofissio sebagai satu sumber katalog, termasuk produk Sasienala yang
+tersedia di sana. Pada Tambah Sampel, pilih sumber katalog, cari kode/nama produk
+(misalnya KS-003 atau SN), lalu pilih kartu foto. Isi brief pekerjaan/warna/ukuran,
+vendor, penyedia bahan dan target seperti biasa. Sistem menyimpan salinan foto
+serta informasi acuan permanen untuk dibandingkan dengan hasil QC. Produk custom
+klien Harmas tetap dapat diisi manual. Pemilihan produk bukan pemesanan barang atau
+persetujuan vendor. [Status implementasi dan rilis](OFISSIO_SAMPLE_CATALOG_IMPLEMENTATION_20261111.md).
