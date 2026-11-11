@@ -4,8 +4,10 @@ import { loadVendorMap, vendorTileConfig } from '../../lib/vendor-map-loader';
 import './vendor-map.css';
 
 const NO_POINTS = [];
-export default function VendorMap({ points = NO_POINTS, editable = false, onPick, onSelect, height = 400 }) {
-  const element = useRef(null), callbacks = useRef({ onPick, onSelect }), fitted = useRef(false);
+// points: titik lokasi; focus: titik terpilih (pan kamera ke sana);
+// selectedKey: `${candidate_id}/${location_id||''}` untuk sorotan pin.
+export default function VendorMap({ points = NO_POINTS, editable = false, onPick, onSelect, height = 400, focus = null, selectedKey = '' }) {
+  const element = useRef(null), callbacks = useRef({ onPick, onSelect }), fitted = useRef(false), fittedPoints = useRef(null);
   callbacks.current = { onPick, onSelect };
   const [instance, setInstance] = useState(null), [fatal, setFatal] = useState(''), [tileError, setTileError] = useState(''), [retry, setRetry] = useState(0);
   const valid = useMemo(() => points.filter((p) => { try { return Boolean(coordinatePair(p.latitude, p.longitude)); } catch { return false; } }), [points]);
@@ -42,8 +44,10 @@ export default function VendorMap({ points = NO_POINTS, editable = false, onPick
       const groups = editable ? visible.map((p) => ({ items: [p], lat: Number(p.latitude), lng: Number(p.longitude) })) : clusterMapPoints(visible, map.getZoom());
       for (const group of groups) {
         const p = group.items[0], clustered = group.items.length > 1;
+        const isHighlighted = !clustered && !editable && selectedKey && `${p.candidate_id}/${p.location_id || ''}` === selectedKey;
         const title = clustered ? `${group.items.length} lokasi vendor` : `${p.business_name || 'Lokasi'} · ${p.location_name || 'Titik pilihan'}`;
-        const content = document.createElement('span'); content.className = `vendor-map-pin ${clustered ? 'vendor-map-cluster' : p.qualification_status === 'APPROVED' ? 'vendor-map-approved' : 'vendor-map-prospect'}`;
+        const content = document.createElement('span');
+        content.className = `vendor-map-pin ${clustered ? 'vendor-map-cluster' : p.qualification_status === 'APPROVED' ? 'vendor-map-approved' : 'vendor-map-prospect'}${isHighlighted ? ' vendor-map-selected' : ''}`;
         content.textContent = clustered ? String(group.items.length) : '●';
         const marker = L.marker([group.lat, group.lng], { title, keyboard: true, draggable: editable,
           icon: L.divIcon({ html: content, className: 'vendor-map-marker', iconSize: [36, 36], iconAnchor: [18, 18] }) });
@@ -63,15 +67,29 @@ export default function VendorMap({ points = NO_POINTS, editable = false, onPick
         marker.addTo(layer);
       }
     };
-    if (valid.length) {
-      const positions = valid.map((p) => [Number(p.latitude), Number(p.longitude)]);
-      if (!editable) map.fitBounds(positions, { padding: [40, 40], maxZoom: 16, animate: false });
-      else if (!fitted.current) { map.setView(positions[0], 16, { animate: false }); fitted.current = true; }
-      else if (!map.getBounds().contains(positions[0])) map.panTo(positions[0], { animate: false });
+    // fitBounds hanya saat kumpulan titik berubah — bukan saat sorotan
+    // terpilih berubah (agar viewport tidak direset saat memilih titik).
+    if (valid !== fittedPoints.current) {
+      fittedPoints.current = valid;
+      if (valid.length) {
+        const positions = valid.map((p) => [Number(p.latitude), Number(p.longitude)]);
+        if (!editable) map.fitBounds(positions, { padding: [40, 40], maxZoom: 16, animate: false });
+        else if (!fitted.current) { map.setView(positions[0], 16, { animate: false }); fitted.current = true; }
+        else if (!map.getBounds().contains(positions[0])) map.panTo(positions[0], { animate: false });
+      }
     }
     map.on('moveend zoomend', draw); draw();
     return () => { map.off('moveend zoomend', draw); clear(); layer.remove(); };
-  }, [instance, valid, editable]);
+  }, [instance, valid, editable, selectedKey]);
+
+  // Pindahkan kamera ke titik terpilih (dipilih dari daftar di samping peta).
+  useEffect(() => {
+    if (!instance || !focus) return;
+    try {
+      const [lat, lng] = coordinatePair(focus.latitude, focus.longitude);
+      instance.map.setView([lat, lng], Math.max(instance.map.getZoom(), 15), { animate: true });
+    } catch { /* koordinat tidak valid — abaikan */ }
+  }, [instance, focus]);
 
   return <div className="space-y-2">
     {(fatal || tileError) && <div role="alert" className="card p-4 text-sm text-rose-300">{fatal || tileError} <button type="button" className="underline" onClick={() => {

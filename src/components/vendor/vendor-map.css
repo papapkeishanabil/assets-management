@@ -7,6 +7,7 @@
 .vendor-map-cluster { background: #1e40af; }
 .vendor-map-approved { background: #15803d; }
 .vendor-map-prospect { background: #b45309; }
+.vendor-map-selected { box-shadow: 0 0 0 5px #38bdf8aa, 0 2px 10px #0007; transform: scale(1.12); }
 .vendor-map-marker:focus-visible { outline: 3px solid #38bdf8; outline-offset: 3px; border-radius: 999px; }
 .vendor-map-coincident { display: flex; flex-direction: column; gap: 6px; }
 .vendor-map-coincident button { text-align: left; padding: 6px; color: #1d4ed8; border: 1px solid #cbd5e1; border-radius: 4px; }
