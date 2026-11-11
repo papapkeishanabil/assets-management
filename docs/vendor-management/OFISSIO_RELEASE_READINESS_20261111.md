@@ -1,5 +1,35 @@
 # Kesiapan rilis katalog sampel Ofissio — 11 November 2026
 
+**Pembaruan: persetujuan migration sudah diterima, eksekusi menunggu backup satu foto privat.**
+User menjawab “ya setuju migrasi”. Helper memakai password yang diberikan,
+memeriksa produksi secara READ ONLY, lalu memperbarui backup karena baseline
+berubah. Backup `D:\Backups\harmas-pre-ofissio-20261111-062445-e86759f8`
+memverifikasi restore **148 tabel/1.854 baris** dan rehearsal, tetapi sekarang
+terdapat satu file privat. Proses berhenti **sebelum percobaan migration**;
+persetujuan belum dikonsumsi dan tetap berlaku. Keterangan menunggu persetujuan
+di bagian historis di bawah tidak berlaku lagi.
+
+Foto asli perlu diunduh melalui Dashboard Storage ke `private-import` pada folder
+backup tersebut. Ini mempertahankan pilihan pengguna memakai PGPASSWORD saja,
+tanpa mengambil service key dari file legacy atau meminta token di chat.
+**95 blob publik sudah lengkap, satu original privat belum tersedia**.
+Path objek privat disimpan hanya pada inventaris backup/instruksi pengguna.
+
+Helper baru `vendor-storage-backup.mjs` dan
+`finish-vendor-ofissio-storage-backup.mjs` menyelesaikan tahap file tanpa SQL
+produksi/password. Original impor harus cocok ukuran dan ETag MD5 metadata;
+salinan disimpan dengan SHA-256. Backup baru boleh memakai ulang private blob
+terverifikasi hanya jika project, ID, path, ukuran, MIME dan ETag tetap cocok.
+Checksum berbeda, cache rusak/lintas project/di luar root, dan original yang
+belum tersedia ditolak. **Storage harus tetap lengkap sebelum migration**.
+[10/10 uji filesystem/mock HTTP](ofissio-catalog-evidence/STORAGE_BACKUP_TESTS.json).
+[Persetujuan dan revisi pin helper](ofissio-catalog-evidence/MIGRATION_APPROVAL.json).
+SQL migration tetap sama; revisi helper tidak mengubah izin tulis database.
+
+Setelah foto cocok, input password baru diperlukan karena sesi sebelumnya sudah
+dibersihkan. Executor memeriksa live baseline/umur backup dan dapat refresh
+read-only pada sesi yang sama; tidak meminta persetujuan migration ulang.
+
 **Frontend utama terbaru sudah memuat Ofissio; backend dan migration masih menunggu.**
 Selama persiapan, domain utama beralih ke rilis peta `b0e376a6`, deployment
 `dpl_A9EAQDt7WJzNAkvZa5yc8M9fT7qZ`. Commit tersebut merupakan turunan `e1285125`

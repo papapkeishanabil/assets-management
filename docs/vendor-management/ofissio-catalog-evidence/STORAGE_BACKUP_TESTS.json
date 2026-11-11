@@ -1,0 +1,48 @@
+{
+  "checked_at": "2026-11-11T08:02:04.786Z",
+  "target": "temporary filesystem and injected public fetch only",
+  "production_accessed": false,
+  "credentials_used": false,
+  "checks": [
+    {
+      "check": "Public files complete while missing private original fails closed without private HTTP access",
+      "pass": true
+    },
+    {
+      "check": "Wrong private file with matching size does not satisfy original checksum",
+      "pass": true
+    },
+    {
+      "check": "Dashboard original import verifies native ETag/size and stores both files with SHA-256",
+      "pass": true
+    },
+    {
+      "check": "Refreshed backup reuses a previously verified private original only with identical object metadata",
+      "pass": true
+    },
+    {
+      "check": "Changed object identity/ETag requires original download again",
+      "pass": true
+    },
+    {
+      "check": "Changed object identity/ETag requires original download again",
+      "pass": true
+    },
+    {
+      "check": "Corrupted previous private backup is rejected",
+      "pass": true
+    },
+    {
+      "check": "Private cache cannot cross Supabase projects",
+      "pass": true
+    },
+    {
+      "check": "Private cache paths cannot escape approved backup root",
+      "pass": true
+    },
+    {
+      "check": "Unverifiable private multipart ETag never passes a manual import",
+      "pass": true
+    }
+  ]
+}

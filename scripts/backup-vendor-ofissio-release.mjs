@@ -1,3 +1,4 @@
+import {backupStorageObjects,rememberVerifiedStorageBackup} from './vendor-storage-backup.mjs';
 // READ-ONLY production preflight/backup. Applies migrations ONLY to an isolated offline restore.
 // No production write path or production approval consumption exists in this driver. Rehearses only 202611110003 on already installed Phase 4/5.
 import fs from 'node:fs';
@@ -62,22 +63,13 @@ try{
  local(fs.readFileSync('supabase/rollbacks/202611110003_vendor_sample_ofissio_references_rollback.sql','utf8'));local(fs.readFileSync('supabase/rollbacks/202611110003_vendor_sample_ofissio_references_rollback.sql','utf8'));
  const rollbackState=JSON.parse(local(`BEGIN READ ONLY;${snapshotSql};ROLLBACK;`));assert.ok(same(stable(rollbackState),stable(cloneBefore)),'Clone rollback changed existing baseline');assert.equal(rollbackState.catalog_objects.length,0);manifest.migrations_and_rollbacks_twice_offline=true;manifest.stale_transaction_rejected=true;manifest.rollback_retains_empty_private_buckets=true;
  status('STORAGE_BACKUP_RUNNING');const objects=JSON.parse(local("SELECT coalesce(jsonb_agg(jsonb_build_object('id',o.id,'bucket',o.bucket_id,'name',o.name,'metadata',o.metadata,'public',b.public) ORDER BY o.bucket_id,o.name),'[]') FROM storage.objects o JOIN storage.buckets b ON b.id=o.bucket_id;"));
- const privateObjects=objects.filter(o=>!o.public);manifest.private_storage_objects=privateObjects.length;
- if(privateObjects.length){manifest.storage_limit='Private blobs require separately authorized Storage download; PGPASSWORD provides metadata, not blob authorization.';}
- else{
-  const blobDir=path.join(folder,'storage-blobs');fs.mkdirSync(blobDir);const records=[];let cursor=0;
-  const cleanEtag=v=>typeof v==='string'?v.replace(/^W\//,'').replaceAll('"','').toLowerCase():null;
-  async function worker(){while(cursor<objects.length){const o=objects[cursor++];assert.ok(o.name.split('/').every(p=>p!=='.'&&p!=='..'));const expected=Number(o.metadata?.size);assert.ok(Number.isSafeInteger(expected)&&expected>=0&&expected<50e6);
-   const url=target+'/storage/v1/object/public/'+[o.bucket,...o.name.split('/')].map(encodeURIComponent).join('/'),response=await fetch(url,{redirect:'manual',signal:AbortSignal.timeout(30000)});assert.equal(response.status,200,'Storage download failed: '+o.id);
-   const chunks=[];let bytes=0;for await(const part of response.body){bytes+=part.length;assert.ok(bytes<=expected);chunks.push(part);}assert.equal(bytes,expected);const body=Buffer.concat(chunks),etag=cleanEtag(o.metadata?.eTag||o.metadata?.etag);
-   if(etag){if(/^[a-f0-9]{32}$/.test(etag))assert.equal(createHash('md5').update(body).digest('hex'),etag);else assert.equal(cleanEtag(response.headers.get('etag')),etag);}
-   const file=hash(o.bucket+'\0'+o.name)+'.blob';fs.writeFileSync(path.join(blobDir,file),body);const digest=hash(body);assert.equal(hash(fs.readFileSync(path.join(blobDir,file))),digest);records.push({id:o.id,bucket:o.bucket,name:o.name,bytes,sha256:digest,file});}}
-  await Promise.all([worker(),worker(),worker(),worker()]);write(path.join(folder,'storage-backup-manifest.json'),{objects:records});manifest.storage_blob_backup_verified=true;manifest.storage_blobs=records.length;manifest.storage_bytes=records.reduce((n,r)=>n+r.bytes,0);
- }
+ const privateObjects=objects.filter(o=>!o.public);
+ write(path.join(folder,'storage-object-inventory.json'),{target,objects});
+ const storage=await backupStorageObjects({target,folder,objects});Object.assign(manifest,storage);if(storage.storage_blob_backup_verified)delete manifest.storage_limit;
  const fresh=collect();assert.ok(same(before,fresh),'Live database changed during verification; refresh backup before migration');
- manifest.verified_at=new Date().toISOString();write(path.join(folder,'manifest.json'),manifest);
- const summary={checked_at:manifest.verified_at,target,backup_directory:folder,database_dump_sha256:manifest.sha256,logical_restore_tables:tables,logical_restore_rows:rows,baseline_tables_verified:27,existing_data_and_security_unchanged:true,migrations_rehearsed_offline:true,production_migration_executed:false,production_write_requests:0,storage_blob_backup_verified:manifest.storage_blob_backup_verified,private_storage_objects:privateObjects.length,supabase_platform_restore_complete:false,migration_approved:false};
- fs.mkdirSync('docs/vendor-management/ofissio-release-evidence',{recursive:true});write('docs/vendor-management/ofissio-release-evidence/BACKUP_READINESS.json',summary);
- status(privateObjects.length?'PRIVATE_STORAGE_BACKUP_REQUIRED':'BACKUP_VERIFIED_WAITING_FOR_EXPLICIT_MIGRATION_APPROVAL',{report_file:'docs/vendor-management/ofissio-release-evidence/BACKUP_READINESS.json'});
+ manifest.verified_at=new Date().toISOString();write(path.join(folder,'manifest.json'),manifest);if(manifest.storage_blob_backup_verified)rememberVerifiedStorageBackup({target,folder});
+ const summary={checked_at:manifest.verified_at,target,backup_directory:folder,database_dump_sha256:manifest.sha256,logical_restore_tables:tables,logical_restore_rows:rows,baseline_tables_verified:27,existing_data_and_security_unchanged:true,migrations_rehearsed_offline:true,production_migration_executed:false,production_write_requests:0,storage_blob_backup_verified:manifest.storage_blob_backup_verified,private_storage_objects:privateObjects.length,supabase_platform_restore_complete:false,migration_approved:fs.existsSync('.vercel/ofissio-migration-approval.json')&&JSON.parse(fs.readFileSync('.vercel/ofissio-migration-approval.json')).explicit_user_approval===true};
+ fs.mkdirSync('docs/vendor-management/ofissio-catalog-evidence',{recursive:true});write('docs/vendor-management/ofissio-catalog-evidence/BACKUP_READINESS.json',summary);
+ status(!manifest.storage_blob_backup_verified?'PRIVATE_STORAGE_BACKUP_REQUIRED':'BACKUP_VERIFIED_WAITING_FOR_EXPLICIT_MIGRATION_APPROVAL',{report_file:'docs/vendor-management/ofissio-catalog-evidence/BACKUP_READINESS.json'});
 }catch(error){manifest.failure=error.message;status('PREPARATION_STOPPED_NO_PRODUCTION_WRITE',{message:error.message});process.exitCode=1;}
 finally{if(clone){try{run(['stop',clone],undefined,{timeout:30000});manifest.restore_container=clone;manifest.restore_container_stopped=true;}catch{manifest.restore_container_stopped=false;}}manifest.finished_at=new Date().toISOString();write(path.join(folder,'manifest.json'),manifest);}
