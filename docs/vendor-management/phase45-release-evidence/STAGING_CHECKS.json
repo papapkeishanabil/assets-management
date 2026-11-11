@@ -1,0 +1,89 @@
+{
+  "checked_at": "2026-11-11T04:17:05.918Z",
+  "deployment_id": "dpl_8Dv1gZW6jhdE1wg8D4CvziiezjhQ",
+  "url": "https://harmas-asset-management-2dcsbcywj.vercel.app",
+  "target": "production staged, no main alias",
+  "source_commit": "888cd72a420468c94d18f087beb7b0ccdda30f6e",
+  "checks": [
+    {
+      "path": "/index.html",
+      "hash_matches": true
+    },
+    {
+      "path": "/assets/index-D4P58bbs.js",
+      "hash_matches": true
+    },
+    {
+      "path": "/assets/index-GmdErF6z.css",
+      "hash_matches": true
+    },
+    {
+      "path": "/sw.js",
+      "hash_matches": true
+    },
+    {
+      "path": "/assets/leaflet-Dgihpmma.css",
+      "hash_matches": true
+    },
+    {
+      "path": "/assets/leaflet-src-DT2cs6uG.js",
+      "hash_matches": true
+    },
+    {
+      "path": "/assets/MasterVendorLocationsPanel-BX4aa_xS.js",
+      "hash_matches": true
+    },
+    {
+      "path": "/assets/vendor-sampling-DXREDCWY.js",
+      "hash_matches": true
+    },
+    {
+      "path": "/assets/VendorApprovalsPage-B2sUotaL.js",
+      "hash_matches": true
+    },
+    {
+      "path": "/assets/VendorDecisionPanel-CAOAZCAt.js",
+      "hash_matches": true
+    },
+    {
+      "path": "/assets/VendorMapPage-ClJO0Glf.js",
+      "hash_matches": true
+    },
+    {
+      "path": "/assets/VendorSamplesPage-C6G3ZlzS.js",
+      "hash_matches": true
+    },
+    {
+      "path": "/assets/VendorSamplesPanel-BYMhwu4k.js",
+      "hash_matches": true
+    },
+    {
+      "path": "/assets/VendorSourcingPanel-Hrsq5dBM.js",
+      "hash_matches": true
+    }
+  ],
+  "production_database_write": false,
+  "git_push": false,
+  "route_checks": [
+    {
+      "path": "/vendor/samples",
+      "http_ok": true,
+      "spa_html_matches": true
+    },
+    {
+      "path": "/vendor/qc",
+      "http_ok": true,
+      "spa_html_matches": true
+    },
+    {
+      "path": "/vendor/approvals",
+      "http_ok": true,
+      "spa_html_matches": true
+    },
+    {
+      "path": "/vendors",
+      "http_ok": true,
+      "spa_html_matches": true
+    }
+  ]
+}

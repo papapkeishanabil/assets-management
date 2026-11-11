@@ -1,5 +1,23 @@
 # HANDOFF — Modul Manajemen Vendor HARMAS Asset Management
 
+**Persiapan rilis gabungan 11 November: frontend STAGING READY, domain utama masih lama.**
+User meminta deploy Fase 4+5; izin frontend ada, migration ditanyakan terpisah sesuai
+batasan user. Staging `dpl_8Dv1gZW6jhdE1wg8D4CvziiezjhQ`,
+https://harmas-asset-management-2dcsbcywj.vercel.app , target production skip-domain;
+14 hash cocok, 86 file bersih. Domain utama tetap `dpl_8HZD3SCrS2ZuwGWRonkkYPRPUKEu`.
+Backup terbaru `D:\Backups\harmas-pre-phase45-20261111-040820-8f160784`, restore
+141 tabel/1.839 baris + 95 blob/29.027.178 byte terverifikasi; 0 file privat.
+Clone offline: migration/rollback dua kali + aktivasi ROLLBACK lulus, 20 baseline utuh.
+Default grants ALL pada objek baru ditemukan sebelum produksi: migration Fase 4/5
+diperketat terhadap TRUNCATE/hak administratif dan reset sequence. Hash terbaru
+di `phase45-release-evidence/SQL_REVIEW.json`, bukan manifest implementasi lama.
+**75 Fase 4 + 69 Fase 5 + 12 gerbang rilis PASS**, build/PWA PASS. Pembanding policy
+clone diperbaiki untuk collation, tetap membandingkan seluruh isi. Belum ada SQL
+tulis produksi/push/promosi domain utama. Password persiapan sudah dibersihkan.
+Jangan menjalankan driver migration tanpa persetujuan baru yang eksplisit; setelah
+disetujui, live baseline/usia backup diperiksa lagi dan dapat diperbarui otomatis.
+[Readiness rilis dan bukti](PHASE45_RELEASE_READINESS_20261111.md).
+
 **Fase 5 Persetujuan & Aktivasi — selesai lokal 11 November; BELUM produksi.**
 User meminta melanjutkan Fase 5 sebelum rilis. Menu `/vendor/approvals` dan tab
 Keputusan dengan key `vendor_approval` sudah terhubung. Direksi/SA mencatat

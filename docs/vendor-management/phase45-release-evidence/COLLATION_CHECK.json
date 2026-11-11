@@ -1,0 +1,7 @@
+{
+  "policies": 239,
+  "default_text_order_matches": false,
+  "comparison_uses_canonical_complete_rows": true,
+  "source": "offline restore only",
+  "production_write": false
+}

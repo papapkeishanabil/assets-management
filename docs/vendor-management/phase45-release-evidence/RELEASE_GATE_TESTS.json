@@ -1,0 +1,55 @@
+{
+  "checked_at": "2026-11-11T04:24:20.483Z",
+  "target": "Docker synthetic only",
+  "production_accessed": false,
+  "checks": [
+    {
+      "check": "20-table preflight accepts hardened Phase 1–3 + archive baseline",
+      "pass": true
+    },
+    {
+      "check": "Missing DDL/reference/Storage/SHA-256 privilege fails closed",
+      "pass": true
+    },
+    {
+      "check": "Disabled existing profile RLS rejected",
+      "pass": true
+    },
+    {
+      "check": "Existing/partial Phase 4–5 installation rejected before write",
+      "pass": true
+    },
+    {
+      "check": "Stale transaction snapshot rolls back before DDL",
+      "pass": true
+    },
+    {
+      "check": "Combined instrumented transaction installs Phase 4 then 5; old data/security intact",
+      "pass": true
+    },
+    {
+      "check": "Two migrations replay idempotently on local stack",
+      "pass": true
+    },
+    {
+      "check": "Altered activation ACL detected",
+      "pass": true
+    },
+    {
+      "check": "Changed existing policy detected",
+      "pass": true
+    },
+    {
+      "check": "Public evidence bucket detected",
+      "pass": true
+    },
+    {
+      "check": "New decision RLS disabled detected",
+      "pass": true
+    },
+    {
+      "check": "Both rollbacks twice preserve existing baseline; empty private buckets intentionally retained",
+      "pass": true
+    }
+  ]
+}

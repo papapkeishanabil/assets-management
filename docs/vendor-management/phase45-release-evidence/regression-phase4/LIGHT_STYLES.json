@@ -1,0 +1,9 @@
+{
+  "dialogColor": "rgb(15, 23, 42)",
+  "variable": "15 23 42",
+  "briefColor": "rgb(15, 23, 42)",
+  "theme": "light",
+  "styles": [
+    ".text-white{\n  --tw-text-opacity: 1;\n  color: rgb(var(--color-white) / var(--tw-text-opacity, 1));\n}"
+  ]
+}

@@ -22,7 +22,7 @@ const migration=readFileSync('supabase/migrations/202611110002_vendor_management
 const run=randomUUID().slice(0,8),ids=Array.from({length:14},()=>randomUUID()),masters=[randomUUID(),randomUUID()],asset=randomUUID(),password=`Local-${randomUUID()}!9`;
 const phone=i=>`0812${parseInt(run,16).toString().slice(0,6).padStart(6,'0')}${String(i).padStart(2,'0')}`,name=i=>`[P5-${run}] ${i===2||i===9?'Existing':i===3?'Ambiguous':i===12||i===13?'Race':i===7?'Browser':'Candidate '+i}`;
 const sessions={},accounts=[],files=[],checks=[],errors=[],external=[];let browser,server,page,applied4=false,applied5=false;
-const dir='docs/vendor-management/phase5-evidence';mkdirSync(dir,{recursive:true});
+const dir=process.env.HARMAS_VENDOR_EVIDENCE_DIR||'docs/vendor-management/phase5-evidence';mkdirSync(dir,{recursive:true});
 const pass=(check,kind='database')=>{checks.push({kind,check,pass:true});console.log(`PASS | ${kind} | ${check}`);};
 const ok=r=>{assert.ifError(r.error);return r.data;},denied=r=>assert.ok(r.error||(Array.isArray(r.data)&&r.data.length===0),'Expected denied/zero-row access');
 const get=async(t,id)=>ok(await service.from(t).select('*').eq('id',id).single());
@@ -53,7 +53,7 @@ try{
  sql(readFileSync('supabase/migrations/202611110001_vendor_management_phase4.sql','utf8'));applied4=true;
  const phase4Functions=sql("SELECT string_agg(oid::text,',') FROM pg_proc WHERE pronamespace='public'::regnamespace;"),phase4Security=security(false,phase4Functions);
  sql('CREATE TABLE public.vendor_decisions(id uuid);CREATE POLICY unexpected_policy ON public.vendor_decisions FOR SELECT USING(true);');assert.throws(()=>sql(migration),/Objek Fase 5 tidak dikenal/);sql('DROP TABLE public.vendor_decisions;');pass('Unowned table/dormant policy collision rejected');
- sql(migration);applied5=true;sql(migration);assert.equal(security(true,phase4Functions),phase4Security);assert.equal(snapshot(),before);pass('Migration twice, two new tables; existing data, guards, functions, RLS untouched');
+ sql(migration);applied5=true;sql(migration);assert.equal(sql("SELECT NOT EXISTS(SELECT FROM unnest(ARRAY['public.vendor_decisions','public.vendor_activations']) t CROSS JOIN unnest(ARRAY['TRUNCATE','TRIGGER','REFERENCES','MAINTAIN']) p WHERE has_table_privilege('authenticated',t,p)) AND NOT has_sequence_privilege('authenticated','public.vendor_decision_code_seq','UPDATE') AND NOT has_sequence_privilege('authenticated','public.vendor_activation_master_code_seq','USAGE');"),'t');pass('Default administrative table/sequence privileges revoked on new decisions and activation objects');assert.equal(security(true,phase4Functions),phase4Security);assert.equal(snapshot(),before);pass('Migration twice, two new tables; existing data, guards, functions, RLS untouched');
  sql('CREATE POLICY unexpected_policy ON public.vendor_decisions FOR SELECT USING(true);');assert.throws(()=>sql(migration),/Policy Fase 5 tidak dikenal/);sql('DROP POLICY unexpected_policy ON public.vendor_decisions;');pass('Unknown policy on owned table stops migration rerun');
  sql("SELECT setval('public.vendor_decision_code_seq',10000,false);SELECT setval('public.vendor_activation_master_code_seq',1000000,false);");
  for(let n=0;n<25;n++){const r=await service.from('vendor_decisions').select('id').limit(0);if(!r.error)break;await new Promise(r=>setTimeout(r,200));}

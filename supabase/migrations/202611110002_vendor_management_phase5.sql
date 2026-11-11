@@ -12,6 +12,7 @@ DO $$ DECLARE t text; BEGIN
 END $$;
 CREATE SEQUENCE IF NOT EXISTS public.vendor_decision_code_seq;
 CREATE SEQUENCE IF NOT EXISTS public.vendor_activation_master_code_seq;
+REVOKE ALL ON SEQUENCE public.vendor_decision_code_seq,public.vendor_activation_master_code_seq FROM PUBLIC,anon,authenticated;
 COMMENT ON SEQUENCE public.vendor_decision_code_seq IS 'HARMAS vendor phase5 202611110002';
 COMMENT ON SEQUENCE public.vendor_activation_master_code_seq IS 'HARMAS vendor phase5 202611110002';
 CREATE TABLE IF NOT EXISTS public.vendor_decisions(

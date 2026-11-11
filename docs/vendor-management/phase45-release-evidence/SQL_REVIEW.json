@@ -1,0 +1,18 @@
+{
+  "checked_at": "2026-11-11T04:22:05.400Z",
+  "reason": "Revoke inherited administrative table and sequence privileges on new Phase 4/5 objects only; no production write",
+  "phase4_pass": 75,
+  "phase5_pass": 69,
+  "sql_files": [
+    {
+      "file": "supabase/migrations/202611110001_vendor_management_phase4.sql",
+      "sha256": "023d8328a677af1a91249759c29461b9dcb3eb9cf66a5f711e7875bebb6996f3"
+    },
+    {
+      "file": "supabase/migrations/202611110002_vendor_management_phase5.sql",
+      "sha256": "0cee202a7e2a2d02d0690a8610ce71ef01cbfb9565ba23b0bab62af24e5fd1f9"
+    }
+  ],
+  "production_migration_approved": false,
+  "production_migration_executed": false
+}

@@ -1,0 +1,38 @@
+{
+  "checked_at": "2026-11-11T04:10:09.143Z",
+  "commit": "888cd72a420468c94d18f087beb7b0ccdda30f6e",
+  "project_id": "prj_2MBxDEiNjz80jfB2L0dQ55hUbG0P",
+  "team_id": "team_gulGpJeEXpB77MplKv8w4Ilo",
+  "target": "production staged without domain",
+  "checks": {
+    "public_config_valid": true,
+    "samples": true,
+    "decisions": true,
+    "activation": true,
+    "approval_menu": true,
+    "free_maps": true,
+    "no_private_artifacts": true
+  },
+  "scanned_files": 86,
+  "entry": "/assets/index-D4P58bbs.js",
+  "selected": [
+    "/index.html",
+    "/assets/index-D4P58bbs.js",
+    "/assets/index-GmdErF6z.css",
+    "/sw.js",
+    "/assets/leaflet-Dgihpmma.css",
+    "/assets/leaflet-src-DT2cs6uG.js",
+    "/assets/MasterVendorLocationsPanel-BX4aa_xS.js",
+    "/assets/vendor-sampling-DXREDCWY.js",
+    "/assets/VendorApprovalsPage-B2sUotaL.js",
+    "/assets/VendorDecisionPanel-CAOAZCAt.js",
+    "/assets/VendorMapPage-ClJO0Glf.js",
+    "/assets/VendorSamplesPage-C6G3ZlzS.js",
+    "/assets/VendorSamplesPanel-BYMhwu4k.js",
+    "/assets/VendorSourcingPanel-Hrsq5dBM.js"
+  ],
+  "cloud_environment_changed": false,
+  "production_database_write": false,
+  "git_push": false,
+  "deployed": false
+}

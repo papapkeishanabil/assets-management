@@ -18,6 +18,7 @@ DO $$ DECLARE t text; BEGIN
 END $$;
 CREATE SEQUENCE IF NOT EXISTS public.vendor_sample_code_seq;
 CREATE SEQUENCE IF NOT EXISTS public.vendor_qc_code_seq;
+REVOKE ALL ON SEQUENCE public.vendor_sample_code_seq,public.vendor_qc_code_seq FROM PUBLIC,anon,authenticated;
 GRANT USAGE ON SEQUENCE public.vendor_sample_code_seq TO authenticated;
 CREATE TABLE IF NOT EXISTS public.vendor_samples(
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),sample_code text NOT NULL UNIQUE,
@@ -231,6 +232,10 @@ ALTER TABLE public.vendor_qc_parameters ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.vendor_sample_qc_runs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.vendor_qc_run_revisions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.vendor_sample_change_history ENABLE ROW LEVEL SECURITY;
+-- Supabase default grants may include TRUNCATE/TRIGGER/MAINTAIN, which RLS does not restrict.
+-- Reset privileges only on these new objects before granting the required application access.
+REVOKE ALL ON public.vendor_samples,public.vendor_qc_parameters,public.vendor_sample_qc_runs,public.vendor_qc_run_revisions,public.vendor_sample_change_history FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON SEQUENCE public.vendor_qc_run_revisions_id_seq,public.vendor_sample_change_history_id_seq FROM PUBLIC,anon,authenticated;
 GRANT SELECT,INSERT,UPDATE ON public.vendor_samples,public.vendor_qc_parameters TO authenticated;
 GRANT SELECT ON public.vendor_sample_qc_runs,public.vendor_qc_run_revisions TO authenticated;
 GRANT SELECT ON public.vendor_sample_change_history TO authenticated;
