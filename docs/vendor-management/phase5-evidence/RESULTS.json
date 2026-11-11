@@ -1,0 +1,353 @@
+{
+  "checked_at": "2026-11-11T03:55:53.036Z",
+  "target": "Docker + loopback only",
+  "production_accessed": false,
+  "accounts_cleaned": 7,
+  "permission_switches_mocked": true,
+  "results": [
+    {
+      "kind": "database",
+      "check": "Phase 5 requires Phase 4; cannot silently activate without QC schema",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Unowned table/dormant policy collision rejected",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Migration twice, two new tables; existing data, guards, functions, RLS untouched",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Unknown policy on owned table stops migration rerun",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Checklist uses real private exterior file, HRD/SA verification and all latest effective sample results",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "sourcing: checklist and decision history readable without recursive RLS",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "hrd: checklist and decision history readable without recursive RLS",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "super_admin: checklist and decision history readable without recursive RLS",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "direksi: checklist and decision history readable without recursive RLS",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "sourcing: direct decision and activation RPC denied",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "hrd: direct decision and activation RPC denied",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "finance: direct decision and activation RPC denied",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "pelaksana: direct decision and activation RPC denied",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "inactive: direct decision and activation RPC denied",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Unrelated/inactive roles cannot read protected decision/activation data",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Anonymous checklist/table/activation denied",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "All app roles, including approvers, cannot raw-write decisions/activation or bypass original candidate guard",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Internal state/normalization helpers are not callable by app clients",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "UID-null context not treated as authorized approver/service",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Strict fields, actor spoof, reason, dates, PIC, private proof and cross-candidate QC references validated",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Missing category/contact cannot be bypassed by override",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "APPROVED blocked without location/verification/QC or written management override",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Decision stores authoritative actor/code/time, QC references and snapshot; APPROVED does not activate or write master",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Retry with same request ID is idempotent; changing its payload is rejected",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Private decision proof readable with expiring URLs by authorized four roles",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Only active approvers may upload decision proof",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Unrelated roles/anonymous public endpoint cannot read proof",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Proof cannot be overwritten/deleted even by application Super Admin",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Proof MIME and 5 MB cap enforced by Storage",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "RESERVE recorded without pretending QC/operational approval",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Concurrent distinct decisions: one wins, stale checklist rejected, history remains append-only",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "REJECTED and FROZEN block activation; each change is a new decision",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Approver override stores reason and exact missing requirements in immutable snapshot",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Decision/master codes remain unique and untruncated beyond their minimum display width",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Explicit override activation succeeds separately, with permanent activation ledger",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Concurrent activation creates one master and one audit; identity/contact/address copied to new row only",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Existing master rows and asset vendor relation remain byte-identical",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Exact name + normalized local/international phone reuses master without overwriting address/profile/assets",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Master linked elsewhere and name-only/phone-mismatch identities cannot be approved/duplicated",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Stale candidate revision prevents decision on unreviewed data",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "QC correction after approval invalidates basis even when candidate stage/status timestamp stays unchanged",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Expected decision ID prevents activation of an unseen newer decision",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Concurrent activation of two identical candidates cannot create duplicate canonical masters",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Injected failure after master/ledger insert rolls back entire activation transaction",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Old passed QC cannot mask another unfinished effective sample; cancelled sample is excluded",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Location change/reset verification invalidates approval and requires new review",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Expired reevaluation date blocks activation",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Archived candidates remain readable but cannot receive decisions/activation",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Rollback refuses existing activation ledger; does not unlink/delete master or assets",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "General feed uses safe metadata; full decisions/basis are protected separately",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Existing Phase 1–4 functions/ACL, policies and security guards remain unchanged",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Direksi sees permissioned approval route/sidebar, search and live checklist",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Cancel decision modal does not write",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Decision UI uploads private proof; failed save keeps draft/evidence; retry approves without activation",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Cancel activation confirmation leaves operational status unchanged",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Explicit activation UI → RPC → new master/candidate/audit → UI confirmed",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Approval checklist/history responsive on mobile and light theme",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "sourcing can monitor history with no decision/activation controls",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "hrd can monitor history with no decision/activation controls",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Existing location and history tabs remain available alongside Keputusan",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Activated vendor appears in existing Vendor Aktif page; existing master/asset fixtures unchanged",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Disabled approval module blocks sidebar and direct route",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Finance blocked by route role guard even with mocked module enabled",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Missing backend shows graceful pending state",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Super Admin records reasoned override from integrated candidate Keputusan tab",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Archived decision tab retains read access without actions",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Zero browser runtime errors or production requests",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Rollback/owned-fixture cleanup restores 17 existing table checksums and original functions/ACL/RLS",
+      "pass": true
+    }
+  ],
+  "browser_errors": [],
+  "external_hosts_blocked": [
+    "fonts.googleapis.com"
+  ]
+}

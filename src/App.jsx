@@ -53,6 +53,7 @@ import VendorDashboardPage from './pages/vendor/VendorDashboardPage';
 import VendorFollowupsPage from './pages/vendor/VendorFollowupsPage';
 const VendorMapPage = lazy(() => import('./pages/vendor/VendorMapPage'));
 const VendorSamplesPage = lazy(() => import('./pages/vendor/VendorSamplesPage'));
+const VendorApprovalsPage = lazy(() => import('./pages/vendor/VendorApprovalsPage'));
 
 function LogoutButton() {
   const handleLogout = async () => {
@@ -232,6 +233,7 @@ export default function App() {
           </VendorRoute>
         } />
         <Route path="vendor" element={<VendorRoute><VendorDashboardPage /></VendorRoute>} />
+        <Route path="vendor/approvals" element={<VendorRoute moduleKey="vendor_approval"><Suspense fallback={<LoadingScreen />}><VendorApprovalsPage /></Suspense></VendorRoute>} />
         <Route path="vendor/samples" element={<VendorRoute moduleKey="vendor_samples"><Suspense fallback={<LoadingScreen />}><VendorSamplesPage /></Suspense></VendorRoute>} />
         <Route path="vendor/qc" element={<VendorRoute moduleKey="vendor_qc"><Suspense fallback={<LoadingScreen />}><VendorSamplesPage mode="qc" /></Suspense></VendorRoute>} />
         <Route path="vendor/followups" element={<VendorRoute moduleKey="vendor_followups"><VendorFollowupsPage /></VendorRoute>} />

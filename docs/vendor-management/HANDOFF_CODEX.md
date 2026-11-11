@@ -1,5 +1,21 @@
 # HANDOFF — Modul Manajemen Vendor HARMAS Asset Management
 
+**Fase 5 Persetujuan & Aktivasi — selesai lokal 11 November; BELUM produksi.**
+User meminta melanjutkan Fase 5 sebelum rilis. Menu `/vendor/approvals` dan tab
+Keputusan dengan key `vendor_approval` sudah terhubung. Direksi/SA mencatat
+keputusan permanen dan melakukan aktivasi eksplisit terpisah; Sourcing/HRD baca.
+Migration `202611110002` additive: `vendor_decisions`, `vendor_activations`, RPC
+checklist/keputusan/aktivasi, bucket privat bukti. Persyaratan identitas wajib;
+pengecualian lokasi/QC hanya approver + alasan. Perubahan basis setelah approval
+memerlukan penilaian baru. Duplikasi ambigu ditolak; master exact match dipakai
+ulang tanpa overwrite; master baru di-INSERT hanya saat RPC aktivasi digunakan.
+Tidak mengubah guard/policy existing atau relasi aset. **52/52 DB/API + 16/16 browser
+= 68/68 PASS**, regresi Fase 4 **73/73 PASS**, build PASS. Cleanup mengembalikan 17
+checksum dan security baseline lokal. **Fase 4 + 5 belum migration/push/deploy**;
+preflight read-only, backup/restore clone terbaru dan persetujuan terpisah masih
+diperlukan; urutan migration wajib `202611110001` lalu `202611110002`.
+[Laporan lengkap, prosedur, batasan dan rencana rilis gabungan](PHASE5_LOCAL_READINESS_20261111.md).
+
 **Fase 4 Sampling & QC — implementasi lokal selesai 11 November; BELUM produksi.**
 User meminta melanjutkan alur penilaian kandidat. Menu Pengujian Sampel/Hasil QC,
 tab Sampel & QC pada detail kandidat, rubrik berbobot, bukti privat, revisi dengan
@@ -10,7 +26,7 @@ rollback manual terpisah. **56/56 database/API + 17/17 browser lokal PASS**, bui
 PASS, 17 checksum existing dan security baseline kembali identik setelah cleanup.
 Migration arsip `202611100001` tetap baseline, jangan jalankan ulang produksi.
 Fase 4 belum menyentuh produksi/push/deploy; preflight/backup dan persetujuan
-migration/deploy baru tetap diperlukan. **Fase 5 belum dimulai**: Lulus QC tidak
+migration/deploy baru tetap diperlukan. **Fase 5 sudah dilanjutkan lokal**, lihat catatan terbaru: Lulus QC tidak
 mengubah kelayakan/operasional/relasi master. Batas lulus QC wajib diisi sesuai SOP,
 tidak ditentukan default sepihak. [Laporan, daftar perubahan dan alur penggunaan](PHASE4_LOCAL_READINESS_20261111.md).
 
@@ -222,7 +238,7 @@ tidak perlu mengulang migration atau deployment untuk penggunaan lokasi sekarang
 | Fase 2 | Schema dan frontend produksi; UAT baca 9 PASS + lifecycle 6 PASS, akun uji bersih; kandidat/follow-up masih 0 |
 | Fase 3 | Backend lokasi/foto AKTIF 10 Nov 09.29 WIB; frontend integrasi menu + koordinat master `09b980ce` READY 11.14 WIB. Baseline/keamanan utuh; pin menunggu input lokasi asli dan UAT operasional |
 | Fase 4 | Implementasi lokal selesai 11 Nov; 56 DB/API + 17 browser PASS, build PASS. Belum migration/push/deploy produksi; lihat laporan di atas |
-| Fase 5 | Belum dimulai. Persetujuan/aktivasi tetap terkunci; rancangan lengkap di dokumen induk §F–G |
+| Fase 5 | Selesai lokal 11 Nov; 52 DB/API + 16 browser PASS, regresi Fase 4 73 PASS, build PASS. Belum migration/push/deploy; keputusan/aktivasi hanya RPC tervalidasi setelah rilis |
 
 ## 3. Stack & Konvensi Kode
 

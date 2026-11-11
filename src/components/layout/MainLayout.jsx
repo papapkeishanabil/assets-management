@@ -214,7 +214,7 @@ export default function MainLayout() {
             </NavLink>
           ))}
 
-          {['super_admin', 'hrd', 'direksi', 'sourcing'].includes(role?.role_name) && (canAccessActiveVendors || hasAccess('vendor_management') || hasAccess('vendor_followups') || hasAccess('vendor_map') || hasAccess('vendor_samples') || hasAccess('vendor_qc')) && (
+          {['super_admin', 'hrd', 'direksi', 'sourcing'].includes(role?.role_name) && (canAccessActiveVendors || hasAccess('vendor_management') || hasAccess('vendor_followups') || hasAccess('vendor_map') || hasAccess('vendor_samples') || hasAccess('vendor_qc') || hasAccess('vendor_approval')) && (
             <>
               <SectionLabel>Manajemen Vendor</SectionLabel>
               {hasAccess('vendor_management') && <NavLink to="/vendor" end onClick={() => setSidebarOpen(false)} className={navLinkClass}>
@@ -239,6 +239,7 @@ export default function MainLayout() {
               </NavLink>}
               {hasAccess('vendor_samples') && <NavLink to="/vendor/samples" onClick={() => setSidebarOpen(false)} className={navLinkClass}><FlaskConical size={16} className="flex-shrink-0" /> Pengujian Sampel</NavLink>}
               {hasAccess('vendor_qc') && <NavLink to="/vendor/qc" onClick={() => setSidebarOpen(false)} className={navLinkClass}><ClipboardCheck size={16} className="flex-shrink-0" /> Hasil QC</NavLink>}
+              {hasAccess('vendor_approval') && <NavLink to="/vendor/approvals" onClick={() => setSidebarOpen(false)} className={navLinkClass}><Shield size={16} className="flex-shrink-0" /> Persetujuan Vendor</NavLink>}
             </>
           )}
 

@@ -2,8 +2,8 @@
 
 Status per 11 November 2026: pendataan, follow-up, lokasi, GPS, foto dan
 verifikasi lokasi sudah tersedia di produksi. **Pengujian sampel/QC terstruktur
-(Fase 4) selesai diuji lokal, menunggu persetujuan migration/deploy; Fase 5
-persetujuan/aktivasi belum diimplementasikan.** Mengganti
+(Fase 4) serta persetujuan/aktivasi (Fase 5) selesai diuji lokal, menunggu
+persetujuan migration/deploy berurutan Fase 4 lalu Fase 5.** Mengganti
 tahap proses atau memilih “Menunggu Approval” tidak menghasilkan persetujuan.
 
 | Langkah | Petugas | Pemeriksaan dan bukti | Ketersediaan |
@@ -12,8 +12,8 @@ tahap proses atau memilih “Menunggu Approval” tidak menghasilkan persetujuan
 | 2. Verifikasi profil dan kemampuan | Sourcing/Resources | Kontak dapat dihubungi, jenis pekerjaan sesuai, kapasitas, MOQ, lead time, harga indikatif dan syarat pembayaran; catat informasi dan tindak lanjut | Profil dan Follow-Up tersedia |
 | 3. Survei fasilitas | Sourcing/Resources; verifikasi oleh HRD/Super Admin | Alamat, GPS fasilitas sebenarnya, foto tampak luar/produksi/mesin yang relevan; cek kecocokan lokasi | Lokasi & Foto dan Peta tersedia; Sourcing tidak menetapkan status terverifikasi |
 | 4. Uji sampel dan QC | Sourcing mengoordinasikan; petugas QC memeriksa | Brief/spesifikasi, sampel, hasil pemeriksaan, kekurangan dan revisi; setiap pemeriksaan ulang menjadi putaran baru | Fase 4 selesai lokal; belum di produksi |
-| 5. Putuskan kelayakan | Direksi/Super Admin | Tinjau hasil profil, lokasi, sampel/QC dan pertimbangan komersial; keputusan Disetujui/Cadangan/Ditolak/Dibekukan disertai alasan | Fase 5, belum tersedia |
-| 6. Aktifkan untuk operasional | Approver melalui tindakan aktivasi | Persetujuan sah, lokasi utama/GPS/foto dan syarat QC atau pengecualian beralasan; cek duplikasi master dan relasi aset | Fase 5, belum tersedia |
+| 5. Putuskan kelayakan | Direksi/Super Admin | Tinjau hasil profil, lokasi, sampel/QC dan pertimbangan komersial; keputusan Disetujui/Cadangan/Ditolak/Dibekukan disertai alasan | Fase 5 selesai lokal; belum di produksi |
+| 6. Aktifkan untuk operasional | Approver melalui tindakan aktivasi | Persetujuan sah, lokasi utama/GPS/foto dan syarat QC atau pengecualian beralasan; cek duplikasi master dan relasi aset | Fase 5 selesai lokal; belum di produksi |
 
 Rubrik QC Fase 4 mencakup kesesuaian spesifikasi, ukuran/gramasi, hasil
 pengerjaan, bahan/warna, finishing, dan fungsi/ketahanan, dengan skor 1–5. Parameter
@@ -30,6 +30,13 @@ riwayat koreksi. Sourcing tidak mendapat kewenangan persetujuan akhir.
 
 Panduan layar, alur status sampel, batas akses dan hasil 73 pemeriksaan lokal:
 [Fase 4 — kesiapan lokal](PHASE4_LOCAL_READINESS_20261111.md).
+
+Panduan Persetujuan Vendor dan aktivasi eksplisit, snapshot bukti, pengecualian
+beralasan, pemakaian ulang master dan batasan operasional:
+[Fase 5 — kesiapan lokal](PHASE5_LOCAL_READINESS_20261111.md). Keputusan koreksi
+dibuat sebagai keputusan baru; tidak menghapus keputusan sebelumnya. Perubahan
+bukti setelah persetujuan memerlukan penilaian ulang sebelum aktivasi. Dibekukan
+tidak otomatis menonaktifkan master vendor existing atau memutus relasi aset.
 
 Untuk kondisi sekarang, staf dapat melengkapi profil, komunikasi dan lokasi dahulu.
 Penilaian sampel/QC formal dilakukan sesuai prosedur internal dengan bukti yang

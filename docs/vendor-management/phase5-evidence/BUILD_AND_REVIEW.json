@@ -1,0 +1,28 @@
+{
+  "checked_at": "2026-11-11T03:56:26.355Z",
+  "build_command": "npm.cmd run build",
+  "build_exit_code": 0,
+  "pwa_build_passed": true,
+  "warning": "Existing main application chunk exceeds 500 kB; approval pages/panel use lazy chunks.",
+  "database_target": "Docker synthetic only",
+  "phase5_test_count": 68,
+  "phase4_regression_count": 73,
+  "production_accessed": false,
+  "migration_executed_in_production": false,
+  "git_pushed": false,
+  "deployed": false,
+  "sql_files": [
+    {
+      "file": "supabase/migrations/202611110001_vendor_management_phase4.sql",
+      "sha256": "118c2166aecfa0fe3bc3e058a005d563d990bdeae27385858c34aaccc624e682"
+    },
+    {
+      "file": "supabase/migrations/202611110002_vendor_management_phase5.sql",
+      "sha256": "7097e58a11a31a79f3c0f39e41bcfdb4f68c21d198015f380880f3655d1ff1bc"
+    },
+    {
+      "file": "supabase/rollbacks/202611110002_vendor_management_phase5_rollback.sql",
+      "sha256": "7105cd6db2ef72cf0b8739ee7a67ea57cbbe51de17dbd7ff51da9e7f055dc637"
+    }
+  ]
+}

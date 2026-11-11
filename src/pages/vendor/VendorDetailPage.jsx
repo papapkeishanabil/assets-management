@@ -18,12 +18,9 @@ import VendorFollowupsPanel from '../../components/vendor/VendorFollowupsPanel';
 import VendorLocationsPanel from '../../components/vendor/VendorLocationsPanel';
 import { useRolePermissions } from '../../hooks/useRolePermissions';
 const VendorSamplesPanel = lazy(() => import('../../components/vendor/VendorSamplesPanel'));
+const VendorDecisionPanel = lazy(() => import('../../components/vendor/VendorDecisionPanel'));
 
-// Tab yang hadir di fase berikutnya (placeholder agar struktur jelas).
-const FUTURE_TABS = [
-  { key: 'decision', label: 'Keputusan', phase: 'Fase 5' }
-];
-const activityTitle = (action) => ({ created: 'Kandidat dibuat', profile_updated: 'Profil diperbarui', followup_created: 'Follow-up dicatat', followup_task_closed: 'Tugas follow-up ditutup', candidate_archived: 'Kandidat dihapus dari daftar (arsip)', candidate_restored: 'Kandidat dipulihkan', sample_created: 'Sampel dibuat', sample_updated: 'Sampel diperbarui', qc_recorded: 'Hasil QC dicatat', qc_corrected: 'Hasil QC dikoreksi' }[action] || action);
+const activityTitle = (action) => ({ created: 'Kandidat dibuat', profile_updated: 'Profil diperbarui', followup_created: 'Follow-up dicatat', followup_task_closed: 'Tugas follow-up ditutup', candidate_archived: 'Kandidat dihapus dari daftar (arsip)', candidate_restored: 'Kandidat dipulihkan', sample_created: 'Sampel dibuat', sample_updated: 'Sampel diperbarui', qc_recorded: 'Hasil QC dicatat', qc_corrected: 'Hasil QC dikoreksi', decision_recorded: 'Keputusan manajemen dicatat', vendor_activated: 'Vendor diaktifkan' }[action] || action);
 
 function InfoItem({ label, value }) {
   return (
@@ -52,7 +49,7 @@ export default function VendorDetailPage() {
   const canWrite = roleCanWrite && !candidate?.archived_at;
   const [history, setHistory] = useState({ statusHistory: [], activityLogs: [] });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState(() => ['location', 'sample'].includes(params.get('tab')) ? params.get('tab') : 'summary');
+  const [activeTab, setActiveTab] = useState(() => ['location', 'sample', 'decision'].includes(params.get('tab')) ? params.get('tab') : 'summary');
   const [showForm, setShowForm] = useState(false);
   const [savingStatus, setSavingStatus] = useState(false);
 
@@ -167,17 +164,7 @@ export default function VendorDetailPage() {
           Follow-Up
         </button>}
         {(hasAccess('vendor_samples') || hasAccess('vendor_qc')) && <button onClick={() => setActiveTab('sample')} className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${activeTab === 'sample' ? 'border-primary-400 text-white' : 'border-transparent text-ink-400 hover:text-white'}`}><ClipboardCheck size={14} className="inline mr-1.5" /> Sampel & QC</button>}
-        {FUTURE_TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setActiveTab(t.key)}
-            className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${
-              activeTab === t.key ? 'border-primary-400 text-white' : 'border-transparent text-ink-400 hover:text-white'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+        {hasAccess('vendor_approval') && <button onClick={() => setActiveTab('decision')} className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${activeTab === 'decision' ? 'border-primary-400 text-white' : 'border-transparent text-ink-400 hover:text-white'}`}><CheckCircle2 size={14} className="inline mr-1.5" /> Keputusan</button>}
         {hasAccess('vendor_map') && <button onClick={() => setActiveTab('location')}
           className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${activeTab === 'location' ? 'border-primary-400 text-white' : 'border-transparent text-ink-400 hover:text-white'}`}>
           <MapPin size={14} className="inline mr-1.5" /> Lokasi & Foto
@@ -192,26 +179,13 @@ export default function VendorDetailPage() {
         </button>
       </div>
 
-      {/* Panel sampel, follow-up, lokasi dan placeholder keputusan Fase 5. */}
+      {/* Panel sampel, follow-up, lokasi dan keputusan. */}
+      {activeTab === 'decision' && <Suspense fallback={<p role="status" className="text-ink-400">Memuat keputusan…</p>}><VendorDecisionPanel candidateId={id} onChanged={() => Promise.all([fetchVendorCandidateDetail(id), fetchCandidateHistory(id)]).then(([detail, hist]) => { setCandidate(detail); setHistory(hist); }).catch(() => toast.error('Gagal menyegarkan keputusan'))} /></Suspense>}
       {activeTab === 'sample' && <Suspense fallback={<p role="status" className="text-ink-400">Memuat sampel…</p>}><VendorSamplesPanel candidateId={id} readOnly={Boolean(candidate.archived_at)} onChanged={() => Promise.all([fetchVendorCandidateDetail(id), fetchCandidateHistory(id)]).then(([detail, hist]) => { setCandidate(detail); setHistory(hist); }).catch(() => toast.error('Gagal menyegarkan riwayat sampel'))} /></Suspense>}
       {activeTab === 'followup' && <VendorFollowupsPanel candidateId={id} readOnly={Boolean(candidate.archived_at)}
         onChanged={() => fetchCandidateHistory(id).then(setHistory).catch(() => toast.error('Gagal menyegarkan riwayat'))} />}
       {activeTab === 'location' && <VendorLocationsPanel candidateId={id} readOnly={Boolean(candidate.archived_at)}
         onChanged={() => fetchCandidateHistory(id).then(setHistory).catch(() => toast.error('Gagal menyegarkan riwayat'))} />}
-      {FUTURE_TABS.some((t) => t.key === activeTab) && (
-        <div className="card p-10 text-center">
-          <div className="inline-flex p-3 rounded-xl bg-primary-500/10 border border-primary-500/20 mb-3">
-            {activeTab === 'location' ? <MapPin size={22} className="text-primary-400" />
-              : activeTab === 'sample' ? <ClipboardCheck size={22} className="text-primary-400" />
-              : <CheckCircle2 size={22} className="text-primary-400" />}
-          </div>
-          <h3 className="text-white font-semibold">Tab {FUTURE_TABS.find((t) => t.key === activeTab)?.label} — {FUTURE_TABS.find((t) => t.key === activeTab)?.phase}</h3>
-          <p className="text-sm text-ink-400 mt-1 max-w-md mx-auto">
-            Bagian ini hadir pada {FUTURE_TABS.find((t) => t.key === activeTab)?.phase} sesuai rencana implementasi bertahap.
-          </p>
-        </div>
-      )}
-
       {activeTab === 'summary' && (
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2 space-y-6">

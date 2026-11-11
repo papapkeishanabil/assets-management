@@ -25,7 +25,7 @@ const hasEmployees=sql("SELECT to_regclass('public.employees') IS NOT NULL;")===
 const employeeBefore=hasEmployees?sql("SELECT md5(coalesce(jsonb_agg(to_jsonb(e) ORDER BY id)::text,'')) FROM public.employees e;"):null;
 const bucketBefore=(await service.storage.getBucket('vendor-sample-files')).data;
 const migration=readFileSync('supabase/migrations/202611110001_vendor_management_phase4.sql','utf8'),rollback=readFileSync('supabase/rollbacks/202611110001_vendor_management_phase4_rollback.sql','utf8');
-const dir='docs/vendor-management/phase4-evidence';mkdirSync(dir,{recursive:true});
+const dir=process.env.HARMAS_VENDOR_EVIDENCE_DIR||'docs/vendor-management/phase4-evidence';mkdirSync(dir,{recursive:true});
 const results=[],accounts=[],sessions={},files=[],errors=[],external=[];
 const run=randomUUID().slice(0,8),password=`Local-${randomUUID()}!9`,ids=Array.from({length:5},()=>randomUUID()),employee=randomUUID(),master=randomUUID(),category=randomUUID();
 let server,browser,page,applied=false;
