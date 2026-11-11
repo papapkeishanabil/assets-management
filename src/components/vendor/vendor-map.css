@@ -30,6 +30,25 @@
   display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 999px;
   background: #15803d; color: #fff; border: 1.5px solid #fff; font: 700 8px/1 system-ui, sans-serif;
 }
+/* Label nama permanen di samping pin */
+.vendor-map-container .vendor-map-label {
+  background: rgba(15, 23, 42, .88); color: #fff; border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: 6px; padding: 2px 7px; font: 600 10.5px/1.4 system-ui, sans-serif;
+  box-shadow: 0 2px 6px #0006; max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  pointer-events: none;
+}
+.vendor-map-container .vendor-map-label::before { display: none; }
+/* Kontrol mode label di pojok kanan-atas peta */
+.vendor-map-labels-control {
+  position: absolute; z-index: 900; right: 10px; top: 10px; display: flex; align-items: center; gap: 2px;
+  background: rgba(15, 23, 42, .93); border: 1px solid rgba(255, 255, 255, .16); border-radius: 8px; padding: 3px;
+  font: 600 10.5px/1 system-ui, sans-serif; box-shadow: 0 4px 14px #0005;
+}
+.vendor-map-labels-control button {
+  border: 0; background: transparent; color: #cbd5e1; padding: 4px 9px; border-radius: 6px; cursor: pointer;
+}
+.vendor-map-labels-control button:hover { color: #fff; }
+.vendor-map-labels-control button[aria-pressed="true"] { background: #2563eb; color: #fff; }
 .vendor-map-marker:focus-visible { outline: 3px solid #38bdf8; outline-offset: 3px; border-radius: 999px; }
 .vendor-map-coincident { display: flex; flex-direction: column; gap: 6px; }
 .vendor-map-coincident button { text-align: left; padding: 6px; color: #1d4ed8; border: 1px solid #cbd5e1; border-radius: 4px; }

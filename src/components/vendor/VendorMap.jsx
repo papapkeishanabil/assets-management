@@ -4,15 +4,25 @@ import { loadVendorMap, vendorTileConfig } from '../../lib/vendor-map-loader';
 import './vendor-map.css';
 
 const NO_POINTS = [];
+const LABEL_MIN_ZOOM = 14; // label nama otomatis muncul saat zoom >= ini (pin sudah renggang)
+const LABEL_MODES = [['auto', 'Auto'], ['always', 'Selalu'], ['off', 'Mati']];
 // points: titik lokasi; focus: titik terpilih (pan kamera ke sana);
 // selectedKey: `${candidate_id}/${location_id||''}` untuk sorotan pin.
 // Pin dibedakan per KATEGORI vendor (warna + kode 2 huruf); vendor
 // disetujui diberi badge centang. Klaster bernomor tetap biru.
+// Label nama pin: mode Auto (muncul saat zoom cukup) / Selalu / Mati.
 export default function VendorMap({ points = NO_POINTS, editable = false, onPick, onSelect, height = 400, focus = null, selectedKey = '' }) {
   const element = useRef(null), callbacks = useRef({ onPick, onSelect }), fitted = useRef(false), fittedPoints = useRef(null);
   callbacks.current = { onPick, onSelect };
   const [instance, setInstance] = useState(null), [fatal, setFatal] = useState(''), [tileError, setTileError] = useState(''), [retry, setRetry] = useState(0);
   const [legendOpen, setLegendOpen] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches);
+  const [labelMode, setLabelMode] = useState(() => {
+    try { return localStorage.getItem('vendor-map-labels') || 'auto'; } catch { return 'auto'; }
+  });
+  const changeLabelMode = (mode) => {
+    setLabelMode(mode);
+    try { localStorage.setItem('vendor-map-labels', mode); } catch { /* penyimpanan tidak tersedia — abaikan */ }
+  };
   const valid = useMemo(() => points.filter((p) => { try { return Boolean(coordinatePair(p.latitude, p.longitude)); } catch { return false; } }), [points]);
   // Kategori yang benar-benar ada pada titik saat ini → isi legenda relevan.
   const legendCategories = useMemo(() => {
@@ -52,6 +62,7 @@ export default function VendorMap({ points = NO_POINTS, editable = false, onPick
     const clear = () => { layer.eachLayer((marker) => marker.off()); layer.clearLayers(); };
     const draw = () => {
       clear();
+      const showLabels = !editable && (labelMode === 'always' || (labelMode === 'auto' && map.getZoom() >= LABEL_MIN_ZOOM));
       const visible = valid.filter((p) => map.getBounds().contains([Number(p.latitude), Number(p.longitude)]));
       const groups = editable ? visible.map((p) => ({ items: [p], lat: Number(p.latitude), lng: Number(p.longitude) })) : clusterMapPoints(visible, map.getZoom());
       for (const group of groups) {
@@ -82,6 +93,7 @@ export default function VendorMap({ points = NO_POINTS, editable = false, onPick
           L.popup({ maxHeight: 240, maxWidth: 320 }).setLatLng([group.lat, group.lng]).setContent(list).openOn(map);
         });
         if (editable) marker.on('dragend', () => { const position = marker.getLatLng(); callbacks.current.onPick?.({ latitude: position.lat, longitude: position.lng, coordinate_source: 'PICK_ON_MAP' }); });
+        if (showLabels && !clustered) marker.bindTooltip(p.business_name || 'Lokasi', { permanent: true, direction: 'right', offset: [20, 0], className: 'vendor-map-label', opacity: 1 });
         marker.addTo(layer);
       }
     };
@@ -98,7 +110,7 @@ export default function VendorMap({ points = NO_POINTS, editable = false, onPick
     }
     map.on('moveend zoomend', draw); draw();
     return () => { map.off('moveend zoomend', draw); clear(); layer.remove(); };
-  }, [instance, valid, editable, selectedKey]);
+  }, [instance, valid, editable, selectedKey, labelMode]);
 
   // Pindahkan kamera ke titik terpilih (dipilih dari daftar di samping peta).
   useEffect(() => {
@@ -117,6 +129,16 @@ export default function VendorMap({ points = NO_POINTS, editable = false, onPick
     {!instance && !fatal && <p role="status" className="text-sm text-ink-400">Memuat peta…</p>}
     <div className="relative">
       <div ref={element} role="region" aria-label={editable ? 'Pilih koordinat pada peta' : 'Peta lokasi vendor'} style={{ height }} className="vendor-map-container w-full rounded-xl border border-white/10" />
+      {!editable && (
+        <div className="vendor-map-labels-control" role="group" aria-label="Mode label nama pin">
+          <span className="px-2 text-slate-300" aria-hidden="true">Label</span>
+          {LABEL_MODES.map(([value, label]) => (
+            <button key={value} type="button" aria-pressed={labelMode === value} onClick={() => changeLabelMode(value)} title={value === 'auto' ? `Nama muncul otomatis saat zoom cukup dekat (≥${LABEL_MIN_ZOOM})` : value === 'always' ? 'Nama selalu tampil di setiap pin' : 'Nama hanya muncul saat kursor di atas pin'}>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
       {!editable && (
         legendOpen ? (
           <div className="vendor-map-legend" role="contentinfo" aria-label="Legenda peta">
