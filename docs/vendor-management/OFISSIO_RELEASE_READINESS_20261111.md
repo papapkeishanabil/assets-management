@@ -1,34 +1,32 @@
 # Kesiapan rilis katalog sampel Ofissio — 11 November 2026
 
-**Pembaruan: persetujuan migration sudah diterima, eksekusi menunggu backup satu foto privat.**
-User menjawab “ya setuju migrasi”. Helper memakai password yang diberikan,
-memeriksa produksi secara READ ONLY, lalu memperbarui backup karena baseline
-berubah. Backup `D:\Backups\harmas-pre-ofissio-20261111-062445-e86759f8`
-memverifikasi restore **148 tabel/1.854 baris** dan rehearsal, tetapi sekarang
-terdapat satu file privat. Proses berhenti **sebelum percobaan migration**;
-persetujuan belum dikonsumsi dan tetap berlaku. Keterangan menunggu persetujuan
-di bagian historis di bawah tidak berlaku lagi.
+**Ofissio: migration produksi COMMITTED dan terverifikasi; backend menunggu Dashboard.**
+Migration `202611110003` yang telah disetujui berjalan pada 2026-11-11T08:27:42.560Z.
+Persetujuan sudah dikonsumsi. **Jangan menjalankan ulang executor migration.**
+Backup terbaru `D:\Backups\harmas-pre-ofissio-20261111-082620-05d1c5e6`: **148 tabel/1.857 baris**,
+restore aplikasi dan rehearsal migration/rollback lulus, **96/96 file Storage** lengkap.
+Original privat 143.698 byte dari ZIP pengguna cocok native ETag MD5 dan SHA-256;
+dipakai ulang untuk refresh hanya setelah metadata identitas cocok.
+27 tabel baseline, data existing, fungsi/ACL/RLS/policy/view/trigger sebelumnya utuh.
+Enam post-check PASS: bucket privat, reference kosong, RPC service-only, trigger aktif,
+policy lengkap, dan reference SELECT-only. Tidak membuat akun/data uji bisnis,
+tidak mengaktifkan kandidat, tidak push Git, dan tidak mempromosikan frontend.
+Frontend utama terbaru `7d24e295`, deployment
+`dpl_GTXij7gDgjy5ivswdJ9Z5F7ZBDtJ`, sudah membawa source Ofissio teruji dan peta terbaru.
+11 file publik, konfigurasi Auth dan 8 guard login anonim PASS; error browser 0,
+request tulis 0. Artifact lokal berbeda; tidak diklaim cocok hash build lokal.
+Backend `vendor-ofissio-catalog` masih 404 pada probe 2026-11-11T08:24:12.376Z.
+Pengguna diminta deploy bundle teruji `.vercel/ofissio-function-bundle.ts`
+melalui Dashboard Supabase HARMAS, nama fungsi persis dan Verify JWT ON.
+Sesi ini tidak memiliki token deployment Supabase; jangan ambil key legacy.
+Verifikasi header release dan penolakan anonim setelah pengguna selesai deploy;
+UAT login Super Admin/Sourcing serta pembuatan sampel tetap menunggu pengguna.
+Jangan promosikan staging lama atau menimpa peta terbaru.
+[Bukti migration](ofissio-catalog-evidence/PRODUCTION_MIGRATION_CHECKS.json),
+[frontend](ofissio-catalog-evidence/CURRENT_MAIN_FRONTEND_CHECKS.json),
+[impor Storage](ofissio-catalog-evidence/PRIVATE_STORAGE_IMPORT_CHECKS.json).
 
-Foto asli perlu diunduh melalui Dashboard Storage ke `private-import` pada folder
-backup tersebut. Ini mempertahankan pilihan pengguna memakai PGPASSWORD saja,
-tanpa mengambil service key dari file legacy atau meminta token di chat.
-**95 blob publik sudah lengkap, satu original privat belum tersedia**.
-Path objek privat disimpan hanya pada inventaris backup/instruksi pengguna.
-
-Helper baru `vendor-storage-backup.mjs` dan
-`finish-vendor-ofissio-storage-backup.mjs` menyelesaikan tahap file tanpa SQL
-produksi/password. Original impor harus cocok ukuran dan ETag MD5 metadata;
-salinan disimpan dengan SHA-256. Backup baru boleh memakai ulang private blob
-terverifikasi hanya jika project, ID, path, ukuran, MIME dan ETag tetap cocok.
-Checksum berbeda, cache rusak/lintas project/di luar root, dan original yang
-belum tersedia ditolak. **Storage harus tetap lengkap sebelum migration**.
-[10/10 uji filesystem/mock HTTP](ofissio-catalog-evidence/STORAGE_BACKUP_TESTS.json).
-[Persetujuan dan revisi pin helper](ofissio-catalog-evidence/MIGRATION_APPROVAL.json).
-SQL migration tetap sama; revisi helper tidak mengubah izin tulis database.
-
-Setelah foto cocok, input password baru diperlukan karena sesi sebelumnya sudah
-dibersihkan. Executor memeriksa live baseline/umur backup dan dapat refresh
-read-only pada sesi yang sama; tidak meminta persetujuan migration ulang.
+**Catatan di bawah adalah riwayat persiapan; status migration terbaru mengikuti bukti di atas.**
 
 **Frontend utama terbaru sudah memuat Ofissio; backend dan migration masih menunggu.**
 Selama persiapan, domain utama beralih ke rilis peta `b0e376a6`, deployment

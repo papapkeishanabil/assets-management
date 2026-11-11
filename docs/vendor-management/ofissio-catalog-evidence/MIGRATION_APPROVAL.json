@@ -29,5 +29,9 @@
   },
   "pin_revision_reason": "Require checksum-verified private Storage originals; support reuse only when native object identity/ETag matches; approved SQL unchanged",
   "git_push_approved": false,
-  "scope": "Only migration 202611110003; no business fixtures or vendor activation"
+  "scope": "Only migration 202611110003; no business fixtures or vendor activation",
+  "consumed": true,
+  "attempted_at": "2026-11-11T08:27:27.936Z",
+  "production_commit_confirmed": true,
+  "production_verified_at": "2026-11-11T08:27:42.560Z"
 }

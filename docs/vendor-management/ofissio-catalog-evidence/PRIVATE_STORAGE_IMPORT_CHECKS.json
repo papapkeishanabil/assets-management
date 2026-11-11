@@ -1,0 +1,14 @@
+{
+  "checked_at": "2026-11-11T08:26:39.929Z",
+  "target": "https://uwlxkwyauxwewoexfgwi.supabase.co",
+  "archive_original_matched_inventory": true,
+  "original_bytes": 143698,
+  "native_md5_matches": true,
+  "sha256": "e098ec5aa2d789d9f48fed7fe9a07dba1a77073b5d84d50d54c9fbf5d415e017",
+  "storage_objects_verified": 96,
+  "private_objects_verified": 1,
+  "missing_private_objects": 0,
+  "private_original_downloaded_by_user": true,
+  "production_write_requests": 0,
+  "migration_executed_by_import": false
+}

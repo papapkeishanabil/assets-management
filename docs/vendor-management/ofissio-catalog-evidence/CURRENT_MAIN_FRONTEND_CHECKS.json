@@ -1,8 +1,8 @@
 {
-  "checked_at": "2026-11-11T06:12:19.916Z",
+  "checked_at": "2026-11-11T08:29:04.780Z",
   "origin": "https://harmas-asset-management.vercel.app",
-  "deployment_id": "dpl_A9EAQDt7WJzNAkvZa5yc8M9fT7qZ",
-  "commit": "b0e376a67cd95bd903656875526fe53d247fd3d6",
+  "deployment_id": "dpl_GTXij7gDgjy5ivswdJ9Z5F7ZBDtJ",
+  "commit": "7d24e29578e22cb8d59ad8e54656b26b27ddf979",
   "feature_source_commit": "e1285125",
   "tested_feature_source_unchanged": true,
   "latest_map_preserved": true,
@@ -12,22 +12,22 @@
   "checks": [
     {
       "path": "/index.html",
-      "sha256": "85f2e39b57129e03dee61d6a0ddf804f0dde9f42f27217f56bccb583dfd983ff",
+      "sha256": "49c7607027935ab133db3a6af07efc295e90d0e4e6f53daf37c85bcb68d42f47",
       "current_artifact_matches": null
     },
     {
-      "path": "/assets/index-Bq03OV6K.js",
-      "sha256": "1e7d6ba14fd38eefb8ddff701b4be9ac2d841339695a6ae233059f85da7f47d5",
+      "path": "/assets/index-8_qHRRyh.js",
+      "sha256": "6f23fcd5321a6522656d92cb6c80b1a7ade24819047dfbb587e7736dedf39985",
       "current_artifact_matches": null
     },
     {
-      "path": "/assets/index-j30ktiQ4.css",
-      "sha256": "ad17b01d5b84bda769e5291e64eb41e34b6ea3a74d708819f3112e7ddd28a6d3",
+      "path": "/assets/index-CRyvu5zC.css",
+      "sha256": "cb34b8df9f65535084041d587c27c2ca1cde24fa2acd7f6c6c7a94d16a1a81a8",
       "current_artifact_matches": null
     },
     {
       "path": "/sw.js",
-      "sha256": "8710bb30e739b9af076c9b293ff7d6614e03c4af61151f55b62f839526541a33",
+      "sha256": "25885533cd633817189bd0c5aaa7c3d761b3e8e165ec9b6fa4b34ad4063e8b53",
       "current_artifact_matches": null
     },
     {
@@ -36,33 +36,33 @@
       "current_artifact_matches": null
     },
     {
-      "path": "/assets/VendorSamplesPanel-joMag2VN.js",
-      "sha256": "0f04150f9027e6981079cdae89de8baab286dec707f76cfd0576dee9ca619e3f",
+      "path": "/assets/VendorSamplesPanel-5UxKsI4J.js",
+      "sha256": "686cab6e0b9604040ef36cf83387976e1ebbf5709dc0a1d8414b2100e557daa4",
       "current_artifact_matches": null
     },
     {
-      "path": "/assets/vendor-sampling-Bo4VYpbu.js",
-      "sha256": "202358f94978f74f3007ad80d925f1c5bae3b8a2264df12cf21c31af1d6100f1",
+      "path": "/assets/vendor-sampling-7fpNH2ii.js",
+      "sha256": "e436860e6d36e859b35248386804f9cafe3d65a1ec56bda31894cc951e3ec305",
       "current_artifact_matches": null
     },
     {
-      "path": "/assets/VendorSourcingPanel-2up0zzeM.js",
-      "sha256": "6200c441db974e642ab3611e6945b1b304240101b00e2d7f26b0f44770f7b61d",
+      "path": "/assets/VendorSourcingPanel-BjU_vF5n.js",
+      "sha256": "b1afcf658363fef17b55d1e1b11b8114e7dc44f3568d13d4dca2b572d8544cbd",
       "current_artifact_matches": null
     },
     {
-      "path": "/assets/VendorSamplesPage-CkrkhD_L.js",
-      "sha256": "e30db6c2824ba6d55f09a5c1b837899250ec82644c844c56f55deca9f686186a",
+      "path": "/assets/VendorSamplesPage-CCNJST3C.js",
+      "sha256": "e73a5930201b7635f46eb02ceebadc5aa3d3fc6cd29be1c84e28a3b9a3d9bf91",
       "current_artifact_matches": null
     },
     {
-      "path": "/assets/VendorApprovalsPage-Cj6sA81H.js",
-      "sha256": "715b3bd04416c0270ae22cef1afe6d5acba42b62b853f168234f7850d87e5244",
+      "path": "/assets/VendorApprovalsPage-Av6-_OGh.js",
+      "sha256": "680e28baa1608743bdcfa872f74379706a4c33525a2e027d5cc4ac8f20166ac6",
       "current_artifact_matches": null
     },
     {
-      "path": "/assets/VendorDecisionPanel-o9RryLC1.js",
-      "sha256": "6effac654b06d81ab3cc1cf9a36b18f89705f87585acd13afdf2e032c5de5eae",
+      "path": "/assets/VendorDecisionPanel-DjkxvHkz.js",
+      "sha256": "130e52e1cfe7302c4ae58dd54fa96b1df33c8db976b1d039042cb35f1a81aacf",
       "current_artifact_matches": null
     }
   ],
@@ -104,5 +104,5 @@
   "write_requests": 0,
   "authenticated_business_uat": false,
   "migration_executed_by_probe": false,
-  "status": "PASS_FRONTEND_PRESENT_BACKEND_DATABASE_PENDING"
+  "status": "PASS_FRONTEND_PRESENT_EDGE_PENDING"
 }

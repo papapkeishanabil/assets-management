@@ -1,0 +1,32 @@
+{
+  "checked_at": "2026-11-11T08:27:42.560Z",
+  "target": "https://uwlxkwyauxwewoexfgwi.supabase.co",
+  "sql_files": [
+    {
+      "file": "supabase/migrations/202611110003_vendor_sample_ofissio_references.sql",
+      "sha256": "2dc70eecbb64f7198eac55566485c064cd9c148ab041ed6c703e6435de8aa0df"
+    }
+  ],
+  "backup_directory": "D:\\Backups\\harmas-pre-ofissio-20261111-082620-05d1c5e6",
+  "database_dump_sha256": "53fde30c5a8e5ec6991ede9a06770056e7f88c7f935fe4cb78f6a820c2c18d66",
+  "logical_restore_tables": 148,
+  "logical_restore_rows": 1857,
+  "storage_blob_backup_verified": true,
+  "storage_blobs": 96,
+  "baseline_tables_verified": 27,
+  "existing_data_security_and_policies_unchanged": true,
+  "production_migration_executed": true,
+  "production_commit_confirmed": true,
+  "post_checks": {
+    "bucket_private": true,
+    "reference_empty": true,
+    "rpc_service_only": true,
+    "triggers_enabled": true,
+    "policies_complete": true,
+    "reference_select_only": true
+  },
+  "business_fixture_created": false,
+  "accounts_created": false,
+  "git_push": false,
+  "frontend_promoted": false
+}

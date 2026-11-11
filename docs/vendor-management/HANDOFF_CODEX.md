@@ -1,27 +1,32 @@
 # HANDOFF — Modul Manajemen Vendor HARMAS Asset Management
 
-**Ofissio: migration sudah DISETUJUI; belum ada percobaan tulis produksi.**
-User menyetujui “ya setuju migrasi”. Input password telah diproses; final preflight
-mendeteksi baseline berubah dan membuat backup baru
-`D:\Backups\harmas-pre-ofissio-20261111-062445-e86759f8`: restore 148 tabel/1.854
-baris dan rehearsal tetap lulus, tetapi ada satu foto privat baru di `vendor-photos`.
-Driver berhenti sebelum konsumsi persetujuan; `migration_attempted=false`,
-`approval.consumed=false`. **Jangan meminta persetujuan migration lagi.**
-Status sekarang `PRIVATE_STORAGE_BACKUP_REQUIRED`: 95 blob publik sudah lengkap,
-satu original privat masih menunggu unduhan pengguna ke folder `private-import`
-di backup tersebut. Path objek lengkap hanya tersimpan dalam inventaris backup
-privat dan instruksi chat, tidak disalin ke dokumen publik.
-`vendor-storage-backup.mjs` memverifikasi ukuran/ETag MD5 asli dan SHA-256, serta
-reuse private blob dari backup terverifikasi hanya jika identitas/metadata cocok;
-10/10 tes filesystem/mock HTTP PASS. Tidak membutuhkan kredensial Storage.
-Setelah file ada, jalankan `node scripts/finish-vendor-ofissio-storage-backup.mjs`,
-pastikan 96/96 blob terverifikasi dan persetujuan tetap belum dikonsumsi. Baru
-buka helper migration untuk input PGPASSWORD baru (password terakhir dibersihkan).
-Executor memperbarui backup jika stale; private blob yang sama dapat dipakai ulang
-tanpa mengunduh ulang. SQL `202611110003` tidak berubah, source pin helper direvisi
-secara terdokumentasi sebelum percobaan SQL, persetujuan user tetap berlaku.
-Backend `vendor-ofissio-catalog` masih 404 pada probe terakhir; deployment Dashboard
-tetap diperlukan. Jangan promosikan frontend lama atau menimpa perubahan peta lain.
+**Ofissio: migration produksi COMMITTED dan terverifikasi; backend menunggu Dashboard.**
+Migration `202611110003` yang telah disetujui berjalan pada 2026-11-11T08:27:42.560Z.
+Persetujuan sudah dikonsumsi. **Jangan menjalankan ulang executor migration.**
+Backup terbaru `D:\Backups\harmas-pre-ofissio-20261111-082620-05d1c5e6`: **148 tabel/1.857 baris**,
+restore aplikasi dan rehearsal migration/rollback lulus, **96/96 file Storage** lengkap.
+Original privat 143.698 byte dari ZIP pengguna cocok native ETag MD5 dan SHA-256;
+dipakai ulang untuk refresh hanya setelah metadata identitas cocok.
+27 tabel baseline, data existing, fungsi/ACL/RLS/policy/view/trigger sebelumnya utuh.
+Enam post-check PASS: bucket privat, reference kosong, RPC service-only, trigger aktif,
+policy lengkap, dan reference SELECT-only. Tidak membuat akun/data uji bisnis,
+tidak mengaktifkan kandidat, tidak push Git, dan tidak mempromosikan frontend.
+Frontend utama terbaru `7d24e295`, deployment
+`dpl_GTXij7gDgjy5ivswdJ9Z5F7ZBDtJ`, sudah membawa source Ofissio teruji dan peta terbaru.
+11 file publik, konfigurasi Auth dan 8 guard login anonim PASS; error browser 0,
+request tulis 0. Artifact lokal berbeda; tidak diklaim cocok hash build lokal.
+Backend `vendor-ofissio-catalog` masih 404 pada probe 2026-11-11T08:24:12.376Z.
+Pengguna diminta deploy bundle teruji `.vercel/ofissio-function-bundle.ts`
+melalui Dashboard Supabase HARMAS, nama fungsi persis dan Verify JWT ON.
+Sesi ini tidak memiliki token deployment Supabase; jangan ambil key legacy.
+Verifikasi header release dan penolakan anonim setelah pengguna selesai deploy;
+UAT login Super Admin/Sourcing serta pembuatan sampel tetap menunggu pengguna.
+Jangan promosikan staging lama atau menimpa peta terbaru.
+[Bukti migration](ofissio-catalog-evidence/PRODUCTION_MIGRATION_CHECKS.json),
+[frontend](ofissio-catalog-evidence/CURRENT_MAIN_FRONTEND_CHECKS.json),
+[impor Storage](ofissio-catalog-evidence/PRIVATE_STORAGE_IMPORT_CHECKS.json).
+
+**Riwayat frontend sebelum verifikasi terbaru:**
 
 **Rilis Ofissio 11 November: source sudah di frontend utama melalui rilis peta, DB/backend menunggu.**
 Domain utama kini `dpl_A9EAQDt7WJzNAkvZa5yc8M9fT7qZ`, source `b0e376a6`, yang
