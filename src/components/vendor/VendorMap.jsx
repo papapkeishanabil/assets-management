@@ -40,7 +40,8 @@ export default function VendorMap({ points = NO_POINTS, editable = false, onPick
     loadVendorMap().then((L) => {
       if (cancelled) return;
       const config = vendorTileConfig();
-      map = L.map(element.current, { center: [-2, 118], zoom: 4, minZoom: 2, maxZoom: 19, scrollWheelZoom: false,
+      map = L.map(element.current, { center: [-2, 118], zoom: 4, minZoom: 2, maxZoom: 19,
+        scrollWheelZoom: true, dragging: true, touchZoom: true,
         maxBounds: [[-85.05112878, -180], [85.05112878, 180]], maxBoundsViscosity: 1 });
       map.attributionControl.setPrefix(false);
       tiles = L.tileLayer(config.url, { attribution: config.attribution, maxZoom: 19, noWrap: true,
