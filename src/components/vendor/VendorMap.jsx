@@ -1,16 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { clusterMapPoints, coordinatePair } from '../../lib/vendor-location-utils';
+import { clusterMapPoints, coordinatePair, categoryPin } from '../../lib/vendor-location-utils';
 import { loadVendorMap, vendorTileConfig } from '../../lib/vendor-map-loader';
 import './vendor-map.css';
 
 const NO_POINTS = [];
 // points: titik lokasi; focus: titik terpilih (pan kamera ke sana);
 // selectedKey: `${candidate_id}/${location_id||''}` untuk sorotan pin.
+// Pin dibedakan per KATEGORI vendor (warna + kode 2 huruf); vendor
+// disetujui diberi badge centang. Klaster bernomor tetap biru.
 export default function VendorMap({ points = NO_POINTS, editable = false, onPick, onSelect, height = 400, focus = null, selectedKey = '' }) {
   const element = useRef(null), callbacks = useRef({ onPick, onSelect }), fitted = useRef(false), fittedPoints = useRef(null);
   callbacks.current = { onPick, onSelect };
   const [instance, setInstance] = useState(null), [fatal, setFatal] = useState(''), [tileError, setTileError] = useState(''), [retry, setRetry] = useState(0);
+  const [legendOpen, setLegendOpen] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches);
   const valid = useMemo(() => points.filter((p) => { try { return Boolean(coordinatePair(p.latitude, p.longitude)); } catch { return false; } }), [points]);
+  // Kategori yang benar-benar ada pada titik saat ini → isi legenda relevan.
+  const legendCategories = useMemo(() => {
+    const counts = new Map();
+    for (const p of valid) {
+      const name = p.category_name || 'Tanpa kategori';
+      counts.set(name, (counts.get(name) || 0) + 1);
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  }, [valid]);
 
   useEffect(() => {
     let cancelled = false, map, tiles, observer, frame;
@@ -47,8 +59,14 @@ export default function VendorMap({ points = NO_POINTS, editable = false, onPick
         const isHighlighted = !clustered && !editable && selectedKey && `${p.candidate_id}/${p.location_id || ''}` === selectedKey;
         const title = clustered ? `${group.items.length} lokasi vendor` : `${p.business_name || 'Lokasi'} · ${p.location_name || 'Titik pilihan'}`;
         const content = document.createElement('span');
-        content.className = `vendor-map-pin ${clustered ? 'vendor-map-cluster' : p.qualification_status === 'APPROVED' ? 'vendor-map-approved' : 'vendor-map-prospect'}${isHighlighted ? ' vendor-map-selected' : ''}`;
-        content.textContent = clustered ? String(group.items.length) : '●';
+        content.className = `vendor-map-pin ${clustered ? 'vendor-map-cluster' : ''}${isHighlighted ? ' vendor-map-selected' : ''}`;
+        if (clustered) {
+          content.textContent = String(group.items.length);
+        } else {
+          const pin = categoryPin(p.category_name);
+          content.style.background = pin.color;
+          content.innerHTML = `<span class="vendor-map-code">${pin.code}</span>${p.qualification_status === 'APPROVED' ? '<span class="vendor-map-approved-badge" title="Disetujui">✓</span>' : ''}`;
+        }
         const marker = L.marker([group.lat, group.lng], { title, keyboard: true, draggable: editable,
           icon: L.divIcon({ html: content, className: 'vendor-map-marker', iconSize: [36, 36], iconAnchor: [18, 18] }) });
         marker.on('click', () => {
@@ -97,9 +115,37 @@ export default function VendorMap({ points = NO_POINTS, editable = false, onPick
       else { setTileError(''); instance?.tiles.redraw(); }
     }}>Coba lagi</button></div>}
     {!instance && !fatal && <p role="status" className="text-sm text-ink-400">Memuat peta…</p>}
-    <div ref={element} role="region" aria-label={editable ? 'Pilih koordinat pada peta' : 'Peta lokasi vendor'} style={{ height }} className="vendor-map-container w-full rounded-xl border border-white/10" />
-    <div className="flex flex-wrap justify-between gap-2 text-xs text-ink-400">
-      {!editable && <span>● Hijau: disetujui · ● Jingga: kandidat lain · Angka biru: kelompok lokasi, klik untuk memperbesar.</span>}
+    <div className="relative">
+      <div ref={element} role="region" aria-label={editable ? 'Pilih koordinat pada peta' : 'Peta lokasi vendor'} style={{ height }} className="vendor-map-container w-full rounded-xl border border-white/10" />
+      {!editable && (
+        legendOpen ? (
+          <div className="vendor-map-legend" role="contentinfo" aria-label="Legenda peta">
+            <div className="flex items-center justify-between gap-3">
+              <strong className="text-[11px] uppercase tracking-wide text-slate-200">Legenda · kategori vendor</strong>
+              <button type="button" className="text-slate-300 hover:text-white text-xs px-1" onClick={() => setLegendOpen(false)} aria-label="Sembunyikan legenda">✕</button>
+            </div>
+            {legendCategories.length === 0 ? <p className="text-slate-300 mt-1.5">Belum ada titik pada peta.</p> : (
+              <ul className="mt-1.5 grid gap-y-1" style={{ gridTemplateColumns: legendCategories.length > 5 ? 'auto auto' : 'auto' }}>
+                {legendCategories.map(([name, count]) => {
+                  const pin = categoryPin(name === 'Tanpa kategori' ? null : name);
+                  return <li key={name} className="flex items-center gap-2 whitespace-nowrap">
+                    <span className="vendor-map-legend-dot" style={{ background: pin.color }} aria-hidden="true">{pin.code}</span>
+                    <span className="text-slate-200">{name === 'Tanpa kategori' ? 'Tanpa kategori' : name}</span>
+                    <span className="text-slate-400">({count})</span>
+                  </li>;
+                })}
+              </ul>
+            )}
+            <p className="mt-2 pt-1.5 border-t border-white/15 text-slate-300 leading-relaxed">
+              <span className="vendor-map-legend-check" aria-hidden="true">✓</span> disetujui · angka biru = kumpulan lokasi (klik untuk perbesar)
+            </p>
+          </div>
+        ) : (
+          <button type="button" className="vendor-map-legend vendor-map-legend-collapsed" onClick={() => setLegendOpen(true)} aria-label="Tampilkan legenda">Legenda</button>
+        )
+      )}
+    </div>
+    <div className="flex flex-wrap justify-end gap-2 text-xs text-ink-400">
       <a className="underline" href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">Laporkan masalah peta dasar</a>
     </div>
   </div>;

@@ -4,7 +4,7 @@ import { MapPin, RefreshCw, Search, SlidersHorizontal, Star, X } from 'lucide-re
 import { useAuth } from '../../contexts/AuthContext';
 import { useRolePermissions } from '../../hooks/useRolePermissions';
 import { PROCESS_STAGE_LABELS, QUALIFICATION_LABELS, OPERATIONAL_LABELS, VENDOR_WRITE_ROLES } from '../../lib/vendor-constants';
-import { LOCATION_READ_ROLES, LOCATION_TYPES, VERIFICATION_LABELS, filterMapPoints } from '../../lib/vendor-location-utils';
+import { LOCATION_READ_ROLES, LOCATION_TYPES, VERIFICATION_LABELS, filterMapPoints, categoryPin } from '../../lib/vendor-location-utils';
 import { fetchMapPoints, fetchMapSpecialties } from '../../lib/vendor-location-helpers';
 import { fetchFollowupOptions } from '../../lib/vendor-followup-helpers';
 import VendorMap from '../../components/vendor/VendorMap';
@@ -189,13 +189,15 @@ export default function VendorMapPage() {
                 {list.slice(0, visibleCount).map((row) => {
                   const key = `${row.candidate_id}/${row.location_id || ''}`, active = key === selectedKey;
                   const hasCoords = row.latitude !== null && row.longitude !== null;
+                  const pin = categoryPin(row.category_name);
                   return <button key={key} onClick={() => select(row)} aria-pressed={active}
                     className={`w-full text-left p-2.5 rounded-lg border flex items-center gap-3 transition-colors ${active ? 'bg-primary-500/10 border-primary-500/40' : 'border-transparent hover:bg-white/[0.04]'}`}>
-                    <span className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${hasCoords ? (row.qualification_status === 'APPROVED' ? 'bg-green-600' : 'bg-amber-600') : 'bg-white/20'}`} aria-hidden="true"></span>
+                    <span className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${hasCoords ? '' : 'bg-white/20'}`} style={hasCoords ? { background: pin.color } : undefined} title={row.category_name || 'Tanpa kategori'} aria-hidden="true" />
                     <span className="flex-1 min-w-0">
                       <span className="flex items-center gap-1.5">
                         <span className="text-sm text-white font-medium truncate">{row.business_name}</span>
                         {row.is_primary && <Star size={11} className="text-primary-300 flex-shrink-0" aria-label="Lokasi utama" />}
+                        {row.qualification_status === 'APPROVED' && <span className="text-[9px] font-bold text-green-300 flex-shrink-0" title="Kelayakan disetujui">✓</span>}
                       </span>
                       <span className="block text-[11px] text-ink-500 truncate">{row.location_name || 'Belum ada lokasi'} · {row.city || 'Kota belum diisi'}</span>
                     </span>

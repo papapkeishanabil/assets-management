@@ -3,6 +3,25 @@ export const PHOTO_TYPES = { EXTERIOR: 'Tampak luar', ENTRANCE: 'Pintu masuk', P
 export const VERIFICATION_LABELS = { UNVERIFIED: 'Belum diverifikasi', NEEDS_REVISIT: 'Perlu kunjungan ulang', VERIFIED: 'Terverifikasi' };
 export const LOCATION_READ_ROLES = ['sourcing', 'hrd', 'direksi', 'super_admin'];
 
+// Tampilan pin per kategori vendor di peta: warna + kode 2 huruf agar
+// puluhan/ratusan titik tetap bisa dibedakan sekilas. Kategori tambahan
+// yang dibuat admin memakai gaya cadangan.
+export const CATEGORY_PINS = {
+  'Jahit': { code: 'JH', color: '#2563eb' },
+  'Bordir': { code: 'BD', color: '#9333ea' },
+  'Supplier Kain': { code: 'SK', color: '#0891b2' },
+  'Pabrik Kain': { code: 'PF', color: '#dc2626' },
+  'Cutting': { code: 'CT', color: '#ea580c' },
+  'Sablon/Printing': { code: 'SB', color: '#db2777' },
+  'Finishing': { code: 'FN', color: '#16a34a' },
+  'Packing': { code: 'PK', color: '#a16207' },
+  'Lainnya': { code: 'LN', color: '#64748b' }
+};
+export const FALLBACK_CATEGORY_PIN = { code: '•', color: '#475569' };
+export function categoryPin(categoryName) {
+  return CATEGORY_PINS[categoryName] || FALLBACK_CATEGORY_PIN;
+}
+
 export function coordinatePair(latitude, longitude) {
   const empty = (v) => v === '' || v === null || v === undefined || (typeof v === 'string' && !v.trim());
   if (empty(latitude) && empty(longitude)) return null;
