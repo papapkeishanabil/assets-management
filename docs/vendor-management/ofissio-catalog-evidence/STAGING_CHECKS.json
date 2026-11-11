@@ -1,0 +1,100 @@
+{
+  "checked_at": "2026-11-11T05:59:57.516Z",
+  "deployment_id": "dpl_5bHPoKtZUHK3BVo6fVsBVriUCXDN",
+  "deployment": "https://harmas-asset-management-gembyprdv.vercel.app",
+  "commit": "e12851253da2240bae269d56d461f0a72897d0ec",
+  "checks": [
+    {
+      "path": "/index.html",
+      "sha256": "e01b025a5a2f898f65ad13b37d89a34694190e99895f8240a008c9eebdda63b4",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/index-B8c2gcPR.js",
+      "sha256": "9747494b465b53c5b6d2daf6bfbc5dfb70c2c3b7e816528784b7f72dde9e4f66",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/index--ntD5RBK.css",
+      "sha256": "262bd9936821ac96fe9454ca8f22c6af59698f0f8dd87ec17653086dfad1b4eb",
+      "artifact_matches": true
+    },
+    {
+      "path": "/sw.js",
+      "sha256": "caf1ff52c2eae17c2d5049c68ae5447a4c10c079110f4fb97d584e4eee5161ac",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/leaflet-Dgihpmma.css",
+      "sha256": "7e14f0f44c4713eb7519182d93575f59139200ca781397a493a11f1dff0ce5e1",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/leaflet-src-CnuqKciT.js",
+      "sha256": "bf8a087e2b13d04a0bed4d76abb08da0baf7e9b3ecd3526dd3589b5ae760cd73",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/MasterVendorLocationsPanel-D-pN5dcn.js",
+      "sha256": "bd6cfd8d51bc1b62b5c84bf163589c1ca4fdaf75285b9a62679d439d734098d0",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/vendor-sampling-COdExm7Y.js",
+      "sha256": "6b9b823198fb3939c1fd2aa0cb6c785afd1d15a5029d704a5fe71df6c5d07394",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorApprovalsPage-RJREIacY.js",
+      "sha256": "ece9845720a2b248392d52e4599c401732a6701a8b6dba01e3a28cf5d2106c97",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorDecisionPanel-BHOzUPu1.js",
+      "sha256": "f4c099407e639c6191e5fdb13ce1f418e07e5043c9751d2001921f37309d5c11",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorMapPage-Sxy-WlcR.js",
+      "sha256": "18223ca74c343b455f9a84775cac22eb892ab7351fb2419b1540d715c01f636e",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorSamplesPage-BCxM9Ura.js",
+      "sha256": "57aea85dea7bb0670943e4ba1eda4a98411b797a8a6fc79e5a1c685132b80949",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorSamplesPanel-MwzOaAx_.js",
+      "sha256": "0a4ea8425d591933e6295add1c76dcd4ba5f6808b09712a5197fe640460c91e8",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorSourcingPanel-CJvoDYJA.js",
+      "sha256": "a638b668c55f1f9134bf06ee82b896b01d0598bd20224ce0737b641f61bacb81",
+      "artifact_matches": true
+    }
+  ],
+  "routes": [
+    {
+      "path": "/vendor/samples",
+      "spa_fallback_matches": true
+    },
+    {
+      "path": "/vendor/qc",
+      "spa_fallback_matches": true
+    },
+    {
+      "path": "/vendor/approvals",
+      "spa_fallback_matches": true
+    },
+    {
+      "path": "/vendor/map",
+      "spa_fallback_matches": true
+    }
+  ],
+  "main_domain_previous_deployment": "dpl_8Dv1gZW6jhdE1wg8D4CvziiezjhQ",
+  "main_domain_unchanged": true,
+  "main_domain_promoted": false,
+  "credentials_or_share_links_exposed": false
+}

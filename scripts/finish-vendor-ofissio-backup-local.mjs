@@ -1,0 +1,59 @@
+// Finish ONLY the existing offline restore and public blob backup. No production SQL or password.
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {target,source,newBuckets,hash,snapshotSql,privilegesSql,validateBefore,validateAfter,validateChecks,postChecksSql,stable,instrument,same} from './vendor-ofissio-release-checks.mjs';
+const state=JSON.parse(fs.readFileSync('.vercel/ofissio-release-status.json')),folder=fs.realpathSync(state.backup_directory),manifest=JSON.parse(fs.readFileSync(path.join(folder,'manifest.json'))),info=JSON.parse(fs.readFileSync(path.join(folder,'restore-container.json')));
+assert.match(folder.replaceAll('\\','/'),/^D:\/Backups\/harmas-pre-ofissio-\d{8}-\d{6}-[a-f0-9]{8}$/);const clone=info.name;assert.match(clone,/^harmas-ofissio-restore-\d{8}-[a-f0-9]{8}$/);assert.equal(manifest.target,target);assert.equal(manifest.sha256,hash(fs.readFileSync(path.join(folder,'database.dump'))));assert.equal(manifest.production_migration_executed,false);assert.ok(same(manifest.sql_files,source.map(({file,sha256})=>({file,sha256}))));
+const before=JSON.parse(fs.readFileSync(path.join(folder,'production-preflight.json'))).before;
+const write=(file,v)=>fs.writeFileSync(file,JSON.stringify(v,null,2)+'\n');let counter=20;
+function status(state,extra={}){write('.vercel/ofissio-release-status.json',{state,updated_at:new Date().toISOString(),backup_directory:folder,production_migration_executed:false,production_write_requests:0,...extra});console.log(state);}
+function run(args,input){const r=spawnSync('docker',args,{input,encoding:'utf8',maxBuffer:128e6,timeout:180000});if(r.status!==0){write(path.join(folder,'private-offline-error-'+(++counter)+'.json'),{error:r.stderr||String(r.error)});throw Error('Offline verification failed; inspect private backup log');}return r.stdout;}
+const config=JSON.parse(run(['inspect',clone]))[0];assert.equal(config.HostConfig.NetworkMode,'none');assert.equal(config.Config.Labels['harmas.task'],'ofissio-backup-restore');assert.equal(Object.keys(config.HostConfig.PortBindings||{}).length,0);assert.ok(config.Mounts.some(m=>m.Destination==='/backup'&&!m.RW));if(!config.State.Running)run(['start',clone]);
+const local=(q,database='ofissio_restore')=>run(['exec','-i',clone,'psql','-X','-q','-A','-t','-U','supabase_admin','-d',database,'-v','ON_ERROR_STOP=1'],"SET timezone='UTC';SET search_path=public,pg_temp;"+q).trim();const identifier=v=>'"'+v.replaceAll('"','""')+'"',literal=v=>"'"+v.replaceAll("'","''")+"'";
+try{let ready=false;for(let i=0;i<60;i++){const r=spawnSync('docker',['exec',clone,'pg_isready','-h','127.0.0.1','-U','postgres','-d','postgres'],{encoding:'utf8'});if(r.status===0){ready=true;break;}await new Promise(r=>setTimeout(r,1000));}assert.ok(ready);status('OFFLINE_RESTORE_VERIFICATION_RUNNING');
+ const restored=JSON.parse(local(`BEGIN READ ONLY;${snapshotSql};ROLLBACK;`));
+ assert.equal(before.buckets.filter(b=>newBuckets.includes(b.id)).length,0);
+ for(const b of restored.buckets.filter(b=>newBuckets.includes(b.id))){assert.equal(b.public,false);assert.equal(b.objects,0);assert.equal(b.file_size_limit,5242880);assert.deepEqual(b.allowed_mime_types,['image/jpeg','image/png','image/webp']);}
+ validateBefore({...restored,buckets:restored.buckets.filter(b=>!newBuckets.includes(b.id))},JSON.parse(local(privilegesSql)));
+ const canonicalPolicies=before.policies.map((p,i)=>{const a=restored.policies[i];assert.ok(same({...p,qual:null,with_check:null},{...a,qual:null,with_check:null}),'Restore policy identity/ACL changed');if(p.qual===a.qual&&p.with_check===a.with_check)return p;
+  const normalized=JSON.parse(local(`BEGIN;CREATE POLICY __ofissio_expected ON ${identifier(p.schemaname)}.${identifier(p.tablename)} AS ${p.permissive} FOR ${p.cmd} TO ${p.roles.map(identifier).join(',')}${p.qual?' USING ('+p.qual+')':''}${p.with_check?' WITH CHECK ('+p.with_check+')':''};SELECT jsonb_build_object('qual',qual,'with_check',with_check) FROM pg_policies WHERE schemaname=${literal(p.schemaname)} AND tablename=${literal(p.tablename)} AND policyname='__ofissio_expected';ROLLBACK;`));return{...p,...normalized};});
+ const expectedRestore={...before,policies:canonicalPolicies};
+ // Canonical view deparse on this engine; no live SQL is executed.
+ if(!same(restored.map_view,expectedRestore.map_view)){
+  const archive=fs.readFileSync('supabase/migrations/202611100001_vendor_candidate_archive.sql','utf8'),start=archive.indexOf('CREATE OR REPLACE VIEW public.vendor_map_points ');assert.ok(start>=0);
+  const sql=archive.slice(start,archive.indexOf(';',start)+1),normalized=JSON.parse(local(`BEGIN;${sql} SELECT to_jsonb(pg_get_viewdef('public.vendor_map_points'::regclass,true));ROLLBACK;`));assert.equal(restored.map_view.definition,normalized);expectedRestore.map_view={...expectedRestore.map_view,definition:normalized};
+ }
+ assert.ok(same(stable(restored),stable(expectedRestore)),'Restored data/functions/ACL/RLS differ from live backup baseline');
+ const data=run(['exec',clone,'pg_restore','--data-only','--file=-','/backup/database.dump']),lines=data.split(/\r?\n/);let tables=0,rows=0;
+ for(let i=0;i<lines.length;i++){const m=lines[i].match(/^COPY ([a-z_][a-z_0-9]*\.[a-z_][a-z_0-9]*) \(([A-Za-z_0-9", ]+)\) FROM stdin;$/);if(!m)continue;const expected=[];while(++i<lines.length&&lines[i]!=='\\.')expected.push(lines[i]);assert.equal(lines[i],'\\.');
+  // A completed rehearsal intentionally retains exactly this empty bucket, absent in the dump.
+  const ownAddition=m[1]==='storage.buckets'?" WHERE id<>'vendor-product-references'":'';
+  const out=run(['exec','-i',clone,'psql','-X','-q','-A','-t','-U','supabase_admin','-d','ofissio_restore','-v','ON_ERROR_STOP=1'],`BEGIN READ ONLY;SET LOCAL timezone='UTC';SET LOCAL extra_float_digits=3;COPY (SELECT ${m[2]} FROM ${m[1]}${ownAddition}) TO STDOUT;ROLLBACK;`),actual=out.split(/\r?\n/);if(actual.at(-1)==='')actual.pop();assert.equal(actual.length,expected.length,m[1]+' row count');assert.equal(hash(JSON.stringify(actual.sort())),hash(JSON.stringify(expected.sort())),m[1]+' COPY checksum');tables++;rows+=actual.length;
+ }
+ assert.ok(tables>=90);manifest.application_restore_verified=true;manifest.logical_restore_tables=tables;manifest.logical_restore_rows=rows;
+ const cloneBefore=JSON.parse(local(`BEGIN READ ONLY;${snapshotSql};ROLLBACK;`)),stale=structuredClone(cloneBefore);stale.baseline.vendors.checksum='stale-test-only';
+ const blocked=spawnSync('docker',['exec','-i',clone,'psql','-X','-q','-A','-t','-U','supabase_admin','-d','ofissio_restore','-v','ON_ERROR_STOP=1'],{input:instrument(stale,{database:'ofissio_restore'}),encoding:'utf8'});assert.notEqual(blocked.status,0);assert.match(blocked.stderr,/Baseline changed/);
+ local(instrument(cloneBefore,{database:'ofissio_restore'}));const afterClone=JSON.parse(local(`BEGIN READ ONLY;${snapshotSql};ROLLBACK;`));validateAfter(cloneBefore,afterClone);validateChecks(JSON.parse(local(postChecksSql)));
+ // Idempotency replay is offline only; production never receives this SQL from this driver.
+ for(const {sql}of source)local(sql);validateAfter(cloneBefore,JSON.parse(local(`BEGIN READ ONLY;${snapshotSql};ROLLBACK;`)));
+ local(fs.readFileSync('supabase/rollbacks/202611110003_vendor_sample_ofissio_references_rollback.sql','utf8'));local(fs.readFileSync('supabase/rollbacks/202611110003_vendor_sample_ofissio_references_rollback.sql','utf8'));
+ const rollbackState=JSON.parse(local(`BEGIN READ ONLY;${snapshotSql};ROLLBACK;`));assert.ok(same(stable(rollbackState),stable(cloneBefore)),'Clone rollback changed existing baseline');assert.equal(rollbackState.catalog_objects.length,0);manifest.migrations_and_rollbacks_twice_offline=true;manifest.stale_transaction_rejected=true;manifest.rollback_retains_empty_private_buckets=true;
+ status('STORAGE_BACKUP_RUNNING');const objects=JSON.parse(local("SELECT coalesce(jsonb_agg(jsonb_build_object('id',o.id,'bucket',o.bucket_id,'name',o.name,'metadata',o.metadata,'public',b.public) ORDER BY o.bucket_id,o.name),'[]') FROM storage.objects o JOIN storage.buckets b ON b.id=o.bucket_id;"));
+ const privateObjects=objects.filter(o=>!o.public);manifest.private_storage_objects=privateObjects.length;
+ if(privateObjects.length){manifest.storage_limit='Private blobs require separately authorized Storage download; PGPASSWORD provides metadata, not blob authorization.';}
+ else{
+  const blobDir=path.join(folder,'storage-blobs');fs.mkdirSync(blobDir,{recursive:true});const records=[];let cursor=0;
+  const cleanEtag=v=>typeof v==='string'?v.replace(/^W\//,'').replaceAll('"','').toLowerCase():null;
+  async function worker(){while(cursor<objects.length){const o=objects[cursor++];assert.ok(o.name.split('/').every(p=>p!=='.'&&p!=='..'));const expected=Number(o.metadata?.size);assert.ok(Number.isSafeInteger(expected)&&expected>=0&&expected<50e6);
+   const url=target+'/storage/v1/object/public/'+[o.bucket,...o.name.split('/')].map(encodeURIComponent).join('/'),response=await fetch(url,{redirect:'manual',signal:AbortSignal.timeout(30000)});assert.equal(response.status,200,'Storage download failed: '+o.id);
+   const chunks=[];let bytes=0;for await(const part of response.body){bytes+=part.length;assert.ok(bytes<=expected);chunks.push(part);}assert.equal(bytes,expected);const body=Buffer.concat(chunks),etag=cleanEtag(o.metadata?.eTag||o.metadata?.etag);
+   if(etag){if(/^[a-f0-9]{32}$/.test(etag))assert.equal(createHash('md5').update(body).digest('hex'),etag);else assert.equal(cleanEtag(response.headers.get('etag')),etag);}
+   const file=hash(o.bucket+'\0'+o.name)+'.blob',digest=hash(body);if(fs.existsSync(path.join(blobDir,file)))assert.equal(hash(fs.readFileSync(path.join(blobDir,file))),digest,'Existing backup blob differs');else fs.writeFileSync(path.join(blobDir,file),body);assert.equal(hash(fs.readFileSync(path.join(blobDir,file))),digest);records.push({id:o.id,bucket:o.bucket,name:o.name,bytes,sha256:digest,file});}}
+  await Promise.all([worker(),worker(),worker(),worker()]);write(path.join(folder,'storage-backup-manifest.json'),{objects:records});manifest.storage_blob_backup_verified=true;manifest.storage_blobs=records.length;manifest.storage_bytes=records.reduce((n,r)=>n+r.bytes,0);
+ }
+delete manifest.failure;manifest.verified_at=new Date().toISOString();manifest.final_live_recheck_required=true;write(path.join(folder,'manifest.json'),manifest);
+const summary={checked_at:manifest.verified_at,target,backup_directory:folder,database_dump_sha256:manifest.sha256,logical_restore_tables:manifest.logical_restore_tables,logical_restore_rows:manifest.logical_restore_rows,baseline_tables_verified:27,existing_data_and_security_unchanged:true,migrations_rehearsed_offline:true,production_migration_executed:false,production_write_requests:0,storage_blob_backup_verified:manifest.storage_blob_backup_verified,private_storage_objects:manifest.private_storage_objects,supabase_platform_restore_complete:false,migration_approved:false,final_live_recheck_required:true};write('docs/vendor-management/ofissio-catalog-evidence/BACKUP_READINESS.json',summary);status(manifest.private_storage_objects?'PRIVATE_STORAGE_BACKUP_REQUIRED':'BACKUP_VERIFIED_WAITING_FOR_EXPLICIT_MIGRATION_APPROVAL',{report_file:'docs/vendor-management/ofissio-catalog-evidence/BACKUP_READINESS.json'});
+}catch(error){manifest.failure=error.message;status('OFFLINE_VERIFICATION_STOPPED_NO_PRODUCTION_WRITE',{message:error.message});process.exitCode=1;}finally{run(['stop',clone]);manifest.restore_container=clone;manifest.restore_container_stopped=true;manifest.finished_at=new Date().toISOString();write(path.join(folder,'manifest.json'),manifest);}

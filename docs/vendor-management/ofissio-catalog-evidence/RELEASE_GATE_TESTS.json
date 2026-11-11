@@ -1,0 +1,46 @@
+{
+  "checked_at": "2026-11-11T05:58:12.515Z",
+  "target": "old verified production backup clone; network none; no production connection",
+  "restore_source": "20261111-040820-8f160784",
+  "source_migration": [
+    {
+      "file": "supabase/migrations/202611110003_vendor_sample_ofissio_references.sql",
+      "sha256": "2dc70eecbb64f7198eac55566485c064cd9c148ab041ed6c703e6435de8aa0df"
+    }
+  ],
+  "checks": [
+    {
+      "check": "Restored production clone with installed Phase 4/5 passes 27-table preflight",
+      "pass": true
+    },
+    {
+      "check": "Missing DDL/Storage/reference/SHA privileges rejected",
+      "pass": true
+    },
+    {
+      "check": "Stale baseline rejected transactionally before creating catalog objects",
+      "pass": true
+    },
+    {
+      "check": "Instrumented migration commits on isolated clone with existing schema/data/security unchanged",
+      "pass": true
+    },
+    {
+      "check": "Catalog migration replay is idempotent on restored production constraints",
+      "pass": true
+    },
+    {
+      "check": "Changed existing approval/activation function is detected",
+      "pass": true
+    },
+    {
+      "check": "Public reference bucket rejected",
+      "pass": true
+    },
+    {
+      "check": "Rollback twice preserves installed Phase 4/5 and all 27 baseline tables",
+      "pass": true
+    }
+  ],
+  "production_write": false
+}

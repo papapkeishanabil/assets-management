@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-11-11T05:55:45.082Z",
+  "function_name": "vendor-ofissio-catalog",
+  "release": "ofissio-e1285125",
+  "bundle_file": ".vercel/ofissio-function-bundle.ts",
+  "bundle_sha256": "a0d1b17d403a05ec98163e6b170574f5559b426d0bff15b1532a009820d2226f",
+  "handler_sha256": "5bf6dfe4923dc8e20e0e496d02d57f5a85b92a983d2c560439f681735400db88",
+  "generated_adapter_local_check": true,
+  "credentials_included": false,
+  "deployed": false
+}

@@ -1,5 +1,35 @@
 # HANDOFF — Modul Manajemen Vendor HARMAS Asset Management
 
+**Rilis Ofissio 11 November: source sudah di frontend utama melalui rilis peta, DB/backend menunggu.**
+Domain utama kini `dpl_A9EAQDt7WJzNAkvZa5yc8M9fT7qZ`, source `b0e376a6`, yang
+merupakan turunan `e1285125`; hash source Ofissio teruji tetap sama. 11 file publik,
+konfigurasi publik dan 8 guard anonim PASS, tanpa error browser/permintaan tulis.
+Artifact lokal berbeda, sehingga tidak mengklaim 11 hash cocok dengan build lokal.
+**Jangan promosikan staging lama `e1285125` karena akan mengembalikan peta lama.**
+Build gabungan `b0e376a6` juga disiapkan terisolasi, belum diupload/dipromosikan.
+Perubahan `vendor-location-utils.js` yang sedang berjalan tetap tidak disertakan.
+Migration `202611110003` dan backend Dashboard masih pending; jangan menyebut
+integrasi usable/live penuh sebelum keduanya terverifikasi.
+[Status terkini dan bukti](OFISSIO_RELEASE_READINESS_20261111.md).
+
+**Riwayat persiapan staging Ofissio sebelum rilis peta terbaru:**
+User mengizinkan deploy (“ok deploy”, “lanjutkan”). Frontend source `e1285125`
+distage sebagai `dpl_5bHPoKtZUHK3BVo6fVsBVriUCXDN`, target production skip-domain;
+14 hash + 4 fallback route cocok. Domain utama tetap rilis Fase 4/5
+`dpl_8Dv1gZW6jhdE1wg8D4CvziiezjhQ`. Build memakai ekspor commit terisolasi agar
+perubahan peta yang sedang berjalan di workspace tidak ikut/tertimpa.
+Backup baru `D:\Backups\harmas-pre-ofissio-20261111-055844-aacfeda0`: 148 tabel/
+1.851 baris dan 95 blob/29.027.178 byte terverifikasi; 27 baseline, full COPY,
+source/ACL/RLS/policy/view/trigger utuh; migration/rollback dua kali offline lulus.
+Penyelesaian offline membutuhkan live recheck lagi sebelum eksekusi; helper dapat
+refresh backup read-only memakai sesi password yang sama bila stale/berubah.
+**Belum ada migration Ofissio produksi/push/promosi domain.** Persetujuan migration
+`202611110003` terpisah sudah diminta; jangan memakai izin Fase 4/5 yang dikonsumsi.
+Backend diminta melalui Dashboard sesuai pilihan user; bundle `.vercel/ofissio-function-bundle.ts`
+memakai handler teruji + versi `ofissio-e1285125`, tanpa kredensial. Probe awal 404;
+jangan menyatakan backend live sebelum header versi/izin terverifikasi.
+[Readiness terbaru, instruksi Dashboard, bukti dan batasan](OFISSIO_RELEASE_READINESS_20261111.md).
+
 **Acuan sampel Ofissio — implementasi lokal 11 November, BELUM produksi.**
 User memilih satu koneksi Ofissio karena produk Sasienala ada dalam katalog yang
 sama. Picker kartu foto pada Tambah Sampel, snapshot nama/SKU/bahan/foto privat

@@ -1,0 +1,108 @@
+{
+  "checked_at": "2026-11-11T06:12:19.916Z",
+  "origin": "https://harmas-asset-management.vercel.app",
+  "deployment_id": "dpl_A9EAQDt7WJzNAkvZa5yc8M9fT7qZ",
+  "commit": "b0e376a67cd95bd903656875526fe53d247fd3d6",
+  "feature_source_commit": "e1285125",
+  "tested_feature_source_unchanged": true,
+  "latest_map_preserved": true,
+  "old_ofissio_staging_must_not_be_promoted": true,
+  "public_build_config_valid": true,
+  "local_artifact_matches": false,
+  "checks": [
+    {
+      "path": "/index.html",
+      "sha256": "85f2e39b57129e03dee61d6a0ddf804f0dde9f42f27217f56bccb583dfd983ff",
+      "current_artifact_matches": null
+    },
+    {
+      "path": "/assets/index-Bq03OV6K.js",
+      "sha256": "1e7d6ba14fd38eefb8ddff701b4be9ac2d841339695a6ae233059f85da7f47d5",
+      "current_artifact_matches": null
+    },
+    {
+      "path": "/assets/index-j30ktiQ4.css",
+      "sha256": "ad17b01d5b84bda769e5291e64eb41e34b6ea3a74d708819f3112e7ddd28a6d3",
+      "current_artifact_matches": null
+    },
+    {
+      "path": "/sw.js",
+      "sha256": "8710bb30e739b9af076c9b293ff7d6614e03c4af61151f55b62f839526541a33",
+      "current_artifact_matches": null
+    },
+    {
+      "path": "/assets/leaflet-Dgihpmma.css",
+      "sha256": "7e14f0f44c4713eb7519182d93575f59139200ca781397a493a11f1dff0ce5e1",
+      "current_artifact_matches": null
+    },
+    {
+      "path": "/assets/VendorSamplesPanel-joMag2VN.js",
+      "sha256": "0f04150f9027e6981079cdae89de8baab286dec707f76cfd0576dee9ca619e3f",
+      "current_artifact_matches": null
+    },
+    {
+      "path": "/assets/vendor-sampling-Bo4VYpbu.js",
+      "sha256": "202358f94978f74f3007ad80d925f1c5bae3b8a2264df12cf21c31af1d6100f1",
+      "current_artifact_matches": null
+    },
+    {
+      "path": "/assets/VendorSourcingPanel-2up0zzeM.js",
+      "sha256": "6200c441db974e642ab3611e6945b1b304240101b00e2d7f26b0f44770f7b61d",
+      "current_artifact_matches": null
+    },
+    {
+      "path": "/assets/VendorSamplesPage-CkrkhD_L.js",
+      "sha256": "e30db6c2824ba6d55f09a5c1b837899250ec82644c844c56f55deca9f686186a",
+      "current_artifact_matches": null
+    },
+    {
+      "path": "/assets/VendorApprovalsPage-Cj6sA81H.js",
+      "sha256": "715b3bd04416c0270ae22cef1afe6d5acba42b62b853f168234f7850d87e5244",
+      "current_artifact_matches": null
+    },
+    {
+      "path": "/assets/VendorDecisionPanel-o9RryLC1.js",
+      "sha256": "6effac654b06d81ab3cc1cf9a36b18f89705f87585acd13afdf2e032c5de5eae",
+      "current_artifact_matches": null
+    }
+  ],
+  "routes": [
+    {
+      "path": "/vendors",
+      "login_guard": true
+    },
+    {
+      "path": "/vendor",
+      "login_guard": true
+    },
+    {
+      "path": "/vendor/database",
+      "login_guard": true
+    },
+    {
+      "path": "/vendor/followups",
+      "login_guard": true
+    },
+    {
+      "path": "/vendor/map",
+      "login_guard": true
+    },
+    {
+      "path": "/vendor/samples",
+      "login_guard": true
+    },
+    {
+      "path": "/vendor/qc",
+      "login_guard": true
+    },
+    {
+      "path": "/vendor/approvals",
+      "login_guard": true
+    }
+  ],
+  "browser_errors": 0,
+  "write_requests": 0,
+  "authenticated_business_uat": false,
+  "migration_executed_by_probe": false,
+  "status": "PASS_FRONTEND_PRESENT_BACKEND_DATABASE_PENDING"
+}

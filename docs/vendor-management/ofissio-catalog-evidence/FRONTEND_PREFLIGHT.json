@@ -1,0 +1,42 @@
+{
+  "checked_at": "2026-11-11T06:11:56.702Z",
+  "commit": "b0e376a67cd95bd903656875526fe53d247fd3d6",
+  "project_id": "prj_2MBxDEiNjz80jfB2L0dQ55hUbG0P",
+  "team_id": "team_gulGpJeEXpB77MplKv8w4Ilo",
+  "build_directory": "C:\\Users\\user\\AppData\\Local\\Temp\\harmas-ofissio-release-b0e376a67cd9",
+  "checks": {
+    "public_config_valid": true,
+    "ofissio_catalog": true,
+    "ofissio_reference": true,
+    "samples": true,
+    "decisions": true,
+    "activation": true,
+    "free_maps": true,
+    "no_private_artifacts": true
+  },
+  "scanned_files": 86,
+  "entry": "/assets/index-Dmxe1VDU.js",
+  "selected": [
+    "/index.html",
+    "/assets/index-Dmxe1VDU.js",
+    "/assets/index-j30ktiQ4.css",
+    "/sw.js",
+    "/assets/leaflet-Dgihpmma.css",
+    "/assets/leaflet-src-9dmdL3tn.js",
+    "/assets/MasterVendorLocationsPanel-BrnnBkw9.js",
+    "/assets/vendor-sampling-D7tDthLn.js",
+    "/assets/VendorApprovalsPage-DKGHZ_RV.js",
+    "/assets/VendorDecisionPanel-CYj0peDU.js",
+    "/assets/VendorMapPage-B6M8YBNz.js",
+    "/assets/VendorSamplesPage-3vDKGBAA.js",
+    "/assets/VendorSamplesPanel-CTf6ikUj.js",
+    "/assets/VendorSourcingPanel-CG7GCMZN.js"
+  ],
+  "excluded_worktree_files": [
+    "src/lib/vendor-location-utils.js"
+  ],
+  "cloud_environment_changed": false,
+  "production_database_write": false,
+  "git_push": false,
+  "deployed": false
+}

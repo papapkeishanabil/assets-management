@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-11-11T06:07:02.629Z",
+  "endpoint": "https://uwlxkwyauxwewoexfgwi.supabase.co/functions/v1/vendor-ofissio-catalog",
+  "options_status": 404,
+  "release_header": null,
+  "expected_release": "ofissio-e1285125",
+  "anonymous_status": 404,
+  "deployment_detected": false,
+  "anonymous_rejected": false,
+  "credentials_used": false,
+  "business_write_requests": 0,
+  "authenticated_search_verified": false
+}
