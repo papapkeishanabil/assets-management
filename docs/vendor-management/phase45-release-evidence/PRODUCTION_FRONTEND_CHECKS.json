@@ -1,0 +1,179 @@
+{
+  "checked_at": "2026-11-11T04:44:53.408Z",
+  "origin": "https://harmas-asset-management.vercel.app",
+  "deployment_id": "dpl_8Dv1gZW6jhdE1wg8D4CvziiezjhQ",
+  "runtime_source_commit": "888cd72a420468c94d18f087beb7b0ccdda30f6e",
+  "assets": [
+    {
+      "path": "/index.html",
+      "http_status": 200,
+      "sha256": "ed84325fcd79f8ecc0c813a08aba260ba7ff461f8dbbdd3c66b6db02f37a38ee",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/index-D4P58bbs.js",
+      "http_status": 200,
+      "sha256": "e34008bcbf9bfbd0f4b6a3d8584d7635550750e171295d0e77b0ae0d88e69a5c",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/index-GmdErF6z.css",
+      "http_status": 200,
+      "sha256": "77271ddf0d35cfd0f1c3cd840560bd6959afe277a1b6397616d3f2873bcda948",
+      "artifact_matches": true
+    },
+    {
+      "path": "/sw.js",
+      "http_status": 200,
+      "sha256": "cc8ad62f013cc86e99a05ec140032a7baf998b8f7f93c872897b9d43a3e73914",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/leaflet-Dgihpmma.css",
+      "http_status": 200,
+      "sha256": "7e14f0f44c4713eb7519182d93575f59139200ca781397a493a11f1dff0ce5e1",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/leaflet-src-DT2cs6uG.js",
+      "http_status": 200,
+      "sha256": "2ce44b606f096d3d3017bc364d19e73e91937a74bd4fad5bd404347702bc0561",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/MasterVendorLocationsPanel-BX4aa_xS.js",
+      "http_status": 200,
+      "sha256": "c351afb3a3c021b5fa59ec3d95e0e73babc701ab42b1418781641f866256daff",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/vendor-sampling-DXREDCWY.js",
+      "http_status": 200,
+      "sha256": "befb6ffe89aa9b9babecb62db768fa34f126def0114edced5e3f822d1a2af380",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorApprovalsPage-B2sUotaL.js",
+      "http_status": 200,
+      "sha256": "16cc49f947fb62921586b37cb9164ccb2a297621aa4848930cc977bc5acd0993",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorDecisionPanel-CAOAZCAt.js",
+      "http_status": 200,
+      "sha256": "96e6bc029b60b107a8a97a1e5086a39348e3ed8d2e669ab8473e18553b80714b",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorMapPage-ClJO0Glf.js",
+      "http_status": 200,
+      "sha256": "8a6c54950022b038af96b19bce3a072ec6f411f46ef17150c43182dc33c8efe7",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorSamplesPage-C6G3ZlzS.js",
+      "http_status": 200,
+      "sha256": "8699a5ee9f3ddfc05c423129cf9103f6e92735b6cbd8f0090e56ba06fa3ef0a2",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorSamplesPanel-BYMhwu4k.js",
+      "http_status": 200,
+      "sha256": "62e8770503ec88de701184101d5cf0c7916e49b8c2df2316eab521ba9d53ba98",
+      "artifact_matches": true
+    },
+    {
+      "path": "/assets/VendorSourcingPanel-Hrsq5dBM.js",
+      "http_status": 200,
+      "sha256": "2a165780fdaf25b4c6bfb5576906bf28d9cf421785416d9c565809609f815062",
+      "artifact_matches": true
+    }
+  ],
+  "routes": [
+    {
+      "path": "/",
+      "http_status": 200,
+      "login_guard": true,
+      "spa_fallback_artifact_matches": true
+    },
+    {
+      "path": "/users",
+      "http_status": 200,
+      "login_guard": true,
+      "spa_fallback_artifact_matches": true
+    },
+    {
+      "path": "/assets",
+      "http_status": 200,
+      "login_guard": true,
+      "spa_fallback_artifact_matches": true
+    },
+    {
+      "path": "/vendors",
+      "http_status": 200,
+      "login_guard": true,
+      "spa_fallback_artifact_matches": true
+    },
+    {
+      "path": "/vendor",
+      "http_status": 200,
+      "login_guard": true,
+      "spa_fallback_artifact_matches": true
+    },
+    {
+      "path": "/vendor/database",
+      "http_status": 200,
+      "login_guard": true,
+      "spa_fallback_artifact_matches": true
+    },
+    {
+      "path": "/vendor/followups",
+      "http_status": 200,
+      "login_guard": true,
+      "spa_fallback_artifact_matches": true
+    },
+    {
+      "path": "/vendor/map",
+      "http_status": 200,
+      "login_guard": true,
+      "spa_fallback_artifact_matches": true
+    },
+    {
+      "path": "/vendor/samples",
+      "http_status": 200,
+      "login_guard": true,
+      "spa_fallback_artifact_matches": true
+    },
+    {
+      "path": "/vendor/qc",
+      "http_status": 200,
+      "login_guard": true,
+      "spa_fallback_artifact_matches": true
+    },
+    {
+      "path": "/vendor/approvals",
+      "http_status": 200,
+      "login_guard": true,
+      "spa_fallback_artifact_matches": true
+    }
+  ],
+  "pwa": {
+    "active": true,
+    "worker_path": "/sw.js",
+    "current_entry_precached": true,
+    "supabase_requests_cached": false,
+    "cache_count": 1,
+    "reload_login_guard": true,
+    "browser_errors": 0,
+    "failed_assets": 0,
+    "write_requests": 0
+  },
+  "browser_errors": 0,
+  "failed_assets": 0,
+  "write_requests": 0,
+  "status": "PASS",
+  "authenticated_business_uat": false,
+  "accounts_created": false,
+  "business_data_changed": false,
+  "git_push": false
+}

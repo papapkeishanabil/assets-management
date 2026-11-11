@@ -1,0 +1,24 @@
+{
+  "deployment": {
+    "main_domain": "harmas-asset-management.vercel.app",
+    "id": "dpl_8Dv1gZW6jhdE1wg8D4CvziiezjhQ",
+    "url": "harmas-asset-management-2dcsbcywj.vercel.app",
+    "project_id": "prj_2MBxDEiNjz80jfB2L0dQ55hUbG0P",
+    "team_id": "team_gulGpJeEXpB77MplKv8w4Ilo",
+    "target": "production",
+    "ready_state": "READY",
+    "runtime_source_commit": "888cd72a420468c94d18f087beb7b0ccdda30f6e"
+  },
+  "runtime_log_probe": {
+    "levels": [
+      "error",
+      "fatal"
+    ],
+    "result": "## Runtime Logs\n\n**Project:** prj_2MBxDEiNjz80jfB2L0dQ55hUbG0P\n**Deployment:** dpl_8Dv1gZW6jhdE1wg8D4CvziiezjhQ\n**Time range:** 2026-11-11T04:30:09.426Z → 2026-11-11T04:45:09.426Z\n\nNo logs found for the specified criteria.",
+    "scope": "Vercel function/daemon logs only; static browser and Supabase errors require separate checks"
+  },
+  "checked_at": "2026-11-11T04:45:10.231Z",
+  "frontend_promoted": true,
+  "git_push": false,
+  "production_authenticated_uat": false
+}

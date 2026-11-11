@@ -1,22 +1,28 @@
 # HANDOFF — Modul Manajemen Vendor HARMAS Asset Management
 
-**Persiapan rilis gabungan 11 November: frontend STAGING READY, domain utama masih lama.**
-User meminta deploy Fase 4+5; izin frontend ada, migration ditanyakan terpisah sesuai
-batasan user. Staging `dpl_8Dv1gZW6jhdE1wg8D4CvziiezjhQ`,
-https://harmas-asset-management-2dcsbcywj.vercel.app , target production skip-domain;
-14 hash cocok, 86 file bersih. Domain utama tetap `dpl_8HZD3SCrS2ZuwGWRonkkYPRPUKEu`.
-Backup terbaru `D:\Backups\harmas-pre-phase45-20261111-040820-8f160784`, restore
-141 tabel/1.839 baris + 95 blob/29.027.178 byte terverifikasi; 0 file privat.
-Clone offline: migration/rollback dua kali + aktivasi ROLLBACK lulus, 20 baseline utuh.
-Default grants ALL pada objek baru ditemukan sebelum produksi: migration Fase 4/5
-diperketat terhadap TRUNCATE/hak administratif dan reset sequence. Hash terbaru
-di `phase45-release-evidence/SQL_REVIEW.json`, bukan manifest implementasi lama.
-**75 Fase 4 + 69 Fase 5 + 12 gerbang rilis PASS**, build/PWA PASS. Pembanding policy
-clone diperbaiki untuk collation, tetap membandingkan seluruh isi. Belum ada SQL
-tulis produksi/push/promosi domain utama. Password persiapan sudah dibersihkan.
-Jangan menjalankan driver migration tanpa persetujuan baru yang eksplisit; setelah
-disetujui, live baseline/usia backup diperiksa lagi dan dapat diperbarui otomatis.
-[Readiness rilis dan bukti](PHASE45_RELEASE_READINESS_20261111.md).
+**Fase 4 Sampling & QC + Fase 5 Persetujuan & Aktivasi sudah LIVE — 11 November 2026.**
+User menyetujui migration terpisah: “Setuju migration Fase 4 dan 5 ke produksi”.
+Kedua SQL final (hash di SQL_REVIEW.json) COMMIT dalam satu transaksi; verifikasi
+selesai 11.42 WIB. Status MIGRATION_COMMITTED_VERIFIED dan izin sekali pakai sudah
+dikonsumsi: **jangan menjalankan ulang driver migration**.
+Domain utama https://harmas-asset-management.vercel.app terverifikasi 11.45 WIB
+menunjuk deployment `dpl_8Dv1gZW6jhdE1wg8D4CvziiezjhQ`, promosi staging yang sama
+tanpa rebuild. Source fitur `888cd72a`, hardening SQL/release lokal `2adafaf7`.
+**Tidak ada push Git**. Environment cloud belum diperbaiki; rilis memakai prebuilt
+dengan konfigurasi publik lokal yang divalidasi. Jangan mengandalkan build remote
+berikutnya sebelum konfigurasi cloud direview.
+Backup `D:\Backups\harmas-pre-phase45-20261111-040820-8f160784`: restore
+141 tabel/1.839 baris + 95 blob terverifikasi, rehearsal clone offline lulus.
+20 checksum tabel baseline, fungsi/ACL/RLS/policy/trigger existing tetap identik.
+Migration tidak membuat akun/fixture/aktivasi/data bisnis existing; tabel baru kosong.
+75/75 Fase 4 + 69/69 Fase 5 + 12/12 gerbang rilis lokal PASS. Produksi: 14/14 hash,
+11/11 SPA/login guard, PWA aktif/entry terbaru/tanpa cache Supabase PASS; 0 error
+browser/permintaan tulis dalam probe anonim. Tidak ada log Vercel error/fatal pada
+jendela probe. **UAT login/CRUD operasional masih menunggu pengguna**, jangan
+membuat akun privileged atau mengaktifkan vendor nyata hanya untuk tes.
+[Laporan rilis, bukti, checklist UAT dan pemulihan](PHASE45_PRODUCTION_RELEASE_20261111.md).
+
+**Catatan di bawah merupakan riwayat sebelum rilis; status terkini mengikuti laporan di atas.**
 
 **Fase 5 Persetujuan & Aktivasi — selesai lokal 11 November; BELUM produksi.**
 User meminta melanjutkan Fase 5 sebelum rilis. Menu `/vendor/approvals` dan tab

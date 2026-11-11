@@ -1,0 +1,38 @@
+{
+  "checked_at": "2026-11-11T04:42:26.345Z",
+  "target": "https://uwlxkwyauxwewoexfgwi.supabase.co",
+  "sql_files": [
+    {
+      "file": "supabase/migrations/202611110001_vendor_management_phase4.sql",
+      "sha256": "023d8328a677af1a91249759c29461b9dcb3eb9cf66a5f711e7875bebb6996f3"
+    },
+    {
+      "file": "supabase/migrations/202611110002_vendor_management_phase5.sql",
+      "sha256": "0cee202a7e2a2d02d0690a8610ce71ef01cbfb9565ba23b0bab62af24e5fd1f9"
+    }
+  ],
+  "backup_directory": "D:\\Backups\\harmas-pre-phase45-20261111-040820-8f160784",
+  "database_dump_sha256": "2f2ad10d1cc4687acd578757d6fe1abe59a2ba086e613a78d2d8a8b046095373",
+  "logical_restore_tables": 141,
+  "logical_restore_rows": 1839,
+  "storage_blob_backup_verified": true,
+  "storage_blobs": 95,
+  "baseline_tables_verified": 20,
+  "existing_data_security_and_policies_unchanged": true,
+  "production_migration_executed": true,
+  "production_commit_confirmed": true,
+  "post_checks": {
+    "view_invoker": true,
+    "seed_parameters": true,
+    "triggers_enabled": true,
+    "new_business_empty": true,
+    "sample_deletes_revoked": true,
+    "qc_decision_writes_revoked": true,
+    "internal_sequence_privileges_revoked": true,
+    "administrative_table_privileges_revoked": true
+  },
+  "business_fixture_created": false,
+  "accounts_created": false,
+  "git_push": false,
+  "frontend_promoted": false
+}
