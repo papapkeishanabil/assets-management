@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { clusterMapPoints, coordinatePair, categoryPin } from '../../lib/vendor-location-utils';
-import { loadVendorMap, vendorTileConfig } from '../../lib/vendor-map-loader';
+import { loadVendorMap, vendorTileConfig, vendorSatelliteConfig } from '../../lib/vendor-map-loader';
 import './vendor-map.css';
 
 const NO_POINTS = [];
@@ -12,7 +12,7 @@ const LABEL_MODES = [['auto', 'Auto'], ['always', 'Selalu'], ['off', 'Mati']];
 // disetujui diberi badge centang. Klaster bernomor tetap biru.
 // Label nama pin: mode Auto (muncul saat zoom cukup) / Selalu / Mati.
 export default function VendorMap({ points = NO_POINTS, editable = false, onPick, onSelect, height = 400, focus = null, selectedKey = '' }) {
-  const element = useRef(null), callbacks = useRef({ onPick, onSelect }), fitted = useRef(false), fittedPoints = useRef(null);
+  const element = useRef(null), callbacks = useRef({ onPick, onSelect }), fitted = useRef(false), fittedPoints = useRef(null), tilesRef = useRef(null);
   callbacks.current = { onPick, onSelect };
   const [instance, setInstance] = useState(null), [fatal, setFatal] = useState(''), [tileError, setTileError] = useState(''), [retry, setRetry] = useState(0);
   const [legendOpen, setLegendOpen] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches);
@@ -22,6 +22,14 @@ export default function VendorMap({ points = NO_POINTS, editable = false, onPick
   const changeLabelMode = (mode) => {
     setLabelMode(mode);
     try { localStorage.setItem('vendor-map-labels', mode); } catch { /* penyimpanan tidak tersedia — abaikan */ }
+  };
+  // Peta dasar: 'map' (OpenStreetMap) atau 'satellite' (Esri World Imagery).
+  const [baseMode, setBaseMode] = useState(() => {
+    try { return localStorage.getItem('vendor-map-base') === 'satellite' ? 'satellite' : 'map'; } catch { return 'map'; }
+  });
+  const changeBaseMode = (mode) => {
+    setBaseMode(mode);
+    try { localStorage.setItem('vendor-map-base', mode); } catch { /* penyimpanan tidak tersedia — abaikan */ }
   };
   const valid = useMemo(() => points.filter((p) => { try { return Boolean(coordinatePair(p.latitude, p.longitude)); } catch { return false; } }), [points]);
   // Kategori yang benar-benar ada pada titik saat ini → isi legenda relevan.
@@ -35,26 +43,41 @@ export default function VendorMap({ points = NO_POINTS, editable = false, onPick
   }, [valid]);
 
   useEffect(() => {
-    let cancelled = false, map, tiles, observer, frame;
+    let cancelled = false, map, observer, frame;
     setFatal(''); setTileError(''); fitted.current = false;
     loadVendorMap().then((L) => {
       if (cancelled) return;
-      const config = vendorTileConfig();
       map = L.map(element.current, { center: [-2, 118], zoom: 4, minZoom: 2, maxZoom: 19,
         scrollWheelZoom: true, dragging: true, touchZoom: true,
         maxBounds: [[-85.05112878, -180], [85.05112878, 180]], maxBoundsViscosity: 1 });
       map.attributionControl.setPrefix(false);
-      tiles = L.tileLayer(config.url, { attribution: config.attribution, maxZoom: 19, noWrap: true,
-        updateWhenIdle: true, keepBuffer: 0, referrerPolicy: 'origin' });
-      tiles.on('tileerror', () => { if (!cancelled) setTileError('Peta dasar tidak dapat dimuat. Daftar lokasi dan tombol rute tetap dapat digunakan.'); });
-      tiles.addTo(map);
       if (editable) map.on('click', (e) => callbacks.current.onPick?.({ latitude: e.latlng.lat, longitude: e.latlng.lng, coordinate_source: 'PICK_ON_MAP' }));
       observer = new ResizeObserver(() => { cancelAnimationFrame(frame); frame = requestAnimationFrame(() => map.invalidateSize({ pan: true, animate: false })); });
       observer.observe(element.current);
-      setInstance({ L, map, tiles });
+      setInstance({ L, map });
     }).catch(() => { if (!cancelled) setFatal('Peta belum dapat dimuat. Daftar lokasi dan tombol rute tetap dapat digunakan.'); });
-    return () => { cancelled = true; observer?.disconnect(); cancelAnimationFrame(frame); tiles?.off(); map?.remove(); };
+    return () => { cancelled = true; observer?.disconnect(); cancelAnimationFrame(frame); map?.remove(); };
   }, [editable, retry]);
+
+  // Layer peta dasar mengikuti mode (Peta/Satelit) — diganti tanpa membangun ulang peta.
+  useEffect(() => {
+    if (!instance) return;
+    const { L, map } = instance;
+    setTileError('');
+    let config;
+    try {
+      config = baseMode === 'satellite' ? vendorSatelliteConfig() : vendorTileConfig();
+    } catch (err) {
+      setTileError(err.message);
+      return;
+    }
+    const layer = L.tileLayer(config.url, { attribution: config.attribution, maxZoom: 19, noWrap: true,
+      updateWhenIdle: true, keepBuffer: 0, referrerPolicy: 'origin' });
+    layer.on('tileerror', () => setTileError('Peta dasar tidak dapat dimuat. Daftar lokasi dan tombol rute tetap dapat digunakan.'));
+    tilesRef.current = layer;
+    layer.addTo(map);
+    return () => { layer.off(); layer.remove(); if (tilesRef.current === layer) tilesRef.current = null; };
+  }, [instance, baseMode]);
 
   useEffect(() => {
     if (!instance) return;
@@ -125,19 +148,26 @@ export default function VendorMap({ points = NO_POINTS, editable = false, onPick
   return <div className="space-y-2">
     {(fatal || tileError) && <div role="alert" className="card p-4 text-sm text-rose-300">{fatal || tileError} <button type="button" className="underline" onClick={() => {
       if (fatal) { setInstance(null); setRetry((n) => n + 1); }
-      else { setTileError(''); instance?.tiles.redraw(); }
+      else { setTileError(''); tilesRef.current?.redraw(); }
     }}>Coba lagi</button></div>}
     {!instance && !fatal && <p role="status" className="text-sm text-ink-400">Memuat peta…</p>}
     <div className="relative">
       <div ref={element} role="region" aria-label={editable ? 'Pilih koordinat pada peta' : 'Peta lokasi vendor'} style={{ height }} className="vendor-map-container w-full rounded-xl border border-white/10" />
       {!editable && (
-        <div className="vendor-map-labels-control" role="group" aria-label="Mode label nama pin">
-          <span className="px-2 text-slate-300" aria-hidden="true">Label</span>
-          {LABEL_MODES.map(([value, label]) => (
-            <button key={value} type="button" aria-pressed={labelMode === value} onClick={() => changeLabelMode(value)} title={value === 'auto' ? `Nama muncul otomatis saat zoom cukup dekat (≥${LABEL_MIN_ZOOM})` : value === 'always' ? 'Nama selalu tampil di setiap pin' : 'Nama hanya muncul saat kursor di atas pin'}>
-              {label}
-            </button>
-          ))}
+        <div className="vendor-map-controls">
+          <div className="vendor-map-labels-control" role="group" aria-label="Mode label nama pin">
+            <span className="px-2 text-slate-300" aria-hidden="true">Label</span>
+            {LABEL_MODES.map(([value, label]) => (
+              <button key={value} type="button" aria-pressed={labelMode === value} onClick={() => changeLabelMode(value)} title={value === 'auto' ? `Nama muncul otomatis saat zoom cukup dekat (≥${LABEL_MIN_ZOOM})` : value === 'always' ? 'Nama selalu tampil di setiap pin' : 'Nama hanya muncul saat kursor di atas pin'}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="vendor-map-labels-control" role="group" aria-label="Jenis peta dasar">
+            <span className="px-2 text-slate-300" aria-hidden="true">Peta</span>
+            <button type="button" aria-pressed={baseMode === 'map'} onClick={() => changeBaseMode('map')} title="Peta standar OpenStreetMap">Jalan</button>
+            <button type="button" aria-pressed={baseMode === 'satellite'} onClick={() => changeBaseMode('satellite')} title="Citra satelit Esri World Imagery">Satelit</button>
+          </div>
         </div>
       )}
       {!editable && (
