@@ -1,0 +1,378 @@
+{
+  "checked_at": "2026-11-11T01:34:47.506Z",
+  "target": "Docker synthetic + loopback browser only",
+  "production_accessed": false,
+  "accounts_cleaned": 7,
+  "results": [
+    {
+      "kind": "database",
+      "check": "Colliding unowned table/dormant policy rejected before RLS activation",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Idempotent migration twice: six seeds, existing 17 table data/security definitions unchanged",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Unknown policy on owned Phase 4 object aborts rerun",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Sourcing creates brief with server code, author and timestamps",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "sourcing: samples, rubric and history readable without recursive policies",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "hrd: samples, rubric and history readable without recursive policies",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "super_admin: samples, rubric and history readable without recursive policies",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "direksi: samples, rubric and history readable without recursive policies",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "finance: read/write/dashboard denied",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "pelaksana: read/write/dashboard denied",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "inactive: read/write/dashboard denied",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Anonymous reads and QC RPC denied",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "UID-null authenticated context is not treated as service",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "hrd: authorized sample creation",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "super_admin: authorized sample creation",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Direksi reads without sample write",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Sample physical delete denied to all application writers",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Sample identity, creator, code and parent cannot be forged",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Insert stamps replace spoofed author/time/code",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Related sample cannot refer to a different candidate",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Invalid transition, missing assignment, quantity and date rejected",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Brief → assigned → working → received → QC, candidate stage synchronized",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Optimistic sample update cannot overwrite a newer change",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Rubric managed by HRD/Super Admin; Sourcing edit and destructive delete denied",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "QC RPC rejects read-only, unrelated and inactive roles",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "QC and both audit histories reject raw INSERT/UPDATE/DELETE",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "RPC rejects null/array payload and forged derived fields/actor/run number",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "All applicable scores required; extra, fractional, string and out-of-range scores rejected",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Pass threshold required, under-threshold LULUS rejected; revision/failure require complete findings",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Inspector, inspection time and cross-candidate/document-as-photo validation",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Round 1 revision: authoritative inspector/actor, weighted score, deadline and synchronized status",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Cannot create another QC round until sample rework/receipt",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Correction without reason rejected",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Concurrent corrections: one succeeds, stale one denied; immutable author and full old/new audit",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Rework requires a reason; latest decision cannot change while rework is running",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Next round requires a reinspection note",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Round 2 LULUS preserves round 1 and moves only process to waiting for decision",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "QC never approves/activates/links vendor; original decision guard remains effective for every app role",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Examined sample specification is frozen",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Old-round correction retains original rubric/weights and does not alter newest sample result",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "New related brief prevents stale waiting-for-approval stage",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Multiple samples aggregate: unfinished sample prevents premature approval stage",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Concurrent QC on sibling samples serializes candidate aggregation without stale process status",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Concurrent new-QC submissions create exactly one round and audit event",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Testing linked active vendor leaves master identity/operational status and stage intact",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Archived candidate blocks new sample, sample edit and QC while existing history remains readable",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Evidence bucket private; authorized four roles receive expiring signed evidence URLs",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Anonymous/public URL and unauthorized signed URL access denied",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Cross-parent and archived sample uploads denied by Storage RLS",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Application users cannot overwrite or delete evidence",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Storage rejects unsupported MIME and files larger than 5 MB",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Rollback refuses nonempty evidence bucket and leaves schema intact",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Dashboard counts actual samples, unique vendors and QC rounds separately using candidate PIC/category",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Broad activity feed contains only safe metadata; full specifications/scores/evidence stay in protected histories",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Existing RLS, helper functions, decision guard and old Storage policies unchanged",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Sample and QC sidebar/routes visible for authorized Sourcing",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Cancel brief creation performs no write",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Failed sample save retains draft and retry persists real database brief",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Search and detail load persisted sample from API",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Browser assignment → work → receipt → QC updates database and UI",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Browser rejects forged PDF signature before upload",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "QC save failure retains inspector, scores and uploaded evidence for retry",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Browser records QC scores/inspector and uploads actual private PDF; readback persisted",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Browser correction creates permanent reason/old-new history",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Mobile/light detail fits viewport without document overflow",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "sourcing module vendor_management+vendor_samples: sidebar and detail controls honor permission boundary",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "sourcing module vendor_management+vendor_qc: sidebar and detail controls honor permission boundary",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "direksi module vendor_management+vendor_samples+vendor_qc: sidebar and detail controls honor permission boundary",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Disabled module blocks direct route",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Frontend with inactive migration shows clear nonblocking pending message",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Candidate Sampel & QC tab integrates persisted records",
+      "pass": true
+    },
+    {
+      "kind": "browser",
+      "check": "Zero browser runtime errors or production API requests",
+      "pass": true
+    },
+    {
+      "kind": "database",
+      "check": "Rollback twice and owned-fixture cleanup restore 17 existing table checksums, original functions and all RLS policies",
+      "pass": true
+    }
+  ],
+  "browser_errors": [],
+  "external_hosts_blocked": [
+    "fonts.googleapis.com"
+  ],
+  "permission_switches_mocked": true
+}

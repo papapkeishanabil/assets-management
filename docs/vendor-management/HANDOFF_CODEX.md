@@ -1,5 +1,19 @@
 # HANDOFF — Modul Manajemen Vendor HARMAS Asset Management
 
+**Fase 4 Sampling & QC — implementasi lokal selesai 11 November; BELUM produksi.**
+User meminta melanjutkan alur penilaian kandidat. Menu Pengujian Sampel/Hasil QC,
+tab Sampel & QC pada detail kandidat, rubrik berbobot, bukti privat, revisi dengan
+putaran baru dan koreksi beralasan sudah dibuat. Hasil QC diinput Sourcing/HRD/SA
+atas nama pemeriksa tanpa role QC baru. Migration `202611110001` additive membuat
+4 tabel rancangan + `vendor_sample_change_history` untuk audit brief/status privat;
+rollback manual terpisah. **56/56 database/API + 17/17 browser lokal PASS**, build
+PASS, 17 checksum existing dan security baseline kembali identik setelah cleanup.
+Migration arsip `202611100001` tetap baseline, jangan jalankan ulang produksi.
+Fase 4 belum menyentuh produksi/push/deploy; preflight/backup dan persetujuan
+migration/deploy baru tetap diperlukan. **Fase 5 belum dimulai**: Lulus QC tidak
+mengubah kelayakan/operasional/relasi master. Batas lulus QC wajib diisi sesuai SOP,
+tidak ditentukan default sepihak. [Laporan, daftar perubahan dan alur penggunaan](PHASE4_LOCAL_READINESS_20261111.md).
+
 **Arsip kandidat sudah LIVE 10 November sekitar 16.51 WIB.** User menyetujui frontend
 “ok deploy” dan migration “ya setuju”. Migration baru `202611100001` COMMIT dan
 verifikasi lulus; jangan ulangi. Frontend `a32d3c49`, deployment
@@ -207,7 +221,8 @@ tidak perlu mengulang migration atau deployment untuk penggunaan lokasi sekarang
 | Git | Fase 2 `c02a66d5`, origin lokal `12de0de4`; dokumentasi penerimaan Fase 1+2 `73b8680a`, implementasi Fase 3 pada commit lokal berikutnya (lihat git log). Tidak ada push baru |
 | Fase 2 | Schema dan frontend produksi; UAT baca 9 PASS + lifecycle 6 PASS, akun uji bersih; kandidat/follow-up masih 0 |
 | Fase 3 | Backend lokasi/foto AKTIF 10 Nov 09.29 WIB; frontend integrasi menu + koordinat master `09b980ce` READY 11.14 WIB. Baseline/keamanan utuh; pin menunggu input lokasi asli dan UAT operasional |
-| Fase 4–5 | Belum dimulai. Rancangan lengkap di dokumen induk §D–G |
+| Fase 4 | Implementasi lokal selesai 11 Nov; 56 DB/API + 17 browser PASS, build PASS. Belum migration/push/deploy produksi; lihat laporan di atas |
+| Fase 5 | Belum dimulai. Persetujuan/aktivasi tetap terkunci; rancangan lengkap di dokumen induk §F–G |
 
 ## 3. Stack & Konvensi Kode
 

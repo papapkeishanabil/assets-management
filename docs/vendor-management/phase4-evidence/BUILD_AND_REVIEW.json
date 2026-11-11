@@ -1,0 +1,20 @@
+{
+  "checked_at": "2026-11-11T01:35:41.346Z",
+  "command": "npm.cmd run build",
+  "exit_code": 0,
+  "pwa_build_passed": true,
+  "warning": "Existing main application chunk exceeds 500 kB; sampling panel uses lazy route chunk.",
+  "migration_executed_in_production": false,
+  "git_pushed": false,
+  "deployed": false,
+  "sql_files": [
+    {
+      "file": "supabase/migrations/202611110001_vendor_management_phase4.sql",
+      "sha256": "118c2166aecfa0fe3bc3e058a005d563d990bdeae27385858c34aaccc624e682"
+    },
+    {
+      "file": "supabase/rollbacks/202611110001_vendor_management_phase4_rollback.sql",
+      "sha256": "55805920b595c3715416df5e90c23342114be7305415e95cef3565caa161767e"
+    }
+  ]
+}

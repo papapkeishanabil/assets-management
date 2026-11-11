@@ -1,0 +1,12 @@
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useRolePermissions } from '../../hooks/useRolePermissions';
+import { fetchSamplingDashboard, missingSamplingBackend } from '../../lib/vendor-sampling';
+export default function VendorSamplingSummary({ category = '', pic = '', version }) {
+  const { hasAccess } = useRolePermissions(), canSamples = hasAccess('vendor_samples'), canQC = hasAccess('vendor_qc');
+  const [data, setData] = useState(null), [error, setError] = useState(''), [pending, setPending] = useState(false);
+  useEffect(() => { if (!canSamples && !canQC) return; let ignore = false; setData(null); setError(''); setPending(false); fetchSamplingDashboard(category, pic).then((d) => { if (!ignore) setData(d); }).catch((e) => { if (!ignore) { setPending(missingSamplingBackend(e)); setError(e.message); } }); return () => { ignore = true; }; }, [canSamples, canQC, category, pic, version]);
+  if (!canSamples && !canQC) return null;
+  const metrics = [['samples', 'Jumlah sampel'], ['vendors', 'Vendor unik diuji'], ['running', 'Sampel berjalan'], ['awaiting_qc', 'Sampel menunggu/proses QC'], ...(canQC ? [['qc_runs', 'Putaran pemeriksaan'], ['passed', 'Sampel QC Lulus'], ['revision', 'Sampel perlu revisi']] : []), ['overdue', 'Sampel lewat target']];
+  return <section className="card p-5 space-y-4"><div className="flex flex-wrap justify-between gap-2"><div><h2 className="font-semibold text-white">Monitoring Sampel & QC</h2><p className="text-xs text-ink-400 mt-1">Jumlah sampel, vendor unik dan putaran pemeriksaan dihitung terpisah dari data sampel aktual.</p></div><Link className="text-xs text-primary-400" to={canSamples ? '/vendor/samples' : '/vendor/qc'}>Buka monitoring →</Link></div>{pending ? <p className="text-sm text-ink-400">Monitoring sampel belum aktif; indikator tahap kandidat tetap tersedia pada alur kualifikasi.</p> : error ? <p role="alert" className="text-sm text-danger-400">Gagal memuat monitoring sampel: {error}</p> : <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">{metrics.map(([k, label]) => <article key={k} aria-label={label} className="rounded-xl bg-white/5 border border-white/5 p-4"><h3 className="text-xs text-ink-400">{label}</h3><p className="text-2xl font-semibold text-white mt-2">{data?.[k] ?? '—'}</p></article>)}</div>}<p className="text-xs text-ink-500">Lulus QC tidak berarti vendor disetujui atau diaktifkan. Sampel kandidat arsip tidak masuk angka monitoring ini.</p></section>;
+}

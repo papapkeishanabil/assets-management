@@ -14,7 +14,7 @@ import {
   Truck, Package, Home, Bell, Search, Settings,
   Wrench, Shield, Calendar, AlertCircle, AlertTriangle,
   HelpCircle, Smartphone, Download, BellRing, UserCheck, FileText,
-  MessageSquare, ClipboardCheck, Lock
+  MessageSquare, ClipboardCheck, Lock, FlaskConical
 } from 'lucide-react';
 
 export default function MainLayout() {
@@ -214,7 +214,7 @@ export default function MainLayout() {
             </NavLink>
           ))}
 
-          {['super_admin', 'hrd', 'direksi', 'sourcing'].includes(role?.role_name) && (canAccessActiveVendors || hasAccess('vendor_management') || hasAccess('vendor_followups') || hasAccess('vendor_map')) && (
+          {['super_admin', 'hrd', 'direksi', 'sourcing'].includes(role?.role_name) && (canAccessActiveVendors || hasAccess('vendor_management') || hasAccess('vendor_followups') || hasAccess('vendor_map') || hasAccess('vendor_samples') || hasAccess('vendor_qc')) && (
             <>
               <SectionLabel>Manajemen Vendor</SectionLabel>
               {hasAccess('vendor_management') && <NavLink to="/vendor" end onClick={() => setSidebarOpen(false)} className={navLinkClass}>
@@ -237,6 +237,8 @@ export default function MainLayout() {
               {hasAccess('vendor_map') && <NavLink to="/vendor/map" onClick={() => setSidebarOpen(false)} className={navLinkClass}>
                 <MapPin size={16} className="flex-shrink-0" /> Peta Vendor
               </NavLink>}
+              {hasAccess('vendor_samples') && <NavLink to="/vendor/samples" onClick={() => setSidebarOpen(false)} className={navLinkClass}><FlaskConical size={16} className="flex-shrink-0" /> Pengujian Sampel</NavLink>}
+              {hasAccess('vendor_qc') && <NavLink to="/vendor/qc" onClick={() => setSidebarOpen(false)} className={navLinkClass}><ClipboardCheck size={16} className="flex-shrink-0" /> Hasil QC</NavLink>}
             </>
           )}
 

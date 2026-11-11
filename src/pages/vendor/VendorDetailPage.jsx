@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { lazy, Suspense, useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -17,13 +17,13 @@ import VendorFormModal from '../../components/vendor/VendorFormModal';
 import VendorFollowupsPanel from '../../components/vendor/VendorFollowupsPanel';
 import VendorLocationsPanel from '../../components/vendor/VendorLocationsPanel';
 import { useRolePermissions } from '../../hooks/useRolePermissions';
+const VendorSamplesPanel = lazy(() => import('../../components/vendor/VendorSamplesPanel'));
 
 // Tab yang hadir di fase berikutnya (placeholder agar struktur jelas).
 const FUTURE_TABS = [
-  { key: 'sample', label: 'Sampel & QC', phase: 'Fase 4' },
   { key: 'decision', label: 'Keputusan', phase: 'Fase 5' }
 ];
-const activityTitle = (action) => ({ created: 'Kandidat dibuat', profile_updated: 'Profil diperbarui', followup_created: 'Follow-up dicatat', followup_task_closed: 'Tugas follow-up ditutup', candidate_archived: 'Kandidat dihapus dari daftar (arsip)', candidate_restored: 'Kandidat dipulihkan' }[action] || action);
+const activityTitle = (action) => ({ created: 'Kandidat dibuat', profile_updated: 'Profil diperbarui', followup_created: 'Follow-up dicatat', followup_task_closed: 'Tugas follow-up ditutup', candidate_archived: 'Kandidat dihapus dari daftar (arsip)', candidate_restored: 'Kandidat dipulihkan', sample_created: 'Sampel dibuat', sample_updated: 'Sampel diperbarui', qc_recorded: 'Hasil QC dicatat', qc_corrected: 'Hasil QC dikoreksi' }[action] || action);
 
 function InfoItem({ label, value }) {
   return (
@@ -52,7 +52,7 @@ export default function VendorDetailPage() {
   const canWrite = roleCanWrite && !candidate?.archived_at;
   const [history, setHistory] = useState({ statusHistory: [], activityLogs: [] });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState(() => params.get('tab') === 'location' ? 'location' : 'summary');
+  const [activeTab, setActiveTab] = useState(() => ['location', 'sample'].includes(params.get('tab')) ? params.get('tab') : 'summary');
   const [showForm, setShowForm] = useState(false);
   const [savingStatus, setSavingStatus] = useState(false);
 
@@ -166,6 +166,7 @@ export default function VendorDetailPage() {
           className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${activeTab === 'followup' ? 'border-primary-400 text-white' : 'border-transparent text-ink-400 hover:text-white'}`}>
           Follow-Up
         </button>}
+        {(hasAccess('vendor_samples') || hasAccess('vendor_qc')) && <button onClick={() => setActiveTab('sample')} className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${activeTab === 'sample' ? 'border-primary-400 text-white' : 'border-transparent text-ink-400 hover:text-white'}`}><ClipboardCheck size={14} className="inline mr-1.5" /> Sampel & QC</button>}
         {FUTURE_TABS.map((t) => (
           <button
             key={t.key}
@@ -191,7 +192,8 @@ export default function VendorDetailPage() {
         </button>
       </div>
 
-      {/* Placeholder fase berikutnya */}
+      {/* Panel sampel, follow-up, lokasi dan placeholder keputusan Fase 5. */}
+      {activeTab === 'sample' && <Suspense fallback={<p role="status" className="text-ink-400">Memuat sampel…</p>}><VendorSamplesPanel candidateId={id} readOnly={Boolean(candidate.archived_at)} onChanged={() => Promise.all([fetchVendorCandidateDetail(id), fetchCandidateHistory(id)]).then(([detail, hist]) => { setCandidate(detail); setHistory(hist); }).catch(() => toast.error('Gagal menyegarkan riwayat sampel'))} /></Suspense>}
       {activeTab === 'followup' && <VendorFollowupsPanel candidateId={id} readOnly={Boolean(candidate.archived_at)}
         onChanged={() => fetchCandidateHistory(id).then(setHistory).catch(() => toast.error('Gagal menyegarkan riwayat'))} />}
       {activeTab === 'location' && <VendorLocationsPanel candidateId={id} readOnly={Boolean(candidate.archived_at)}

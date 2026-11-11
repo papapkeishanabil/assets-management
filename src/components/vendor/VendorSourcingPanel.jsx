@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { PROCESS_STAGE_LABELS, PROCESS_STAGE_BADGES } from '../../lib/vendor-constants';
 import { fetchFollowupOptions, fetchSourcingDashboard, formatFollowupTime } from '../../lib/vendor-followup-helpers';
 import { fetchLocationMonitoring } from '../../lib/vendor-location-helpers';
+import VendorSamplingSummary from './VendorSamplingSummary';
 
 const METRICS = [
   ['total', 'Total profil unik', 'Termasuk profil vendor aktif yang terhubung'], ['new_leads', 'Lead baru', 'Tahap Lead Masuk'],
@@ -15,8 +16,8 @@ const METRICS = [
   ['needs_followup', 'Perlu follow-up', 'Kandidat aktif tanpa log atau dengan tugas terbuka'],
   ['overdue', 'Tugas overdue', 'Tugas terbuka melewati deadline'],
   ['location_incomplete', 'Lokasi belum lengkap', 'Kandidat tanpa lokasi utama, alamat, GPS atau foto tampak luar'],
-  ['samples_running', 'Sampel berjalan', 'Kandidat pada tahap sampel/revisi'],
-  ['awaiting_qc', 'Menunggu / proses QC', 'Kandidat pada tahap sampel diterima/QC'],
+  ['samples_running', 'Kandidat pada tahap sampel', 'Jumlah profil pada tahap sampel/revisi; bukan jumlah sampel'],
+  ['awaiting_qc', 'Kandidat pada tahap QC', 'Jumlah profil pada tahap sampel diterima/QC'],
   ['awaiting_approval', 'Menunggu approval', 'Tahap keputusan atau status pending approval'],
   ['approved', 'Disetujui', 'Status kelayakan APPROVED']
 ];
@@ -66,7 +67,8 @@ export default function VendorSourcingPanel({ canMap, canFollowups, version }) {
         </tbody></table></div>
         <p className="text-xs text-ink-500 px-5 pb-5">Vendor yang ditangani beberapa PIC dapat muncul pada masing-masing baris PIC; jangan menjumlahkan kolom vendor per PIC sebagai total vendor unik.</p>
       </div>
-      <p className="text-xs text-ink-500">Indikator sampel/QC memakai tahap kandidat sampai Fase 4. Pengingat overdue diperiksa saat halaman dibuka atau di-refresh; belum berjalan otomatis saat aplikasi tidak digunakan. Satu kejadian keterlambatan tugas dikirim sekali ke notifikasi PIC.</p>
+      <VendorSamplingSummary category={category} pic={pic} version={`${version}-${retry}`} />
+      <p className="text-xs text-ink-500">Alur kualifikasi menghitung profil kandidat; monitoring Sampel & QC menghitung sampel dan putaran pemeriksaan aktual. Pengingat follow-up diperiksa saat halaman dibuka/di-refresh, bukan scheduler latar belakang. Satu kejadian keterlambatan tugas dikirim sekali ke notifikasi PIC.</p>
     </>}
   </div>;
 }
